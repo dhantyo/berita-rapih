@@ -1,0 +1,17 @@
+{
+  "$schema": "../schema.json",
+  "id": "medcom",
+  "name": "Medcom",
+  "domains": ["medcom.id"],
+  "articleUrl": "^/[a-z0-9-]+/[a-z0-9-]+/[A-Za-z0-9]{6,}-",
+  "body": ["#articleBody", ".detail_body"],
+  "remove": [".readother", ".btm-s", "#stickshare", "#author", ".add-google-mobile", ".gliaplayer-container"],
+  "pagination": { "method": "none" },
+  "feed": "https://www.medcom.id/feed",
+  "samples": [
+    "https://www.medcom.id/olahraga/liga-dunia/5b2y6YnN-klasemen-kualifikasi-piala-asia-u-17-2027-indonesia-tempel-afghanistan",
+    "https://www.medcom.id/teknologi/game/wkBdm0eN-metaphor-refantazio-resmi-meluncur-di-nintendo-switch-2"
+  ],
+  "verified": "2026-11-15",
+  "notes": "Body is #articleBody (desktop) or .detail_body (mobile template): bare text and inline elements separated by <br>, no <p>, so the generic break splitter wraps the runs; tables and h2 stay as blocks. Baca Juga is .readother, the editor tag #author, share bar .btm-s. Article URLs look like /section/subsection/Id8chars-slug. Feed is /feed (200); /rss is the homepage."
+}

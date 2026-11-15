@@ -1,0 +1,20 @@
+{
+  "$schema": "../schema.json",
+  "id": "sindonews",
+  "name": "Sindonews",
+  "domains": ["sindonews.com"],
+  "articleUrl": "^/read/\\d+/",
+  "body": [".detail-desc"],
+  "remove": [".lihat-juga", ".wa-channel", ".page-status", ".v-youtube + br"],
+  "pagination": {
+    "method": "param",
+    "fullpage": "showpage=all"
+  },
+  "feed": "https://nasional.sindonews.com/rss",
+  "samples": [
+    "https://nasional.sindonews.com/read/1772401/12/prabowo-tegaskan-asean-harus-bersatu-dan-punya-pengaruh-lebih-besar-di-dunia-1794737483",
+    "https://nasional.sindonews.com/read/1772389/13/gaji-rp50-juta-dan-bonus-tembak-mati-tentara-ukraina-iming-iming-perekrut-wni-ke-rusia-1794737461"
+  ],
+  "verified": "2026-11-15",
+  "notes": "Section subdomains (nasional., ekbis., …). Body is .detail-desc: bare text and inline elements separated by <br>, no <p>, so the generic break splitter wraps the runs. Baca Juga is a bare <strong> line (dropped by the common patterns). Long stories paginate; ?showpage=all returns every page. RSS at /rss on each section subdomain returns 200."
+}
