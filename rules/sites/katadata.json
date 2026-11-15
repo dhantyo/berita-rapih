@@ -1,0 +1,17 @@
+{
+  "$schema": "../schema.json",
+  "id": "katadata",
+  "name": "Katadata",
+  "domains": ["katadata.co.id"],
+  "articleUrl": "^/[a-z0-9-]+/[a-z0-9-]+/[0-9a-f]{10,}/[a-z0-9-]+|^/[a-z0-9-]+/[a-z0-9-]+-\\d{4,}$",
+  "body": [".detail-body", ".n-article-detail-body"],
+  "remove": [".qna-section", ".section-affiliate", ".widget-bacajuga", ".widget-baca-juga"],
+  "pagination": { "method": "none" },
+  "feed": "https://katadata.co.id/rss",
+  "samples": [
+    "https://katadata.co.id/berita/nasional/6af94514ebe7d/ramai-dukungan-pengurus-daerah-gerindra-untuk-sufmi-dasco-jadi-wapres",
+    "https://otomotif.katadata.co.id/motor/yamaha-safety-riding-day-2026-berlanjut-ke-solo-25583"
+  ],
+  "verified": "2026-11-15",
+  "notes": "Main site uses .detail-body; subdomains (otomotif.) use .n-article-detail-body."
+}

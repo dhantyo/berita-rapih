@@ -1,0 +1,17 @@
+{
+  "$schema": "../schema.json",
+  "id": "mediaindonesia",
+  "name": "Media Indonesia",
+  "domains": ["mediaindonesia.com"],
+  "articleUrl": "^/[a-z0-9-]+/\\d{4,}/[a-z0-9-]+",
+  "body": ["section.detail .article"],
+  "remove": ["[id^=\"w2g-slot\"]", ".gliaplayer-container", ".ext-channel", ".info-author", ".amp-flying-carpet-wrapper", "._ap_apex_ad"],
+  "pagination": { "method": "none" },
+  "feed": "https://mediaindonesia.com/rss",
+  "samples": [
+    "https://mediaindonesia.com/ekonomi/956322/9-penyebab-tidak-dapat-bsu-2026-ini-aturan-permenaker-nomor-16-tahun-2026",
+    "https://mediaindonesia.com/nusantara/956331/cuaca-ekstrem-potensial-landa-jateng-waspadai-bencana-hidrometeorologi"
+  ],
+  "verified": "2026-11-15",
+  "notes": "Plain downloads return 403 from some clients; checked in real Chrome."
+}
