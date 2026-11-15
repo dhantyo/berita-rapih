@@ -1,0 +1,21 @@
+{
+  "$schema": "../schema.json",
+  "id": "jawapos",
+  "name": "Jawa Pos",
+  "domains": ["jawapos.com"],
+  "articleUrl": "^/[a-z0-9-]+/\\d{8,}/[a-z0-9-]+",
+  "body": [".content-news .prose", ".prose"],
+  "remove": ["p.baca-juga", "[id^=\"ap\"]"],
+  "pagination": {
+    "method": "param",
+    "fullpage": "page=all",
+    "onlyIf": "button[title=\"Tampilkan semua halaman\"]"
+  },
+  "feed": "https://www.jawapos.com/rss.xml",
+  "samples": [
+    "https://www.jawapos.com/politik/2611150162/pbnu-tegaskan-dukung-pemerintahan-prabowo-minta-semua-pihak-jaga-persatuan",
+    "https://www.jawapos.com/ekonomi/2611150160/jasa-marga-buka-2-tol-fungsional-untuk-nataru-2026-jogja-bawen-dan-jogja-solo"
+  ],
+  "verified": "2026-11-15",
+  "notes": "Next.js site. Body is the .prose block inside .content-news; Baca Juga lines are p.baca-juga. Long stories split into ?page=N; ?page=all returns every page (checked: 12 + 11 paragraphs on pages 1 and 2, 23 with page=all) and is also the canonical URL. /rss.xml returns 200."
+}

@@ -1,0 +1,16 @@
+{
+  "$schema": "../schema.json",
+  "id": "idntimes",
+  "name": "IDN Times",
+  "domains": ["idntimes.com"],
+  "articleUrl": "^/[a-z0-9-]+(/[a-z0-9-]+)?/[a-z0-9-]+-[a-z0-9]{2,}-[a-z0-9]{5}-[a-z0-9]{6}$",
+  "body": ["#article-description > div"],
+  "remove": [".wrapper-ads", "[id^=\"IDN_Partner\"]"],
+  "pagination": { "method": "none" },
+  "samples": [
+    "https://www.idntimes.com/sport/soccer/timnas-u-17-benamkan-kamboja-di-kualifikasi-piala-asia-2027-00-f411s-h6jsw1",
+    "https://www.idntimes.com/sport/arena/pestaporun-2026-lari-senang-senang-dan-jadi-anak-skena-00-f411s-4n8c25"
+  ],
+  "verified": "2026-11-15",
+  "notes": "Next.js with emotion classes (css-xxxx, never use them). The stable hook is #article-description; paragraphs are p.article-text, ads sit in .wrapper-ads. Article URLs end in an id like -00-f411s-h6jsw1 or -c1c2-01-9m4db-st96hp. No pagination seen and no RSS feed (/rss is 404), so the canary uses the samples."
+}
