@@ -5,7 +5,7 @@
  * Where each part applies:
  *   remove selectors  -> rule.remove (applyPersonal), so the pipeline drops them
  *   remove fingerprints ("t:…", "i:…") and add selectors -> the finished article (applyPersonalContent),
- *                        at run() and again by the overlay when the lists change (Tandai, Pilih, Kembalikan)
+ *                        at run() and again by the overlay when the lists change (the editor, Kembalikan)
  *   fields            -> read from the live page before the JSON-LD fallbacks (extractMetadata)
  *   newSite           -> a whole SiteRule (ruleFromPersonal) for a site without an official rule
  */
@@ -14,6 +14,7 @@ import { collapse, safeQuery, textKey } from './dom.ts';
 import { hostMatches, resolveSite } from './rules/match.ts';
 import { applyHidden } from './render/picker.ts';
 import { applyAdded } from './render/pagepicker.ts';
+import { hideMatching } from './render/provenance.ts';
 
 export type PersonalField = 'title' | 'byline' | 'editor' | 'date';
 export const PERSONAL_FIELDS: readonly PersonalField[] = ['title', 'byline', 'editor', 'date'];
@@ -55,6 +56,8 @@ export function applyPersonalContent(content: HTMLElement, p: PersonalRule | und
   // No rule (never had one, or the last edit was undone) still has to clear what an earlier edit put in.
   applyAdded(content, p?.add ?? [], page);
   applyHidden(content, new Set(p?.remove.filter(isFingerprint)));
+  // A selector removal made after the article was extracted (the editor, or pages merged since): hide what it hits.
+  hideMatching(content, page, p?.remove.filter((s) => !isFingerprint(s)) ?? []);
 }
 
 /** What a field selector reads on the page: a date's machine value when it has one, else the visible text. */
