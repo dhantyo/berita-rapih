@@ -58,6 +58,8 @@ export interface OverlayOptions {
   reportUrl?: (article: Article, note?: string) => string | undefined;
   /** The article as the official rule alone makes it (made on demand): the editor retires entries it covers and resets to it. */
   official?: () => Promise<OfficialView | undefined>;
+  /** Open the editor in "new site" mode right away (the bookmark on a site without a rule, docs/FEEDBACK.md §5). */
+  newSite?: boolean;
   /** Which wrapper this is (web, ios, android…), listed in the details sent with a report. */
   platform?: string;
   /** The reader chose "not now" on the update bar. */
@@ -474,6 +476,7 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
       edit: (edit) => change({ personal: editPersonal(settings.personal, siteKey(), edit) }),
       replace: replacePersonal,
       reset: resetRule,
+      newSite: opts.newSite && !personalFor(settings.personal, siteKey())?.newSite,
       official: async () => opts.official?.(),
       reportUrl: (note) => opts.reportUrl?.(article, note),
       showClean: () => show(),
@@ -604,6 +607,7 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
   render();
   if (opts.startHidden) hide();
   else show();
+  if (opts.newSite) openEditor();
 
   return {
     update: (a, loadingMore = false) => {

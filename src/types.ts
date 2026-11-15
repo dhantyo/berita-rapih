@@ -130,6 +130,8 @@ export interface Context {
   log: (msg: string, data?: unknown) => void;
   /** The reader's personal rule for this outlet (src/personal.ts), already picked from settings. */
   personal?: PersonalRule;
+  /** A page of a site with no rule is read as a generic article (Readability): the bookmark's "new site" mode (src/newsite.ts). */
+  generic?: boolean;
 }
 
 /**

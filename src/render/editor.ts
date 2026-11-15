@@ -15,6 +15,8 @@ import { buildEditNote, computeMarks, entryCovers, findHeaderSources, markAt, re
 import { describe, fingerprint } from './picker.ts';
 import { insertFromPage, selectorPart, stableSelector } from './pagepicker.ts';
 import { leavesOf } from './provenance.ts';
+import { bodyFromMarks, buildNewSiteNote, idSelector, withNewSite } from '../newsite.ts';
+import { generalisePath } from '../personal.ts';
 
 /** Parts bigger than this are not "a part" of the article (as in the old pick tools). */
 const MAX_CHARS = 6000;
@@ -47,6 +49,8 @@ export interface EditorContext {
   reportUrl: (note: string) => string | undefined;
   showClean: () => void;
   showOriginal: () => void;
+  /** "New site" mode (docs/FEEDBACK.md §5): the kept parts define the body of a site without a rule; Selesai saves it. */
+  newSite?: boolean;
   /** The editor has ended (the reader shows again). */
   onClose: () => void;
 }
@@ -67,9 +71,6 @@ function h(doc: Document, tag: string, attrs: Record<string, string> = {}, ...ch
   for (const c of children) node.append(c);
   return node;
 }
-
-/** `#id` for an element whose id reads as a name, not a per-article number. */
-const idSelector = (el: Element): string | undefined => (/^[a-z][\w-]{2,}$/i.test(el.id) && !/\d{3,}/.test(el.id) ? `#${el.id}` : undefined);
 
 /**
  * A selector for a header field: like stableSelector, but a small element in a plain line (a name in a bold link)
@@ -429,7 +430,7 @@ export function startEditor(ctx: EditorContext): Editor {
       b.addEventListener('click', () => setMode(m));
       seg.append(b);
     }
-    top.replaceChildren(h(doc, 'span', { class: 'ed-title' }, t.edTitle), seg);
+    top.replaceChildren(h(doc, 'span', { class: 'ed-title' }, ctx.newSite ? t.nsTitle : t.edTitle), seg);
   };
 
   const fieldChips = () => {
@@ -460,7 +461,7 @@ export function startEditor(ctx: EditorContext): Editor {
   const renderBar = () => {
     renderTop();
     const active = (layer.getRootNode() as ShadowRoot | Document).activeElement?.getAttribute?.('data-ed');
-    const done = button(t.edDone, 'primary', 'done', close);
+    const done = button(t.edDone, 'primary', 'done', finish);
     const lines: HTMLElement[] = [];
     if (mode === 'clean') {
       bar.dataset.mode = 'clean';
@@ -479,7 +480,7 @@ export function startEditor(ctx: EditorContext): Editor {
           h(doc, 'span', { class: `ed-state ${kind}` }, kind === 'in' ? t.edIn : kind === 'out' ? t.edOut : t.edMixed),
           h(doc, 'span', { class: 'ed-what' }, what),
         );
-      } else text.textContent = t.edHint;
+      } else text.textContent = ctx.newSite ? t.nsHint(doc.location?.hostname ?? '') : t.edHint;
       line.append(text, done);
       lines.push(line);
 
@@ -504,7 +505,13 @@ export function startEditor(ctx: EditorContext): Editor {
         lines.push(h(doc, 'div', { class: 'ed-sources' }, h(doc, 'div', { class: 'ed-label-row' }, h(doc, 'span', {}, t.edSources), more), fieldChips()));
         if (moreOpen) {
           const send = h(doc, 'a', { class: 'btn', target: '_blank', rel: 'noopener', 'data-ed': 'send' }, t.edSend);
-          const note = () => (p ? buildEditNote(p, t.edSummary(ctx.site, p.add.length, p.remove.length, Object.keys(p.fields ?? {}).map((f) => t.edFieldNames[f as PersonalField]))) : '');
+          const note = () => {
+            if (!p) return '';
+            const names = Object.keys(p.fields ?? {}).map((f) => t.edFieldNames[f as PersonalField]);
+            const site = p.newSite ? p : newSiteRule(p);
+            if (site?.newSite) return buildNewSiteNote(site, new URL(doc.location.href), t.nsSummary(ctx.site, site.remove.length, names), siteName());
+            return buildEditNote(p, t.edSummary(ctx.site, p.add.length, p.remove.length, names));
+          };
           const sync = () => {
             const href = p ? ctx.reportUrl(note()) : undefined;
             if (href) {
@@ -557,6 +564,29 @@ export function startEditor(ctx: EditorContext): Editor {
     layer.querySelector<HTMLElement>(`[data-ed="view-${next}"]`)?.focus({ preventScroll: true });
   };
 
+  /** The site this page defines, from what is green and red now (new-site mode); undefined when it cannot be named. */
+  const newSiteRule = (p: PersonalRule): PersonalRule | undefined => {
+    if (!ctx.newSite) return undefined;
+    const body = bodyFromMarks(marks.green, marks.red, doc);
+    return body ? withNewSite(p, new URL(doc.location.href), body, generalisePath(doc.location.pathname)) : undefined;
+  };
+  const siteName = () => doc.querySelector<HTMLMetaElement>('meta[property="og:site_name"]')?.content;
+  const hadSite = !!ctx.personal()?.newSite;
+
+  /** Selesai. In new-site mode it first saves the site; with nothing to save it stays open and says why. */
+  function finish() {
+    if (ctx.newSite) {
+      const p = ctx.personal() ?? { site: ctx.site, add: [], remove: [], updated: '' };
+      const site = newSiteRule(p);
+      if (!site) {
+        message = marks.green.length ? t.nsNoName : t.nsNoBody;
+        return renderBar();
+      }
+      ctx.edit(() => site);
+    }
+    close();
+  }
+
   function close() {
     if (closed) return;
     closed = true;
@@ -587,7 +617,11 @@ export function startEditor(ctx: EditorContext): Editor {
     } else if (fieldMode) {
       fieldMode = null;
       renderBar();
-    } else close();
+    } else {
+      // Leaving a new site half set up drops what was saved on the way (it would show as a personal version that does nothing).
+      if (ctx.newSite && !hadSite) ctx.replace(undefined);
+      close();
+    }
   };
 
   doc.addEventListener('click', onTap, true);
