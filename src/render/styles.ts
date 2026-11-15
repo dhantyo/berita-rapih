@@ -121,6 +121,11 @@ a.btn { color: inherit; text-decoration: none; flex: none; }
 .btn[aria-expanded="true"] { border-color: var(--accent); background: var(--chip); }
 .aa { font-weight: 650; letter-spacing: -0.03em; padding: 0 12px; gap: 1px; }
 .aa .big { font-size: 18px; } .aa .small { font-size: 13px; }
+.bar { transition: transform 180ms var(--ease); }
+.bar[data-hidden] { transform: translateY(-100%); }
+.bar[data-hidden] .outlet, .bar[data-hidden] .tools { visibility: hidden; transition: visibility 0s 180ms; }
+/* Tucked away, the reading hairline stays at the very top of the screen. */
+.bar[data-hidden] .progress { bottom: auto; top: 100%; }
 .progress { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--accent); transform-origin: 0 50%; transform: scaleX(0); }
 
 /* ── The article ── */
@@ -373,6 +378,8 @@ a.btn.fb-send { justify-content: center; height: 44px; border-radius: 22px; font
 @media (prefers-reduced-motion: reduce) {
   .panel, .panel[data-open="true"], .btn, .seg button, .fb-choice, .fb-chip, .switch, .switch::after { transition: none; }
   .reopen { animation: none; }
+  .bar { transition: none; }
+  .bar[data-hidden] .outlet, .bar[data-hidden] .tools { transition: none; }
   .spinner { animation-duration: 2.4s; }
 }
 `;

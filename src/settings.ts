@@ -26,6 +26,8 @@ export interface Settings {
   summaries: boolean;
   /** Quoted social posts play in the article (official embeds); off = a card with a link. */
   embeds: boolean;
+  /** Slide the top bar away while scrolling down; it returns on any upward scroll. */
+  hideBar: boolean;
   /** The reader's own edits per outlet (src/personal.ts). Kept out of the shared cookie like the lists below. */
   personal: PersonalRule[];
   /** Legacy (before personal rules): read once and folded into `personal` on load, never written any more. Blocks the reader hid with "Tandai", as "<site rule>:<fingerprint>" (render/picker.ts). */
@@ -48,6 +50,7 @@ export const DEFAULT_SETTINGS: Settings = {
   links: true,
   summaries: true,
   embeds: true,
+  hideBar: false,
   personal: [],
   hidden: [],
   added: [],
@@ -135,7 +138,7 @@ export function outletDomain(host: string, siteDomains: string[]): string | unde
 }
 
 /** The reader's on/off switches. Each one's label and hint live in i18n under the same name and "<name>Hint". */
-export const SWITCHES = ['hero', 'autoOpen', 'sweepLine', 'updates', 'links', 'summaries', 'embeds'] as const;
+export const SWITCHES = ['hero', 'autoOpen', 'sweepLine', 'updates', 'links', 'summaries', 'embeds', 'hideBar'] as const;
 export type Switch = (typeof SWITCHES)[number];
 
 const MAX_HIDDEN = 100;

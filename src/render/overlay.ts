@@ -11,6 +11,7 @@ import { quietPage } from './quiet.ts';
 import { textKey } from '../dom.ts';
 import { createFeedbackPage, type FeedbackPage } from './feedback.ts';
 import { describe, fingerprint, startPicking } from './picker.ts';
+import { barHiddenAfterScroll } from './barscroll.ts';
 import { applyPersonalContent, editPersonal, isFingerprint, personalFor, withEntry } from '../personal.ts';
 import { insertFromPage, stableSelector, startPagePicking } from './pagepicker.ts';
 
@@ -366,12 +367,13 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
     // Switches. How Sapu Berita behaves first; then what shows in the article, in the order it appears
     // on the page (photo under the headline, summary box, links and media in the text, the end note).
     const rows = (...keys: Switch[]) => h(doc, 'div', {}, ...keys.map(toggle));
-    // "General" only lists what this build can change (the bookmark has neither switch).
+    // "General" lists what this build can change (the bookmark has only the bar switch).
     const general = () => {
       const keys: Switch[] = [];
       if (opts.autoOpenSetting !== false) keys.push('autoOpen');
       if (opts.updatesSetting !== false) keys.push('updates');
-      return keys.length ? [group(t.general, rows(...keys))] : [];
+      keys.push('hideBar');
+      return [group(t.general, rows(...keys))];
     };
     panel.append(
       ...general(),
@@ -540,6 +542,7 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
     panel?.setAttribute('data-open', String(open));
     const aa = root.querySelector('.aa');
     aa?.setAttribute('aria-expanded', String(open));
+    if (open) setBarHidden(false);
     if (open) (panel?.querySelector('button[aria-checked="true"], .icon-btn') as HTMLElement | null)?.focus();
     else (aa as HTMLElement | null)?.focus();
   };
@@ -559,8 +562,17 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
   // Reading progress: a hairline of lidi ochre under the masthead.
   let progressBar: HTMLElement | null = null;
   let frame = 0;
+  let barHidden = false;
+  let lastTop = 0;
+  const setBarHidden = (hidden: boolean) => {
+    barHidden = hidden;
+    root.querySelector('.bar')?.toggleAttribute('data-hidden', hidden);
+  };
   const updateProgress = () => {
     frame = 0;
+    const top = root.scrollTop;
+    setBarHidden(settings.hideBar && !panelOpen && barHiddenAfterScroll(barHidden, lastTop, top));
+    lastTop = top;
     const max = root.scrollHeight - root.clientHeight;
     progressBar?.style.setProperty('transform', `scaleX(${max > 0 ? Math.min(1, root.scrollTop / max) : 0})`);
   };

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  applyPersonal, editPersonal, generalisePath, isRedundant, matchPersonalSite, migrateLegacy, normalizePersonal,
+  applyPersonal, applyPersonalContent, editPersonal, generalisePath, isRedundant, matchPersonalSite, migrateLegacy, normalizePersonal,
   personalForPage, retireRedundant, ruleFromPersonal, type PersonalRule,
 } from '../src/personal.ts';
 import { extractMetadata } from '../src/extract/metadata.ts';
@@ -170,5 +170,17 @@ describe('isRedundant', () => {
     const p = personal({ remove: ['.ad', '.promo'] });
     expect(retireRedundant(p, rule(), null)!.remove).toEqual(['.promo']);
     expect(retireRedundant(personal({ remove: ['.ad'] }), rule(), null)).toBeUndefined();
+  });
+});
+
+describe('applyPersonalContent', () => {
+  it('clears earlier hides and additions once the rule is gone (undo)', () => {
+    const doc = new DOMParser().parseFromString('<article><p>Paragraf pertama yang panjang tentang kejadian.</p><p>Simak video berikut ini:</p></article>', 'text/html');
+    const content = doc.querySelector('article') as HTMLElement;
+    const hidden = personal({ remove: ['t:simak video berikut ini'] });
+    applyPersonalContent(content, hidden, doc);
+    expect(content.querySelectorAll('[data-user-hidden]').length).toBe(1);
+    applyPersonalContent(content, undefined, doc);
+    expect(content.querySelectorAll('[data-user-hidden]').length).toBe(0);
   });
 });

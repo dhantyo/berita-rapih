@@ -52,9 +52,9 @@ export function applyPersonal(rule: ResolvedRule, p: PersonalRule): ResolvedRule
 
 /** Add the personal parts at their place and mark the fingerprinted blocks hidden. Safe to repeat. */
 export function applyPersonalContent(content: HTMLElement, p: PersonalRule | undefined, page: Document): void {
-  if (!p) return;
-  applyAdded(content, p.add, page);
-  applyHidden(content, new Set(p.remove.filter(isFingerprint)));
+  // No rule (never had one, or the last edit was undone) still has to clear what an earlier edit put in.
+  applyAdded(content, p?.add ?? [], page);
+  applyHidden(content, new Set(p?.remove.filter(isFingerprint)));
 }
 
 /** What a field selector reads on the page: a date's machine value when it has one, else the visible text. */

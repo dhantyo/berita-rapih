@@ -6,6 +6,9 @@ The first four releases were published as 0.1.0-beta.1 to beta.4 and renamed on 
 
 ## [Unreleased]
 
+- **One place for feedback:** Aa now has a single **Beri masukan** row. It opens a page with four choices: *Atur isi artikel* (hide parts or add them from the original page), *Laporkan masalah* (quick choices plus a note; the details sent along are shown before sending), *Usulkan situs*, and *Ide atau saran*.
+- **Your edits become your own version of the site:** parts you hide or add are kept as a personal rule for that outlet and applied when the article is read, ready to be sent as a suggestion. Earlier hides and additions carry over.
+- **New setting: hide the bar while scrolling** (Aa → Umum). The top bar slides away as you scroll down and comes back when you scroll up. Off by default.
 - **Kontan TV** video pages (tv.kontan.co.id/video/…) open in the reader with the video at the top and its description below.
 
 ## [0.5.0] - 2026-11-15
