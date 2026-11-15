@@ -70,7 +70,7 @@ One-time setup: Settings → Pages → Source: **GitHub Actions** (needs a publi
 
 By default **Laporkan** (in the reader) and **Laporkan masalah** (install page footer) open the GitHub "Broken article" form, which needs a GitHub account. To let anyone report, point them at a free form instead (Tally works well: no sign-in for the reporter, screenshot uploads included):
 
-1. Create the form with these questions: *Apa yang salah?* (checkboxes: Sapu Berita tidak muncul · Teks artikel terpotong · Masih ada iklan / "Baca Juga" · Halaman 2, 3 tidak digabung · Foto atau video hilang · Tampilannya rusak), *Ceritakan sedikit* (long text, optional), *Screenshot* (file upload, optional). Add **hidden fields** named `url`, `site`, `version`, `platform` and `note` (`note` carries the text of a block the reader marked with **Tandai**).
+1. Create the form with these questions: *Apa yang salah?* (checkboxes: Sapu Berita tidak muncul · Teks artikel terpotong · Masih ada iklan / "Baca Juga" · Halaman 2, 3 tidak digabung · Foto atau video hilang · Tampilannya rusak), *Ceritakan sedikit* (long text, optional), *Screenshot* (file upload, optional). Add **hidden fields** named `url`, `site`, `version`, `platform` and `note` (`note` carries the text of the personal rule or the part the reader sent from the editor, **Atur isi artikel**).
 2. Take the form's share link and add the placeholders, e.g. `https://tally.so/r/AbC123?url={url}&site={site}&version={version}&platform={platform}&note={note}`. Placeholders available: `{url} {title} {site} {version} {platform} {note}`.
 3. Save it as the repository variable `SAPU_REPORT_URL` (Settings → Secrets and variables → Actions → Variables, or `gh variable set SAPU_REPORT_URL --body '<link>'`).
 

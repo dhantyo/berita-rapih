@@ -30,7 +30,7 @@ export interface Settings {
   hideBar: boolean;
   /** The reader's own edits per outlet (src/personal.ts). Kept out of the shared cookie like the lists below. */
   personal: PersonalRule[];
-  /** Legacy (before personal rules): read once and folded into `personal` on load, never written any more. Blocks the reader hid with "Tandai", as "<site rule>:<fingerprint>" (render/picker.ts). */
+  /** Legacy (before personal rules): read once and folded into `personal` on load, never written any more. Blocks the reader hid with the old "Tandai" tool, as "<site rule>:<fingerprint>" (render/picker.ts). */
   hidden: string[];
   /** Parts of the original page the reader added to the clean view, as "<site rule>:<selector>" (render/pagepicker.ts). */
   added: string[];

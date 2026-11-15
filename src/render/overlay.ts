@@ -1,4 +1,4 @@
-import type { Article } from '../types.ts';
+import type { Article, ArticleMeta, OfficialView } from '../types.ts';
 import { SIZE_STEPS, type Font, type Lang, type Settings, type Switch, type Theme } from '../settings.ts';
 import { strings, type Strings } from './i18n.ts';
 import { analyzeLoadedLogo, corsLogoUrl, opticalHeight, plateNeeds, recolourNeeds } from './logo.ts';
@@ -8,12 +8,12 @@ import { attachGallery, GALLERY_CSS } from './gallery.ts';
 import type { UpdateOffer } from '../update.ts';
 import { heightFromMessage, playerFor } from './players.ts';
 import { quietPage } from './quiet.ts';
+import { parseNewsDate } from './dates.ts';
 import { textKey } from '../dom.ts';
 import { createFeedbackPage, type FeedbackPage } from './feedback.ts';
-import { describe, fingerprint, startPicking } from './picker.ts';
 import { barHiddenAfterScroll } from './barscroll.ts';
-import { applyPersonalContent, editPersonal, isFingerprint, personalFor, withEntry } from '../personal.ts';
-import { insertFromPage, stableSelector, startPagePicking } from './pagepicker.ts';
+import { applyPersonalContent, editPersonal, personalFor, personalMeta, resetPersonal, type PersonalRule } from '../personal.ts';
+import { startEditor, type Editor } from './editor.ts';
 
 declare const __SAPU_VERSION__: string | undefined;
 const VERSION = typeof __SAPU_VERSION__ === 'string' ? __SAPU_VERSION__ : 'dev';
@@ -53,9 +53,11 @@ export interface OverlayOptions {
   updatesSetting?: boolean;
   /** Link target for "read on the original site". */
   originalUrl?: string;
-  /** Builds the "report a problem" link for the current article (no link when unset); `note` describes
-   *  what the reader marked with Tandai. */
+  /** Builds the "report a problem" link for the current article (no link when unset); `note` carries
+   *  the reader's report or the personal rule from the editor. */
   reportUrl?: (article: Article, note?: string) => string | undefined;
+  /** The article as the official rule alone makes it (made on demand): the editor retires entries it covers and resets to it. */
+  official?: () => Promise<OfficialView | undefined>;
   /** Which wrapper this is (web, ios, android…), listed in the details sent with a report. */
   platform?: string;
   /** The reader chose "not now" on the update bar. */
@@ -89,7 +91,7 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
 
   const root = h(doc, 'div', { class: 'root', role: 'dialog', 'aria-modal': 'true' });
   const reopen = h(doc, 'button', { type: 'button', class: 'reopen' });
-  // Pick mode on the original page draws its outline and bar here, in the reader's theme.
+  // The editor draws its boxes, outline and bar here, over the original page, in the reader's theme.
   const pageLayer = h(doc, 'div', { class: 'pagepick tokens' });
   pageLayer.hidden = true;
   shadow.append(style, root, reopen, pageLayer);
@@ -110,7 +112,7 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
     opts.loadFonts?.(settings.font);
     root.style.setProperty('--fs', `${SIZES[settings.size]}px`);
     root.setAttribute('lang', settings.lang);
-    root.setAttribute('aria-label', article.meta.title);
+    root.setAttribute('aria-label', viewMeta().title);
 
     const progress = h(doc, 'div', { class: 'progress', 'aria-hidden': 'true' });
     root.replaceChildren(
@@ -127,6 +129,9 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
     progressBar = progress;
     updateProgress();
   };
+
+  /** The header values as shown: the page's own, unless the reader pointed at where they are written. */
+  const viewMeta = (): ArticleMeta => ({ ...article.meta, ...personalMeta(doc, personalFor(settings.personal, siteKey())?.fields) });
 
   const masthead = (t: Strings, progress: HTMLElement) => {
     const name = article.meta.siteName ?? doc.location?.hostname ?? '';
@@ -236,7 +241,7 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
   };
 
   const articleView = (t: Strings) => {
-    const m = article.meta;
+    const m = viewMeta();
     const head = h(doc, 'header');
     head.append(h(doc, 'h1', {}, ...titleNodes(doc, m.titleMarkup ?? m.title)));
     const deck = deckText(m.description, article.content);
@@ -386,17 +391,19 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
       openFeedback();
     });
     panel.append(h(doc, 'div', { class: 'group report' }, h(doc, 'span', { class: 'text' }, t.fbPrompt), give));
-    const hiddenCount = keysHere('hidden').size;
-    if (hiddenCount) {
-      const show = h(doc, 'button', { type: 'button', class: 'btn' }, t.hiddenShow);
-      show.addEventListener('click', () => change({ personal: editPersonal(settings.personal, siteKey(), (p) => ({ ...p, remove: p.remove.filter((v) => !isFingerprint(v)) })) }));
-      panel.append(h(doc, 'div', { class: 'report hidden-row' }, h(doc, 'span', { class: 'text' }, t.hiddenCount(hiddenCount)), show));
-    }
-    const addedCount = keysHere('added').size;
-    if (addedCount) {
-      const remove = h(doc, 'button', { type: 'button', class: 'btn' }, t.addedRemove);
-      remove.addEventListener('click', () => change({ personal: editPersonal(settings.personal, siteKey(), (p) => ({ ...p, add: [] })) }));
-      panel.append(h(doc, 'div', { class: 'report hidden-row' }, h(doc, 'span', { class: 'text' }, t.addedCount(addedCount)), remove));
+    if (personalFor(settings.personal, siteKey())) {
+      const reset = h(doc, 'button', { type: 'button', class: 'btn' }, t.edReset);
+      let sure = false;
+      reset.addEventListener('click', () => {
+        if (!sure) {
+          sure = true; // asked once: the next tap resets
+          reset.textContent = t.edResetYes;
+          reset.setAttribute('aria-label', t.edResetAsk);
+          return;
+        }
+        void resetRule();
+      });
+      panel.append(h(doc, 'div', { class: 'report hidden-row' }, h(doc, 'span', { class: 'text' }, t.personalOn), reset));
     }
     // Version, so bug reports say which build they came from.
     panel.append(h(doc, 'p', { class: 'version' }, `Sapu Berita ${VERSION}`));
@@ -440,71 +447,51 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
     opts.onSettingsChange?.(settings);
   };
 
-  // ── Tandai: pick a block that doesn't belong, hide it here and on this site, offer to report it ──
   const siteKey = () => article.ruleId ?? doc.location?.hostname ?? '';
-  /** This outlet's remembered hidden fingerprints or added selectors (its personal rule). */
-  const keysHere = (list: 'hidden' | 'added') => {
-    const p = personalFor(settings.personal, siteKey());
-    return new Set(list === 'added' ? p?.add : p?.remove.filter(isFingerprint));
-  };
-  let stopPicking: (() => void) | undefined;
-  const startPick = () => {
-    stopPicking?.();
-    stopPicking = startPicking(root, article.content, strings(settings.lang), hideBlock, () => (stopPicking = undefined));
-  };
-  const hideBlock = (el: Element) => {
-    const t = strings(settings.lang);
-    const note = t.pickNote(describe(el));
-    const key = fingerprint(el);
-    if (key) {
-      change({ personal: editPersonal(settings.personal, siteKey(), (p) => ({ ...p, remove: withEntry(p.remove, key) })) });
-    } else {
-      el.setAttribute('data-user-hidden', ''); // nothing to remember it by: hidden on this article only
-    }
-    doneNote(t.pickDone, note);
-  };
 
-  // ── Pilih di halaman asli: pick a missing part on the original page, add it here and on this site ──
-  let stopPagePicking: (() => void) | undefined;
-  const startPagePick = () => {
-    stopPicking?.();
-    hide();
-    reopen.style.display = 'none';
-    stopPagePicking = startPagePicking(pageLayer, host, strings(settings.lang), addFromPage, () => {
-      stopPagePicking = undefined;
-      show();
+  // ── Atur isi artikel: the editor (render/editor.ts), on the original page ──
+  let editor: Editor | null = null;
+  const replacePersonal = (p: PersonalRule | undefined) => {
+    const rest = resetPersonal(settings.personal, siteKey());
+    change({ personal: p ? editPersonal(rest, siteKey(), () => p) : rest });
+  };
+  /** Kembalikan: no personal rule, and the article as the official rule makes it (the extraction had the rule applied). */
+  const resetRule = async () => {
+    const official = await opts.official?.();
+    if (official) article = { ...official.article, content: official.article.content.cloneNode(true) as HTMLElement };
+    replacePersonal(undefined);
+    editor?.refresh();
+  };
+  const openEditor = () => {
+    if (editor) return;
+    closeFeedback(false);
+    if (panelOpen) setPanel(false);
+    editor = startEditor({
+      doc, host, layer: pageLayer, root, t: strings(settings.lang), site: siteKey(),
+      content: () => article.content,
+      meta: () => viewMeta(),
+      personal: () => personalFor(settings.personal, siteKey()),
+      edit: (edit) => change({ personal: editPersonal(settings.personal, siteKey(), edit) }),
+      replace: replacePersonal,
+      reset: resetRule,
+      official: async () => opts.official?.(),
+      reportUrl: (note) => opts.reportUrl?.(article, note),
+      showClean: () => show(),
+      showOriginal: () => {
+        hide();
+        reopen.style.display = 'none';
+      },
+      onClose: () => {
+        editor = null;
+        show();
+        (root.querySelector('.aa') as HTMLElement | null)?.focus({ preventScroll: true });
+      },
     });
-  };
-  const addFromPage = (el: Element) => {
-    const t = strings(settings.lang);
-    const selector = stableSelector(el);
-    const note = t.addNote(describe(el), selector);
-    if (selector) {
-      change({ personal: editPersonal(settings.personal, siteKey(), (p) => ({ ...p, add: withEntry(p.add, selector) })) });
-    } else {
-      insertFromPage(el, article.content); // nothing stable to find it by again: this article only
-    }
-    root.querySelector('[data-user-added]')?.scrollIntoView({ block: 'center' });
-    doneNote(selector ? t.addDone : t.addDoneOnce, note);
-  };
-
-  /** A short note at the bottom after Tandai or Tambahkan, with a one-tap report so the rule gets fixed for everyone. */
-  const doneNote = (message: string, note: string) => {
-    const t = strings(settings.lang);
-    root.querySelector('.pickbar.done')?.remove();
-    const close = h(doc, 'button', { type: 'button', class: 'btn quiet' }, t.close);
-    const done = h(doc, 'div', { class: 'pickbar done', role: 'status' }, h(doc, 'div', { class: 'head' }, h(doc, 'p', {}, message), close));
-    close.addEventListener('click', () => done.remove());
-    const report = opts.reportUrl?.(article, note);
-    if (report) done.append(h(doc, 'div', { class: 'row' }, h(doc, 'a', { class: 'btn primary', href: report, target: '_blank', rel: 'noopener' }, t.pickReport)));
-    root.append(done);
-    setTimeout(() => done.remove(), 20_000);
   };
 
   // ── Beri masukan: the feedback page (render/feedback.ts), a full view over the article ──
   let feedback: FeedbackPage | null = null;
   const openFeedback = () => {
-    stopPicking?.();
     const t = strings(settings.lang);
     const themes = { auto: t.themeAuto, light: t.themeLight, sepia: t.themeSepia, dark: t.themeDark };
     const fonts = { serif: t.fontSerif, sans: t.fontSans, legible: t.fontLegible };
@@ -524,8 +511,7 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
       ],
       reportUrl: (note) => opts.reportUrl?.(article, note),
       close: () => closeFeedback(),
-      hidePart: () => { closeFeedback(false); startPick(); },
-      addPart: () => { closeFeedback(false); startPagePick(); },
+      editArticle: () => openEditor(),
     });
     root.append(feedback.el);
     feedback.focus();
@@ -599,7 +585,6 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
   };
   const hide = () => {
     closeFeedback(false);
-    stopPicking?.();
     unquiet?.();
     unquiet = undefined;
     if (panelOpen) setPanel(false);
@@ -637,6 +622,7 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
       render();
     },
     destroy: () => {
+      editor?.close();
       hide();
       host.remove();
     },
@@ -730,18 +716,7 @@ export function titleNodes(doc: Document, title: string): Array<Node | string> {
   });
 }
 
-/**
- * Outlets write dates as ISO with an offset, or as "2026/11/13 14:59:46" / "2026-11-11 08:00:01" with
- * no zone at all, which is Jakarta time. Read those as WIB, not as the reader's own time zone.
- */
-export function parseNewsDate(value: string): Date {
-  const local = /^(\d{4})[-/](\d{2})[-/](\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?$/.exec(value.trim());
-  if (local) {
-    const [, y, mo, d, hh, mm, ss = '00'] = local;
-    return new Date(`${y}-${mo}-${d}T${hh}:${mm}:${ss}+07:00`);
-  }
-  return new Date(value);
-}
+export { parseNewsDate };
 
 function formatDate(iso: string | undefined, t: Strings): string | undefined {
   if (!iso) return undefined;

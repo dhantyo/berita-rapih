@@ -9,8 +9,8 @@ import {
   type RunResult,
 } from '../index.ts';
 import { normalizeSettings, outletDomain, outletStore, type SettingsStore } from '../settings.ts';
-import type { RuleSet } from '../types.ts';
-import { findRule } from '../rules/match.ts';
+import type { OfficialView, RuleSet } from '../types.ts';
+import { adblockSelectors, findRule } from '../rules/match.ts';
 import { personalForPage } from '../personal.ts';
 import { ensureFonts } from '../render/fonts.ts';
 import { cachedManifest, isSnoozed, latestManifest, offerFor, reportLink, snoozeOffer, type Platform } from '../update.ts';
@@ -63,6 +63,15 @@ export async function boot(options: BootOptions = {}): Promise<BootResult> {
   const store = options.store ?? outletStore(outletDomain(url.hostname, (bundledRules as RuleSet).sites.flatMap((s) => s.domains)));
   const settingsReady = store.load().then(normalizeSettings, () => normalizeSettings(undefined));
   let overlay: OverlayHandle | null = null;
+  // The article without the reader's own rule, made once and only when the editor asks (it is a second run).
+  let officialView: Promise<OfficialView | undefined> | undefined;
+  const official = () =>
+    (officialView ??= (async () => {
+      const rule = findRule(rules, url);
+      if (!rule) return undefined;
+      const r = await run({ doc: document, url, rules, fetchDocument: (u) => fetchSameOriginDocument(u, url.origin), log: debug });
+      return r.ok ? { article: r.article, rule, removeSelectors: [...rules.common.remove, ...rule.remove, ...adblockSelectors(rules, url.hostname)] } : undefined;
+    })());
   let pending: Promise<void> = Promise.resolve();
 
   // The reader's own rule for this outlet is part of extraction, so settings load first (a local read, not a delay).
@@ -93,6 +102,7 @@ export async function boot(options: BootOptions = {}): Promise<BootResult> {
               autoOpenSetting: !options.forceOpen,
               updatesSetting: !options.selfUpdating,
               originalUrl: url.href,
+              official,
               platform,
               onSettingsChange: (s) => void store.save(s),
               onSnoozeUpdate: snoozeOffer,
