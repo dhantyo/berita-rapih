@@ -2,6 +2,7 @@
 // so the fix stays fixed even for sites that block saved test pages (Bisnis, Tirto).
 import { describe, expect, it } from 'vitest';
 import { findLogo, logoAlternates } from '../src/extract/logo.ts';
+import { logoBox } from '../src/render/logo.ts';
 import { clean } from '../src/clean/index.ts';
 import { findRule } from '../src/rules/match.ts';
 import { extractByRule } from '../src/extract/content.ts';
@@ -233,5 +234,17 @@ describe('Tribrata News (tribratanews.polri.go.id)', () => {
   it('opens its articles, not its other pages', () => {
     expect(findRule(rules, new URL('https://tribratanews.polri.go.id/article/polisi-gagalkan-16-kg-emas-diduga-ilegal-dua-wna-china-ditangkap-105488'))?.id).toBe('tribratanews');
     expect(findRule(rules, new URL('https://tribratanews.polri.go.id/category/nasional'))).toBeNull();
+  });
+});
+
+describe('logo crop window (Viva, Tirto: bottom cut off)', () => {
+  it('keeps a margin of one analysis pixel so a faint, downscaled edge row is not cropped', () => {
+    // 342x56 logo analysed at 240x39 (rounded): drawn pixels found down to row 37 of 39.
+    const box = logoBox({ minX: 0, minY: 0, maxX: 239, maxY: 37 }, 240, 39, 342, 56);
+    expect(box.y).toBe(0);
+    expect(box.y + box.h).toBeCloseTo(56, 5); // clamped to the image, never beyond
+    const inner = logoBox({ minX: 10, minY: 5, maxX: 100, maxY: 20 }, 240, 39, 342, 56);
+    expect(inner.y).toBeCloseTo(4 * (56 / 39), 5);
+    expect(inner.y + inner.h).toBeCloseTo(22 * (56 / 39), 5);
   });
 });

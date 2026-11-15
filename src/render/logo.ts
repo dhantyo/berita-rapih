@@ -17,6 +17,9 @@ export interface LogoAnalysis {
   lightPart: number;
 }
 
+/** Alpha (0-255) from which a pixel counts as drawn. Low on purpose: downscaling smears a one-pixel edge to a few percent. */
+const FAINT = 6;
+
 const cache = new Map<string, LogoAnalysis | undefined>();
 
 /**
@@ -62,7 +65,7 @@ function measure(img: HTMLImageElement): LogoAnalysis | undefined {
     for (let x = 0; x < w; x++) {
       const i = (y * w + x) * 4;
       const a = data[i + 3]!;
-      if (a > 25) {
+      if (a > FAINT) {
         if (x < minX) minX = x;
         if (x > maxX) maxX = x;
         if (y < minY) minY = y;
@@ -79,12 +82,28 @@ function measure(img: HTMLImageElement): LogoAnalysis | undefined {
   return {
     naturalWidth: nw,
     naturalHeight: nh,
-    box: { x: minX / scale, y: minY / scale, w: (maxX - minX + 1) / scale, h: (maxY - minY + 1) / scale },
+    box: logoBox({ minX, minY, maxX, maxY }, w, h, nw, nh),
     badge: opaque / (w * h) > 0.97,
     inkLuminance: lum[Math.floor(lum.length / 2)]!,
     darkPart: lum[Math.floor(lum.length * 0.35)]!,
     lightPart: lum[Math.floor(lum.length * 0.65)]!,
   };
+}
+
+/**
+ * Drawn-pixel bounds (inclusive, in analysis pixels) to a natural-pixel box. The analysis canvas is a
+ * downscaled, anti-aliased copy, so an edge row can come out fainter than the threshold and get lost
+ * (Viva's descenders, Tirto's baseline); the box therefore takes one analysis pixel of margin on every
+ * side, clamped to the image. Each axis uses its own scale since the canvas size is rounded.
+ */
+export function logoBox(
+  b: { minX: number; minY: number; maxX: number; maxY: number },
+  w: number, h: number, nw: number, nh: number,
+): LogoAnalysis['box'] {
+  const sx = nw / w, sy = nh / h;
+  const x0 = Math.max(0, b.minX - 1) * sx, y0 = Math.max(0, b.minY - 1) * sy;
+  const x1 = Math.min(w, b.maxX + 2) * sx, y1 = Math.min(h, b.maxY + 2) * sy;
+  return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
 }
 
 /** WCAG relative luminance from 8-bit sRGB. */
