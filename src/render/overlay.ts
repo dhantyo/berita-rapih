@@ -10,8 +10,9 @@ import { heightFromMessage, playerFor } from './players.ts';
 import { quietPage } from './quiet.ts';
 import { textKey } from '../dom.ts';
 import { createFeedbackPage, type FeedbackPage } from './feedback.ts';
-import { applyHidden, describe, fingerprint, startPicking } from './picker.ts';
-import { applyAdded, insertFromPage, stableSelector, startPagePicking } from './pagepicker.ts';
+import { describe, fingerprint, startPicking } from './picker.ts';
+import { applyPersonalContent, editPersonal, isFingerprint, personalFor, withEntry } from '../personal.ts';
+import { insertFromPage, stableSelector, startPagePicking } from './pagepicker.ts';
 
 declare const __SAPU_VERSION__: string | undefined;
 const VERSION = typeof __SAPU_VERSION__ === 'string' ? __SAPU_VERSION__ : 'dev';
@@ -120,8 +121,7 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
     reopen.replaceChildren(broom(16), doc.createTextNode(t.reopen));
     reopen.title = t.reopenLong;
     reopen.setAttribute('aria-label', t.reopenLong);
-    applyAdded(article.content, keysHere('added'), doc);
-    applyHidden(article.content, keysHere('hidden'));
+    applyPersonalContent(article.content, personalFor(settings.personal, siteKey()), doc);
     root.scrollTop = top;
     progressBar = progress;
     updateProgress();
@@ -387,13 +387,13 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
     const hiddenCount = keysHere('hidden').size;
     if (hiddenCount) {
       const show = h(doc, 'button', { type: 'button', class: 'btn' }, t.hiddenShow);
-      show.addEventListener('click', () => change({ hidden: settings.hidden.filter((k) => !k.startsWith(sitePrefix())) }));
+      show.addEventListener('click', () => change({ personal: editPersonal(settings.personal, siteKey(), (p) => ({ ...p, remove: p.remove.filter((v) => !isFingerprint(v)) })) }));
       panel.append(h(doc, 'div', { class: 'report hidden-row' }, h(doc, 'span', { class: 'text' }, t.hiddenCount(hiddenCount)), show));
     }
     const addedCount = keysHere('added').size;
     if (addedCount) {
       const remove = h(doc, 'button', { type: 'button', class: 'btn' }, t.addedRemove);
-      remove.addEventListener('click', () => change({ added: settings.added.filter((k) => !k.startsWith(sitePrefix())) }));
+      remove.addEventListener('click', () => change({ personal: editPersonal(settings.personal, siteKey(), (p) => ({ ...p, add: [] })) }));
       panel.append(h(doc, 'div', { class: 'report hidden-row' }, h(doc, 'span', { class: 'text' }, t.addedCount(addedCount)), remove));
     }
     // Version, so bug reports say which build they came from.
@@ -439,10 +439,12 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
   };
 
   // ── Tandai: pick a block that doesn't belong, hide it here and on this site, offer to report it ──
-  const sitePrefix = () => `${article.ruleId ?? doc.location?.hostname ?? ''}:`;
-  /** This outlet's remembered hidden fingerprints or added selectors. */
-  const keysHere = (list: 'hidden' | 'added') =>
-    new Set(settings[list].filter((k) => k.startsWith(sitePrefix())).map((k) => k.slice(sitePrefix().length)));
+  const siteKey = () => article.ruleId ?? doc.location?.hostname ?? '';
+  /** This outlet's remembered hidden fingerprints or added selectors (its personal rule). */
+  const keysHere = (list: 'hidden' | 'added') => {
+    const p = personalFor(settings.personal, siteKey());
+    return new Set(list === 'added' ? p?.add : p?.remove.filter(isFingerprint));
+  };
   let stopPicking: (() => void) | undefined;
   const startPick = () => {
     stopPicking?.();
@@ -453,8 +455,7 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
     const note = t.pickNote(describe(el));
     const key = fingerprint(el);
     if (key) {
-      const full = sitePrefix() + key;
-      change({ hidden: [...settings.hidden.filter((k) => k !== full), full] });
+      change({ personal: editPersonal(settings.personal, siteKey(), (p) => ({ ...p, remove: withEntry(p.remove, key) })) });
     } else {
       el.setAttribute('data-user-hidden', ''); // nothing to remember it by: hidden on this article only
     }
@@ -477,8 +478,7 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
     const selector = stableSelector(el);
     const note = t.addNote(describe(el), selector);
     if (selector) {
-      const full = sitePrefix() + selector;
-      change({ added: [...settings.added.filter((k) => k !== full), full] });
+      change({ personal: editPersonal(settings.personal, siteKey(), (p) => ({ ...p, add: withEntry(p.add, selector) })) });
     } else {
       insertFromPage(el, article.content); // nothing stable to find it by again: this article only
     }

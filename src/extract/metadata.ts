@@ -1,5 +1,6 @@
 import type { ArticleMeta } from '../types.ts';
 import { collapse, textKey } from '../dom.ts';
+import { personalMeta, type PersonalRule } from '../personal.ts';
 import { isYoutubeEmbed, youtubeEmbedUrl, youtubeId } from '../youtube.ts';
 
 type Json = Record<string, unknown>;
@@ -9,7 +10,7 @@ const list = (v: unknown): unknown[] => ([] as unknown[]).concat(v ?? []);
 const isType = (n: Json, type: RegExp) => type.test(list(n['@type']).join(','));
 
 /** Title/author/date/image from JSON-LD NewsArticle (SEO-critical, so stable), falling back to OpenGraph/meta. */
-export function extractMetadata(doc: Document): ArticleMeta {
+export function extractMetadata(doc: Document, fields?: PersonalRule['fields']): ArticleMeta {
   const nodes = jsonLdNodes(doc);
   const ld = nodes.find((n) => isType(n, /Article|Posting/i));
   // Some outlets (Merdeka) name their logo only on a separate Organization node, not on the article.
@@ -26,14 +27,18 @@ export function extractMetadata(doc: Document): ArticleMeta {
     }
   };
 
+  // What the reader pointed at on the page wins over page data.
+  const mine = personalMeta(doc, fields);
   return decodeText({
     title:
+      mine.title ??
       str(ld?.headline) ??
       meta('meta[property="og:title"]') ??
       doc.title.trim(),
-    byline: authorNames(ld?.author) ?? meta('meta[name="author"]'),
-    editor: authorNames(ld?.editor) ?? pageEditor(doc),
+    byline: mine.byline ?? authorNames(ld?.author) ?? meta('meta[name="author"]'),
+    editor: mine.editor ?? authorNames(ld?.editor) ?? pageEditor(doc),
     published:
+      mine.published ??
       str(ld?.datePublished) ??
       meta('meta[property="article:published_time"]') ??
       meta('meta[name="publishdate"]') ??

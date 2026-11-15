@@ -12,7 +12,7 @@ export function findRule(rules: RuleSet, url: URL): ResolvedRule | null {
   const site = rules.sites.find(
     (s) => s.domains.some((d) => hostMatches(host, d)) && new RegExp(s.articleUrl).test(path),
   );
-  if (site) return resolve(site, path, rules);
+  if (site) return resolveSite(site, path, rules);
 
   const generic = rules.paginationOnly.find(
     (r) => new RegExp(r.hostname).test(host) && new RegExp(r.path).test(path),
@@ -35,7 +35,7 @@ export function findRule(rules: RuleSet, url: URL): ResolvedRule | null {
   return null;
 }
 
-function resolve(site: SiteRule, path: string, rules: RuleSet): ResolvedRule {
+export function resolveSite(site: SiteRule, path: string, rules: RuleSet): ResolvedRule {
   const variant = site.variants?.find((v) => new RegExp(v.when).test(path));
   return {
     id: site.id,

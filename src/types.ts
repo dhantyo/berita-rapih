@@ -1,3 +1,5 @@
+import type { PersonalRule } from './personal.ts';
+
 // Shared types. Mirrors rules/schema.json; keep them in sync.
 
 export type Pagination =
@@ -126,4 +128,6 @@ export interface Context {
   /** Fetches a same-origin URL and returns an inert parsed Document. Injected so Node tests/canary can provide their own. */
   fetchDocument: (url: URL) => Promise<Document>;
   log: (msg: string, data?: unknown) => void;
+  /** The reader's personal rule for this outlet (src/personal.ts), already picked from settings. */
+  personal?: PersonalRule;
 }
