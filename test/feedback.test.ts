@@ -30,8 +30,7 @@ describe('feedback page', () => {
       details: () => [['Link', 'https://www.detik.com/a']],
       reportUrl: (note) => url + encodeURIComponent(note),
       close: () => calls.push('close'),
-      hidePart: () => calls.push('hide'),
-      addPart: () => calls.push('add'),
+      editArticle: () => calls.push('edit'),
     });
     document.body.replaceChildren(page.el);
     return { page, calls };
@@ -41,13 +40,18 @@ describe('feedback page', () => {
   it('offers four choices, and back returns step by step', () => {
     const { page, calls } = make();
     expect(page.el.querySelectorAll('.fb-choice')).toHaveLength(4);
+    click(page.el.querySelectorAll('.fb-choice')[1]!);
+    expect(page.el.querySelector('textarea')).not.toBeNull();
+    page.back();
+    expect(calls).toEqual([]);
+    expect(page.el.querySelectorAll('.fb-choice')).toHaveLength(4);
+    page.back();
+    expect(calls).toEqual(['close']);
+  });
+  it('opens the editor from "Atur isi artikel"', () => {
+    const { page, calls } = make();
     click(page.el.querySelectorAll('.fb-choice')[0]!);
-    click(page.el.querySelector('.fb-choices .fb-choice'));
-    expect(calls).toEqual(['hide']);
-    page.back();
-    expect(calls).toEqual(['hide']);
-    page.back();
-    expect(calls).toEqual(['hide', 'close']);
+    expect(calls).toEqual(['edit']);
   });
   it('builds the report link from chips, text and details; inert until something is filled in', () => {
     const { page } = make();

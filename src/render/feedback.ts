@@ -1,6 +1,6 @@
 // The feedback page (docs/FEEDBACK.md §1, §2): one full view inside the reader with four choices, and the
 // guided text reports. The page is built here; overlay.ts only opens it, hosts it in the reader root and
-// hands it the few things it needs (details, the report link, the two picking tools).
+// hands it the few things it needs (details, the report link, the editor).
 import type { Strings } from './i18n.ts';
 
 /** One label/value pair of the automatic details shown to the reader before sending. */
@@ -59,9 +59,8 @@ export interface FeedbackContext {
   reportUrl: (note: string) => string | undefined;
   /** Leave the feedback page (back to the article, same scroll position). */
   close: () => void;
-  /** Close, then start the existing picking tools. */
-  hidePart: () => void;
-  addPart: () => void;
+  /** "Atur isi artikel": leave this page and open the editor on the original page. */
+  editArticle: () => void;
 }
 
 export interface FeedbackPage {
@@ -71,7 +70,7 @@ export interface FeedbackPage {
   focus: () => void;
 }
 
-type View = 'choices' | 'edit' | 'report' | 'site' | 'idea';
+type View = 'choices' | 'report' | 'site' | 'idea';
 
 export function createFeedbackPage(ctx: FeedbackContext): FeedbackPage {
   const { doc, t } = ctx;
@@ -80,7 +79,7 @@ export function createFeedbackPage(ctx: FeedbackContext): FeedbackPage {
   const labels: NoteLabels = { problems: t.fbNoteProblems, story: t.fbNoteStory, details: t.fbNoteDetails };
 
   const titles: Record<View, string> = {
-    choices: t.fbTitle, edit: t.fbEditTitle, report: t.fbReportTitle, site: t.fbSiteTitle, idea: t.fbIdeaTitle,
+    choices: t.fbTitle, report: t.fbReportTitle, site: t.fbSiteTitle, idea: t.fbIdeaTitle,
   };
 
   const show = (next: View) => {
@@ -90,7 +89,6 @@ export function createFeedbackPage(ctx: FeedbackContext): FeedbackPage {
     const bar = h(doc, 'header', { class: 'fb-bar' }, back, h(doc, 'h2', {}, titles[next]));
     const body = h(doc, 'div', { class: 'fb-body' });
     if (next === 'choices') body.append(choices());
-    else if (next === 'edit') body.append(editPage());
     else if (next === 'report') body.append(reportPage());
     else if (next === 'site') body.append(sitePage());
     else body.append(ideaPage());
@@ -106,34 +104,18 @@ export function createFeedbackPage(ctx: FeedbackContext): FeedbackPage {
 
   const focusFirst = () => (el.querySelector('.fb-body textarea, .fb-body input, .fb-body button, .fb-bar button') as HTMLElement | null)?.focus({ preventScroll: true });
 
-  const choice = (title: string, desc: string, to: View) => {
+  const choice = (title: string, desc: string, to: View | (() => void)) => {
     const b = h(doc, 'button', { type: 'button', class: 'fb-choice' },
       h(doc, 'span', { class: 'fb-choice-text' }, h(doc, 'span', { class: 'fb-choice-title' }, title), h(doc, 'span', { class: 'fb-choice-desc' }, desc)),
       chevron(doc));
-    b.addEventListener('click', () => show(to));
+    b.addEventListener('click', () => (typeof to === 'function' ? to() : show(to)));
     return b;
   };
   const choices = () => h(doc, 'div', { class: 'fb-choices' },
-    choice(t.fbEditTitle, t.fbEditDesc, 'edit'),
+    choice(t.fbEditTitle, t.fbEditDesc, ctx.editArticle),
     choice(t.fbReportTitle, t.fbReportDesc, 'report'),
     choice(t.fbSiteTitle, t.fbSiteDesc, 'site'),
     choice(t.fbIdeaTitle, t.fbIdeaDesc, 'idea'));
-
-  // ── Atur isi artikel: the two existing tools, until the editor exists ──
-  const editPage = () => {
-    const tool = (title: string, hint: string, run: () => void) => {
-      const b = h(doc, 'button', { type: 'button', class: 'fb-choice' },
-        h(doc, 'span', { class: 'fb-choice-text' }, h(doc, 'span', { class: 'fb-choice-title' }, title), h(doc, 'span', { class: 'fb-choice-desc' }, hint)),
-        chevron(doc));
-      b.addEventListener('click', run);
-      return b;
-    };
-    return h(doc, 'div', {},
-      h(doc, 'p', { class: 'fb-lead' }, t.fbEditLead),
-      h(doc, 'div', { class: 'fb-choices' },
-        tool(t.fbHidePart, t.fbHidePartHint, ctx.hidePart),
-        tool(t.fbAddPart, t.fbAddPartHint, ctx.addPart)));
-  };
 
   /** A "Kirim" link that stays inert (no href) until `ready()` and the destination exist. */
   const sender = (ready: () => boolean, note: () => string) => {

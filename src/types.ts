@@ -131,3 +131,14 @@ export interface Context {
   /** The reader's personal rule for this outlet (src/personal.ts), already picked from settings. */
   personal?: PersonalRule;
 }
+
+/**
+ * The article as the official rule alone makes it (no personal rule), for the editor: to retire entries the
+ * rule already covers, to reset a page to it, and to draw what the rule removes.
+ */
+export interface OfficialView {
+  article: Article;
+  rule: ResolvedRule;
+  /** Every selector the pipeline removes: common + site + adblock. */
+  removeSelectors: string[];
+}

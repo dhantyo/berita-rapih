@@ -1,6 +1,5 @@
 import { describe as group, expect, it } from 'vitest';
-import { applyHidden, describe, fingerprint, startPicking } from '../src/render/picker.ts';
-import { strings } from '../src/render/i18n.ts';
+import { applyHidden, describe, fingerprint } from '../src/render/picker.ts';
 
 const article = (html: string) => {
   const root = document.createElement('div');
@@ -43,53 +42,6 @@ group('describe', () => {
     const { content } = article('<p>Baca juga: berita lain</p><figure><img src="a.jpg"></figure>');
     expect(describe(content.querySelector('p')!)).toBe('Baca juga: berita lain');
     expect(describe(content.querySelector('figure')!)).toBe('(foto)');
-  });
-});
-
-group('startPicking', () => {
-  const t = strings('id');
-  const tap = (el: Element) => el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
-
-  it('taps choose a block, Wider climbs, Hide hands it over and ends', () => {
-    const { root, content } = article(BODY);
-    let hidden: Element | undefined;
-    let ended = false;
-    startPicking(root, content, t, (el) => (hidden = el), () => (ended = true));
-    const bar = root.querySelector('.pickbar')!;
-    const byLabel = (label: string) => [...bar.querySelectorAll('button')].find((b) => b.textContent === label)!;
-    const [wider, smaller, hide] = [byLabel(t.pickWider), byLabel(t.pickSmaller), byLabel(t.pickHide)];
-    expect(hide.disabled).toBe(true);
-
-    tap(content.querySelector('.promo p')!);
-    expect(content.querySelector('[data-picked]')?.textContent).toBe('Simak video berikut ini:');
-    tap(wider);
-    expect(content.querySelector('[data-picked]')?.className).toBe('promo');
-    tap(smaller);
-    expect(content.querySelector('[data-picked]')?.tagName).toBe('P');
-    tap(wider);
-    tap(hide);
-    expect((hidden as Element).className).toBe('promo');
-    expect(ended).toBe(true);
-    expect(root.querySelector('.pickbar')).toBeNull();
-    expect(content.querySelector('[data-picked]')).toBeNull();
-  });
-
-  it('never picks a wrapper holding most of the article', () => {
-    const { root, content } = article(`<div class="wrap">${BODY}</div>`);
-    startPicking(root, content, t, () => {}, () => {});
-    tap(content.querySelector('.promo p')!);
-    const wider = [...root.querySelectorAll('.pickbar button')].find((b) => b.textContent === t.pickWider)!;
-    tap(wider); // to .promo
-    expect(content.querySelector('[data-picked]')?.className).toBe('promo');
-    expect((wider as HTMLButtonElement).disabled).toBe(true); // .wrap is most of the article
-  });
-
-  it('links and photos do nothing while picking', () => {
-    const { root, content } = article('<p><a href="https://example.com/x">tautan</a> dan teks yang cukup panjang untuk artikel ini.</p>' + BODY);
-    startPicking(root, content, t, () => {}, () => {});
-    const click = new MouseEvent('click', { bubbles: true, cancelable: true });
-    content.querySelector('a')!.dispatchEvent(click);
-    expect(click.defaultPrevented).toBe(true);
   });
 });
 
