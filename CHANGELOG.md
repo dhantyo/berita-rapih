@@ -4,7 +4,7 @@ Versions follow [semver](https://semver.org): MAJOR.MINOR.PATCH. While the versi
 
 The first four releases were published as 0.1.0-beta.1 to beta.4 and renamed on 2026-11-13 to the scheme below; the app files inside those releases still report their original beta names.
 
-## [Unreleased]
+## [0.5.0] - 2026-11-15
 
 - **Eleven new sites:** Kumparan, IDN Times, Sindonews, Jawa Pos, Pikiran Rakyat, Medcom, Kontan (free articles; Kontan Plus stays behind its paywall), Katadata, Media Indonesia, Berita Satu and Kompas TV. Sindonews, Jawa Pos and Pikiran Rakyat articles split over pages are merged into one. On Android, open the Sapu Berita app once after updating to switch the new sites on under "Open by default".
 - Articles that a site writes as loose text separated by line breaks, with no paragraphs at all (Sindonews, Medcom), come out as real paragraphs.
