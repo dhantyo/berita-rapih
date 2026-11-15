@@ -1,0 +1,244 @@
+// The feedback page (docs/FEEDBACK.md §1, §2): one full view inside the reader with four choices, and the
+// guided text reports. The page is built here; overlay.ts only opens it, hosts it in the reader root and
+// hands it the few things it needs (details, the report link, the two picking tools).
+import type { Strings } from './i18n.ts';
+
+/** One label/value pair of the automatic details shown to the reader before sending. */
+export type Detail = [label: string, value: string];
+
+export interface NoteParts {
+  /** First line, e.g. "Usulan situs: detik.com". */
+  headline?: string;
+  /** Chips the reader ticked, in order. */
+  chips?: string[];
+  /** What the reader typed. */
+  text?: string;
+  details?: Detail[];
+}
+
+export interface NoteLabels {
+  problems: string;
+  story: string;
+  details: string;
+}
+
+const MAX_TEXT = 2000;
+const MAX_VALUE = 300;
+
+const oneLine = (s: string) => s.replace(/\s+/g, ' ').trim();
+
+/**
+ * The report note: readable lines the maintainers can scan, and nothing the reader didn't see.
+ * Empty parts are left out. Typed text keeps its line breaks (blank runs collapsed) but is capped,
+ * since the whole note travels inside a link.
+ */
+export function buildNote(parts: NoteParts, labels: NoteLabels): string {
+  const lines: string[] = [];
+  if (parts.headline) lines.push(oneLine(parts.headline));
+  const chips = (parts.chips ?? []).map(oneLine).filter(Boolean);
+  if (chips.length) lines.push(`${labels.problems}: ${chips.join(', ')}`);
+  const text = (parts.text ?? '').replace(/\r\n?/g, '\n').replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim().slice(0, MAX_TEXT).trim();
+  if (text) lines.push(chips.length ? `${labels.story}: ${text}` : text);
+  const details = (parts.details ?? []).filter(([, v]) => v.trim());
+  if (details.length) {
+    if (lines.length) lines.push('');
+    lines.push(`${labels.details}:`);
+    for (const [k, v] of details) lines.push(`- ${k}: ${oneLine(v).slice(0, MAX_VALUE)}`);
+  }
+  return lines.join('\n');
+}
+
+export interface FeedbackContext {
+  doc: Document;
+  t: Strings;
+  /** This article's hostname, prefilled in "Usulkan situs". */
+  hostname: string;
+  /** The automatic details, read when the report page opens. */
+  details: () => Detail[];
+  /** The report link carrying `note`; none when this build has no report destination. */
+  reportUrl: (note: string) => string | undefined;
+  /** Leave the feedback page (back to the article, same scroll position). */
+  close: () => void;
+  /** Close, then start the existing picking tools. */
+  hidePart: () => void;
+  addPart: () => void;
+}
+
+export interface FeedbackPage {
+  el: HTMLElement;
+  /** Back one step: sub page → choices → article. Used by Escape. */
+  back: () => void;
+  focus: () => void;
+}
+
+type View = 'choices' | 'edit' | 'report' | 'site' | 'idea';
+
+export function createFeedbackPage(ctx: FeedbackContext): FeedbackPage {
+  const { doc, t } = ctx;
+  const el = h(doc, 'section', { class: 'feedback', role: 'region', 'aria-label': t.fbTitle });
+  let view: View = 'choices';
+  const labels: NoteLabels = { problems: t.fbNoteProblems, story: t.fbNoteStory, details: t.fbNoteDetails };
+
+  const titles: Record<View, string> = {
+    choices: t.fbTitle, edit: t.fbEditTitle, report: t.fbReportTitle, site: t.fbSiteTitle, idea: t.fbIdeaTitle,
+  };
+
+  const show = (next: View) => {
+    view = next;
+    const back = h(doc, 'button', { type: 'button', class: 'icon-btn', 'aria-label': t.fbBack }, backArrow(doc));
+    back.addEventListener('click', goBack);
+    const bar = h(doc, 'header', { class: 'fb-bar' }, back, h(doc, 'h2', {}, titles[next]));
+    const body = h(doc, 'div', { class: 'fb-body' });
+    if (next === 'choices') body.append(choices());
+    else if (next === 'edit') body.append(editPage());
+    else if (next === 'report') body.append(reportPage());
+    else if (next === 'site') body.append(sitePage());
+    else body.append(ideaPage());
+    el.replaceChildren(bar, body);
+    el.scrollTop = 0;
+    focusFirst();
+  };
+
+  const goBack = () => {
+    if (view === 'choices') ctx.close();
+    else show('choices');
+  };
+
+  const focusFirst = () => (el.querySelector('.fb-body textarea, .fb-body input, .fb-body button, .fb-bar button') as HTMLElement | null)?.focus({ preventScroll: true });
+
+  const choice = (title: string, desc: string, to: View) => {
+    const b = h(doc, 'button', { type: 'button', class: 'fb-choice' },
+      h(doc, 'span', { class: 'fb-choice-text' }, h(doc, 'span', { class: 'fb-choice-title' }, title), h(doc, 'span', { class: 'fb-choice-desc' }, desc)),
+      chevron(doc));
+    b.addEventListener('click', () => show(to));
+    return b;
+  };
+  const choices = () => h(doc, 'div', { class: 'fb-choices' },
+    choice(t.fbEditTitle, t.fbEditDesc, 'edit'),
+    choice(t.fbReportTitle, t.fbReportDesc, 'report'),
+    choice(t.fbSiteTitle, t.fbSiteDesc, 'site'),
+    choice(t.fbIdeaTitle, t.fbIdeaDesc, 'idea'));
+
+  // ── Atur isi artikel: the two existing tools, until the editor exists ──
+  const editPage = () => {
+    const tool = (title: string, hint: string, run: () => void) => {
+      const b = h(doc, 'button', { type: 'button', class: 'fb-choice' },
+        h(doc, 'span', { class: 'fb-choice-text' }, h(doc, 'span', { class: 'fb-choice-title' }, title), h(doc, 'span', { class: 'fb-choice-desc' }, hint)),
+        chevron(doc));
+      b.addEventListener('click', run);
+      return b;
+    };
+    return h(doc, 'div', {},
+      h(doc, 'p', { class: 'fb-lead' }, t.fbEditLead),
+      h(doc, 'div', { class: 'fb-choices' },
+        tool(t.fbHidePart, t.fbHidePartHint, ctx.hidePart),
+        tool(t.fbAddPart, t.fbAddPartHint, ctx.addPart)));
+  };
+
+  /** A "Kirim" link that stays inert (no href) until `ready()` and the destination exist. */
+  const sender = (ready: () => boolean, note: () => string) => {
+    const a = h(doc, 'a', { class: 'btn primary fb-send', target: '_blank', rel: 'noopener' }, t.fbSend);
+    const sync = () => {
+      const href = ready() ? ctx.reportUrl(note()) : undefined;
+      if (href) {
+        a.setAttribute('href', href);
+        a.removeAttribute('aria-disabled');
+      } else {
+        a.removeAttribute('href');
+        a.setAttribute('aria-disabled', 'true');
+      }
+    };
+    a.addEventListener('click', (e) => {
+      sync(); // read the fields as they are right now
+      if (a.getAttribute('aria-disabled') === 'true') e.preventDefault();
+    });
+    sync();
+    return { a, sync };
+  };
+
+  const textarea = (label: string, rows: number, onInput: () => void) => {
+    const id = `fb-${Math.random().toString(36).slice(2, 8)}`;
+    const ta = h(doc, 'textarea', { id, class: 'fb-text', rows: String(rows), maxlength: String(MAX_TEXT) }) as HTMLTextAreaElement;
+    ta.addEventListener('input', onInput);
+    return { ta, field: h(doc, 'div', { class: 'fb-field' }, h(doc, 'label', { for: id }, label), ta) };
+  };
+
+  // ── Laporkan masalah ──
+  const reportPage = () => {
+    const picked = new Set<number>();
+    const chipRow = h(doc, 'div', { class: 'fb-chips' });
+    const details = ctx.details();
+    const note = () => buildNote({ chips: [...picked].sort((a, b) => a - b).map((i) => t.fbChips[i]!), text: ta.value, details }, labels);
+    const { ta, field } = textarea(t.fbStory, 5, () => send.sync());
+    const send = sender(() => picked.size > 0 || ta.value.trim().length > 0, note);
+    t.fbChips.forEach((label, i) => {
+      const chip = h(doc, 'button', { type: 'button', class: 'fb-chip', 'aria-pressed': 'false' }, label);
+      chip.addEventListener('click', () => {
+        if (picked.has(i)) picked.delete(i);
+        else picked.add(i);
+        chip.setAttribute('aria-pressed', String(picked.has(i)));
+        send.sync();
+      });
+      chipRow.append(chip);
+    });
+    const list = h(doc, 'dl', { class: 'fb-details' });
+    for (const [k, v] of details) list.append(h(doc, 'dt', {}, k), h(doc, 'dd', {}, v));
+    return h(doc, 'div', {},
+      h(doc, 'p', { class: 'fb-lead' }, t.fbReportLead),
+      chipRow, field,
+      h(doc, 'div', { class: 'fb-box' }, h(doc, 'h3', {}, t.fbSentWith), list),
+      sendRow(send.a, true));
+  };
+
+  const sendRow = (a: HTMLElement, withNote: boolean) =>
+    h(doc, 'div', { class: 'fb-send-row' }, a, ...(withNote ? [h(doc, 'p', { class: 'fb-note' }, t.fbSendNote)] : []));
+
+  // ── Usulkan situs ──
+  const sitePage = () => {
+    const id = `fb-${Math.random().toString(36).slice(2, 8)}`;
+    const input = h(doc, 'input', { id, class: 'fb-text', type: 'text', inputmode: 'url', autocapitalize: 'off', autocomplete: 'off', spellcheck: 'false', value: ctx.hostname }) as HTMLInputElement;
+    input.addEventListener('input', () => send.sync());
+    const { ta, field } = textarea(t.fbSiteExtra, 4, () => send.sync());
+    const send = sender(() => input.value.trim().length > 0, () => buildNote({ headline: t.fbNoteSite(input.value), text: ta.value }, labels));
+    return h(doc, 'div', {},
+      h(doc, 'div', { class: 'fb-field' }, h(doc, 'label', { for: id }, t.fbSiteLabel), input),
+      field, sendRow(send.a, false));
+  };
+
+  // ── Ide atau saran ──
+  const ideaPage = () => {
+    const { ta, field } = textarea(t.fbIdeaLabel, 7, () => send.sync());
+    const send = sender(() => ta.value.trim().length > 0, () => buildNote({ headline: t.fbNoteIdea, text: ta.value }, labels));
+    return h(doc, 'div', {}, field, sendRow(send.a, false));
+  };
+
+  show('choices');
+  return { el, back: goBack, focus: focusFirst };
+}
+
+// ── Tiny DOM helpers (same as overlay.ts; kept local so this module doesn't import it back) ──
+function h(doc: Document, tag: string, attrs: Record<string, string> = {}, ...children: Array<Node | string>): HTMLElement {
+  const node = doc.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v);
+  for (const c of children) node.append(c);
+  return node;
+}
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
+function stroke(doc: Document, d: string): SVGSVGElement {
+  const svg = doc.createElementNS(SVG_NS, 'svg');
+  for (const [k, v] of Object.entries({
+    width: '20', height: '20', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor',
+    'stroke-width': '1.6', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true',
+  })) svg.setAttribute(k, v);
+  const path = doc.createElementNS(SVG_NS, 'path');
+  path.setAttribute('d', d);
+  svg.append(path);
+  return svg;
+}
+const backArrow = (doc: Document) => stroke(doc, 'M19 12H5M11 6l-6 6 6 6');
+const chevron = (doc: Document) => {
+  const c = stroke(doc, 'M9 6l6 6-6 6');
+  c.classList.add('fb-chevron');
+  return c;
+};

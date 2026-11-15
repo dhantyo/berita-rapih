@@ -310,6 +310,49 @@ a.btn.primary { text-decoration: none; }
 .switch[aria-checked="true"] { background: var(--accent); }
 .switch[aria-checked="true"]::after { transform: translateX(16px); }
 
+/* ── Beri masukan: a full view over the article (render/feedback.ts) ── */
+.feedback { position: fixed; inset: 0; z-index: 4; overflow-y: auto; overscroll-behavior: contain; background: var(--bg); color: var(--ink); -webkit-overflow-scrolling: touch; }
+.fb-bar {
+  position: sticky; top: 0; z-index: 1; height: 56px; display: flex; align-items: center; gap: 6px;
+  padding: 0 max(16px, env(safe-area-inset-right)) 0 max(8px, env(safe-area-inset-left)); background: var(--bg); border-bottom: 1px solid var(--rule);
+}
+.fb-bar h2 { margin: 0; font: 600 17px/1.3 var(--sans); letter-spacing: -0.01em; }
+.fb-bar .icon-btn { color: var(--ink); }
+.fb-body { width: min(100% - 32px, 34em); margin: 0 auto; padding: 18px 0 max(40px, env(safe-area-inset-bottom)); font: 15px/1.5 var(--sans); }
+.fb-lead { margin: 0 0 14px; font: 14px/1.45 var(--sans); color: var(--muted); }
+.fb-choices { display: flex; flex-direction: column; gap: 10px; }
+.fb-choice {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; padding: 16px; text-align: left; cursor: pointer;
+  border: 1px solid var(--rule-strong); border-radius: 14px; background: transparent;
+  transition: background-color 160ms var(--ease), border-color 160ms var(--ease);
+}
+.fb-choice:hover { background: var(--chip); }
+.fb-choice-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.fb-choice-title { font: 600 16px/1.3 var(--sans); }
+.fb-choice-desc { font: 400 14px/1.35 var(--sans); color: var(--muted); }
+.fb-chevron { color: var(--muted); }
+.fb-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; }
+.fb-chip {
+  min-height: 38px; padding: 0 14px; border-radius: 19px; border: 1px solid var(--rule-strong); background: transparent; cursor: pointer;
+  font: 500 14px/1.2 var(--sans); transition: background-color 160ms var(--ease), border-color 160ms var(--ease);
+}
+.fb-chip:hover { background: var(--chip); }
+.fb-chip[aria-pressed="true"] { border-color: var(--accent); background: var(--chip); font-weight: 650; }
+.fb-field { margin: 0 0 18px; }
+.fb-field label { display: block; margin: 0 0 8px; font: 600 12px/1.3 var(--sans); color: var(--muted); }
+.fb-text { display: block; width: 100%; box-sizing: border-box; padding: 11px 12px; border: 1px solid var(--rule-strong); border-radius: 10px; background: transparent; color: var(--ink); font: 16px/1.45 var(--sans); resize: vertical; }
+.fb-text:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.fb-box { margin: 0 0 20px; padding: 12px 14px; border: 1px solid var(--rule); border-radius: 12px; background: var(--chip); }
+.fb-box h3 { margin: 0 0 8px; font: 600 12px/1.3 var(--sans); color: var(--muted); }
+.fb-details { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 12px; margin: 0; font: 13px/1.4 var(--sans); }
+.fb-details dt { color: var(--muted); }
+.fb-details dd { margin: 0; overflow-wrap: anywhere; }
+.fb-send-row { display: flex; flex-direction: column; align-items: stretch; gap: 10px; }
+a.btn.fb-send { justify-content: center; height: 44px; border-radius: 22px; font-size: 15px; background: var(--accent); border-color: var(--accent); color: rgb(18 18 18); text-decoration: none; }
+.fb-send:hover { background: var(--accent); filter: brightness(1.06); }
+.fb-send[aria-disabled="true"] { opacity: 0.4; cursor: default; pointer-events: none; }
+.fb-note { margin: 0; font: 13px/1.45 var(--sans); color: var(--muted); text-align: center; }
+
 /* ── Floating button while the original page is showing ── */
 /* Same spot as "Asli" in the reader's bar, so the two read as one toggle. Ochre border plus a white ring:
    it stands out on light and dark news sites alike. */
@@ -328,7 +371,7 @@ a.btn.primary { text-decoration: none; }
 @keyframes reopen-in { from { opacity: 0; transform: translateY(-6px) scale(0.96); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .panel, .panel[data-open="true"], .btn, .seg button, .switch, .switch::after { transition: none; }
+  .panel, .panel[data-open="true"], .btn, .seg button, .fb-choice, .fb-chip, .switch, .switch::after { transition: none; }
   .reopen { animation: none; }
   .spinner { animation-duration: 2.4s; }
 }
