@@ -63,12 +63,14 @@
                 <data android:host="kumparan.com" />
                 <data android:host="*.kumparan.com" />
                 <data android:host="*.liputan6.com" />
+                <data android:host="*.medcom.id" />
                 <data android:host="mediaindonesia.com" />
                 <data android:host="*.mediaindonesia.com" />
                 <data android:host="*.merdeka.com" />
                 <data android:host="*.okezone.com" />
                 <data android:host="*.pikiran-rakyat.com" />
                 <data android:host="*.republika.co.id" />
+                <data android:host="*.sindonews.com" />
                 <data android:host="*.suara.com" />
                 <data android:host="tirto.id" />
                 <data android:host="*.tirto.id" />

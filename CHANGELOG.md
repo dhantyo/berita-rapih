@@ -8,6 +8,7 @@ The first four releases were published as 0.1.0-beta.1 to beta.4 and renamed on 
 
 - **Eleven new sites:** Kumparan, IDN Times, Sindonews, Jawa Pos, Pikiran Rakyat, Medcom, Kontan (free articles; Kontan Plus stays behind its paywall), Katadata, Media Indonesia, Berita Satu and Kompas TV. Sindonews, Jawa Pos and Pikiran Rakyat articles split over pages are merged into one. On Android, open the Sapu Berita app once after updating to switch the new sites on under "Open by default".
 - Articles that a site writes as loose text separated by line breaks, with no paragraphs at all (Sindonews, Medcom), come out as real paragraphs.
+- **Logos look right on more sites:** BeritaSatu's no longer turns into a black box in light mode; logos with a cut-out letter (detik Rekomendit, TB News) keep their colours on a small plate instead of losing the letter in dark mode; logos whose pixels a site won't let the reader read (Kompas TV, Kontan) are sized properly instead of tiny; Jawa Pos's logo is loaded from the original file instead of a blurry resized copy.
 - **Logos no longer lose their bottom edge** (Viva's descenders, Tirto's baseline): the crop around a logo keeps a pixel of margin, since the edge row can come out too faint to count when the logo is measured.
 
 ## [0.4.0] - 2026-11-14
