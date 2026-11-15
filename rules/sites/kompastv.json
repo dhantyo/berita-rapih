@@ -1,0 +1,15 @@
+{
+  "$schema": "../schema.json",
+  "id": "kompastv",
+  "name": "Kompas TV",
+  "domains": ["kompas.tv"],
+  "articleUrl": "^/[a-z0-9-]+/\\d{5,}/[a-z0-9-]+",
+  "body": ["#paragraph"],
+  "pagination": { "method": "none" },
+  "samples": [
+    "https://www.kompas.tv/nasional/701678/pengamat-soal-peluang-prabowo-pilih-wapres-dari-luar-koalisi-bisa-muncul-matahari-kembar",
+    "https://www.kompas.tv/olahraga/701679/erick-thohir-puji-kemenangan-timnas-indonesia-u17-atas-kamboja-minta-tetap-fokus"
+  ],
+  "verified": "2026-11-15",
+  "notes": "No RSS (404)."
+}
