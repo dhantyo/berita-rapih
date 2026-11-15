@@ -106,3 +106,29 @@ group('splitBreaks (paragraphs separated by blank lines, Tribrata News)', () => 
     expect(root.querySelector('p a')?.getAttribute('href')).toBe('/');
   });
 });
+
+group('splitBreaks on a body with no <p> (Sindonews, Medcom)', () => {
+  const texts = (root: HTMLElement) => [...root.children].map((c) => c.tagName + ':' + c.textContent?.trim());
+  const make = async (html: string) => {
+    const { splitBreaks } = await import('../src/clean/breaks.ts');
+    const root = document.createElement('div');
+    root.innerHTML = html;
+    splitBreaks(root);
+    return root;
+  };
+  it('wraps bare text separated by single <br>', async () => {
+    expect(texts(await make('Satu.<br>Dua.<br>\n<br>Tiga.'))).toEqual(['P:Satu.', 'P:Dua.', 'P:Tiga.']);
+  });
+  it('wraps bare text separated by double <br>', async () => {
+    expect(texts(await make('Satu.<br><br>Dua.<br /><br />'))).toEqual(['P:Satu.', 'P:Dua.']);
+  });
+  it('keeps inline elements inside their paragraph and leaves blocks alone', async () => {
+    const root = await make('<strong>JAKARTA</strong> - Satu <a href="/x">tautan</a> di sini.<br><br><figure>F</figure>Dua <em>miring</em>.<h2>Judul</h2>Tiga.');
+    expect(texts(root)).toEqual(['P:JAKARTA - Satu tautan di sini.', 'FIGURE:F', 'P:Dua miring.', 'H2:Judul', 'P:Tiga.']);
+    expect(root.querySelector('p a')?.getAttribute('href')).toBe('/x');
+  });
+  it('leaves a container that already has <p> children unchanged', async () => {
+    const html = '<p>Satu.</p>Teks lepas<br>lagi<p>Dua.</p>';
+    expect((await make(html)).innerHTML).toBe(html);
+  });
+});
