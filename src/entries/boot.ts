@@ -6,12 +6,16 @@ import {
   renderOverlay,
   run,
   type OverlayHandle,
+  type OverlayOptions,
   type RunResult,
 } from '../index.ts';
-import { normalizeSettings, outletDomain, outletStore, type SettingsStore } from '../settings.ts';
+import { normalizeSettings, outletDomain, outletStore, type Settings, type SettingsStore } from '../settings.ts';
 import type { OfficialView, RuleSet } from '../types.ts';
 import { adblockSelectors, findRule } from '../rules/match.ts';
 import { personalForPage } from '../personal.ts';
+import { genericRuleFor, needsNewSitePrompt } from '../newsite.ts';
+import { showNewSitePrompt } from '../render/newsiteprompt.ts';
+import { strings } from '../render/i18n.ts';
 import { ensureFonts } from '../render/fonts.ts';
 import { cachedManifest, isSnoozed, latestManifest, offerFor, reportLink, snoozeOffer, type Platform } from '../update.ts';
 
@@ -65,14 +69,35 @@ export async function boot(options: BootOptions = {}): Promise<BootResult> {
   let overlay: OverlayHandle | null = null;
   // The article without the reader's own rule, made once and only when the editor asks (it is a second run).
   let officialView: Promise<OfficialView | undefined> | undefined;
+  // New-site mode (docs/FEEDBACK.md §5): no official rule, so "the official article" is the generic (Readability) one.
+  let newSiteMode = false;
   const official = () =>
     (officialView ??= (async () => {
-      const rule = findRule(rules, url);
+      const rule = findRule(rules, url) ?? (newSiteMode ? genericRuleFor(url.hostname) : null);
       if (!rule) return undefined;
-      const r = await run({ doc: document, url, rules, fetchDocument: (u) => fetchSameOriginDocument(u, url.origin), log: debug });
+      const r = await run({ doc: document, url, rules, generic: newSiteMode, fetchDocument: (u) => fetchSameOriginDocument(u, url.origin), log: debug });
       return r.ok ? { article: r.article, rule, removeSelectors: [...rules.common.remove, ...rule.remove, ...adblockSelectors(rules, url.hostname)] } : undefined;
     })());
   let pending: Promise<void> = Promise.resolve();
+  const overlayOptions = (settings: Settings, loadingMore: boolean): OverlayOptions => ({
+    settings,
+    loadingMore,
+    startHidden: !settings.autoOpen && !options.forceOpen,
+    autoOpenSetting: !options.forceOpen,
+    updatesSetting: !options.selfUpdating,
+    originalUrl: url.href,
+    official,
+    platform,
+    onSettingsChange: (s) => void store.save(s),
+    onSnoozeUpdate: snoozeOffer,
+    loadFonts: (f) => ensureFonts(document, f, __GEIST__, CHANNEL && new URL('fonts/', CHANNEL).href),
+    reportUrl: (a, note) => {
+      const template = cachedManifest()?.report || __REPORT_URL__;
+      return template ? reportLink(template, {
+        url: url.href, title: a.meta.title, site: url.hostname, version: VERSION, platform, note: note ?? '',
+      }) : undefined;
+    },
+  });
 
   // The reader's own rule for this outlet is part of extraction, so settings load first (a local read, not a delay).
   const settings0 = await settingsReady;
@@ -95,25 +120,7 @@ export async function boot(options: BootOptions = {}): Promise<BootResult> {
         if (r.ok) {
           if (overlay) overlay.update(r.article, loadingMore);
           else {
-            overlay = renderOverlay(document, r.article, {
-              settings,
-              loadingMore,
-              startHidden: !settings.autoOpen && !options.forceOpen,
-              autoOpenSetting: !options.forceOpen,
-              updatesSetting: !options.selfUpdating,
-              originalUrl: url.href,
-              official,
-              platform,
-              onSettingsChange: (s) => void store.save(s),
-              onSnoozeUpdate: snoozeOffer,
-              loadFonts: (f) => ensureFonts(document, f, __GEIST__, CHANNEL && new URL('fonts/', CHANNEL).href),
-              reportUrl: (a, note) => {
-                const template = cachedManifest()?.report || __REPORT_URL__;
-                return template ? reportLink(template, {
-                  url: url.href, title: a.meta.title, site: url.hostname, version: VERSION, platform, note: note ?? '',
-                }) : undefined;
-              },
-            });
+            overlay = renderOverlay(document, r.article, overlayOptions(settings, loadingMore));
             if (settings.updates) void checkForUpdates(overlay);
           }
           const now = Math.round(performance.now());
@@ -138,5 +145,20 @@ export async function boot(options: BootOptions = {}): Promise<BootResult> {
   await pending;
 
   if (!result.ok && !overlay) debug('skipped:', `${result.reason} ${result.detail ?? ''}`);
+
+  // The bookmark on a site without a rule: offer to set it up (docs/FEEDBACK.md §5). Only the bookmark/Shortcut
+  // build asks to open (forceOpen); the extension and the Android app never get here.
+  if (!overlay && needsNewSitePrompt({ forceOpen: options.forceOpen, result, url, personal: settings0.personal, rules })) {
+    const prompt = showNewSitePrompt(document, strings(settings0.lang), settings0.theme, () => {
+      prompt.working();
+      void (async () => {
+        newSiteMode = true;
+        const r = await run({ doc: document, url, rules, personal, generic: true, fetchDocument: (u) => fetchSameOriginDocument(u, url.origin), log: debug });
+        if (!r.ok) return prompt.fail();
+        prompt.close();
+        overlay = renderOverlay(document, r.article, { ...overlayOptions(await settingsReady, false), startHidden: false, newSite: true });
+      })();
+    });
+  }
   return { result, rendered: overlay !== null };
 }

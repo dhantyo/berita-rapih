@@ -9,11 +9,12 @@ import { needsNetwork, paginate, type Extractor } from './paginate/index.ts';
 import { clean, dropPatterns, isDroppedText } from './clean/index.ts';
 import { sanitize } from './clean/sanitize.ts';
 import { prependMainVideo } from './clean/embeds.ts';
+import { genericRuleFor } from './newsite.ts';
 import { applyPersonal, applyPersonalContent, matchPersonalSite } from './personal.ts';
 
 export type { PersonalRule } from './personal.ts';
 export type { Article, Context, RunResult, RuleSet } from './types.ts';
-export { renderOverlay, type OverlayHandle } from './render/overlay.ts';
+export { renderOverlay, type OverlayHandle, type OverlayOptions } from './render/overlay.ts';
 export { loadRules, refreshRulesIfStale } from './rules/load.ts';
 export { fetchSameOriginDocument, parseHtml } from './dom.ts';
 
@@ -31,7 +32,7 @@ export async function run(ctx: Context, onProgress?: ProgressCallback): Promise<
   try {
     // The reader's own rule: a new site only where no official rule matched (a pagination-only import doesn't count),
     // otherwise extra removals merged over the official one.
-    const official = findRule(ctx.rules, ctx.url);
+    const official = findRule(ctx.rules, ctx.url) ?? (ctx.generic ? genericRuleFor(ctx.url.hostname) : null);
     const mine = (!official || official.generic) && matchPersonalSite(ctx.personal, ctx.url, ctx.rules);
     const rule = mine || (official && ctx.personal ? applyPersonal(official, ctx.personal) : official);
     if (!rule) return report({ ok: false, reason: 'not-article' });

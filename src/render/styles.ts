@@ -415,7 +415,21 @@ a.btn.fb-send { justify-content: center; height: 44px; border-radius: 22px; font
 .reopen:focus-visible { outline: 2px solid rgb(222 172 70); outline-offset: 4px; }
 @keyframes reopen-in { from { opacity: 0; transform: translateY(-6px) scale(0.96); } }
 
+/* ── "Situs ini belum didukung": the bookmark's offer on a site without a rule ── */
+.nsprompt {
+  position: fixed; z-index: 2147483647; top: calc(11px + env(safe-area-inset-top)); right: max(16px, env(safe-area-inset-right));
+  width: min(320px, calc(100vw - 32px)); box-sizing: border-box; padding: 14px 14px 12px; border: 1.5px solid var(--accent); border-radius: 14px;
+  background: var(--panel); color: var(--ink); box-shadow: 0 0 0 2px rgb(255 255 255 / 0.9), 0 8px 22px -6px rgb(0 0 0 / 0.5);
+  animation: reopen-in 320ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ns-text { margin: 0 0 10px; font: 600 14px/1.4 var(--sans); letter-spacing: -0.01em; }
+.ns-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.nsprompt .btn { color: var(--ink); min-height: 36px; }
+.nsprompt .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+.nsprompt .btn:disabled { opacity: 0.5; cursor: default; }
+
 @media (prefers-reduced-motion: reduce) {
+  .nsprompt { animation: none; }
   .panel, .panel[data-open="true"], .btn, .seg button, .fb-choice, .fb-chip, .switch, .switch::after { transition: none; }
   .reopen { animation: none; }
   .bar { transition: none; }
