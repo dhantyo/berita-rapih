@@ -36,9 +36,9 @@ The [install page](https://dhantyo.github.io/sapu-berita/) picks the right steps
 
 ## Supported sites
 
-Detik · Kompas · Tribunnews (including regional sites) · CNN Indonesia · CNBC Indonesia · Liputan6 · Merdeka · Suara · Okezone · Viva · iNews · JPNN · ANTARA · Republika · Bisnis.com · Tirto
+Detik · Kompas · Tribunnews (including regional sites) · CNN Indonesia · CNBC Indonesia · Liputan6 · Merdeka · Suara · Okezone · Viva · iNews · JPNN · ANTARA · Republika · Bisnis.com · Tirto · Tribrata News · Kumparan · IDN Times · Sindonews · Jawa Pos · Pikiran Rakyat · Kontan · Katadata · Media Indonesia · Berita Satu · Medcom · Kompas TV
 
-**Not yet:** Tempo (paywalled; Sapu Berita doesn't bypass paywalls), Kumparan, Sindonews, IDN Times. Want another site? [Suggest it](../../issues/new/choose).
+**Not yet:** Tempo (paywalled; Sapu Berita doesn't bypass paywalls). Want another site? [Suggest it](../../issues/new/choose).
 
 ## Updates
 

@@ -4,6 +4,12 @@ Versions follow [semver](https://semver.org): MAJOR.MINOR.PATCH. While the versi
 
 The first four releases were published as 0.1.0-beta.1 to beta.4 and renamed on 2026-11-13 to the scheme below; the app files inside those releases still report their original beta names.
 
+## [Unreleased]
+
+- **Eleven new sites:** Kumparan, IDN Times, Sindonews, Jawa Pos, Pikiran Rakyat, Medcom, Kontan (free articles; Kontan Plus stays behind its paywall), Katadata, Media Indonesia, Berita Satu and Kompas TV. Sindonews, Jawa Pos and Pikiran Rakyat articles split over pages are merged into one. On Android, open the Sapu Berita app once after updating to switch the new sites on under "Open by default".
+- Articles that a site writes as loose text separated by line breaks, with no paragraphs at all (Sindonews, Medcom), come out as real paragraphs.
+- **Logos no longer lose their bottom edge** (Viva's descenders, Tirto's baseline): the crop around a logo keeps a pixel of margin, since the edge row can come out too faint to count when the logo is measured.
+
 ## [0.4.0] - 2026-11-14
 
 - **Tandai: hide what doesn't belong.** In Aa, tap **Tandai**, then tap the part of the article that shouldn't be there (a promo, a leftover "Baca juga"). Widen or narrow the pick, then **Sembunyikan**: it's hidden straight away and on other articles from that site too. Aa shows how many parts are hidden on the site, with **Tampilkan lagi** to bring them back. After hiding, one tap sends a report with that part's text filled in, so the site rule can be fixed for everyone.
