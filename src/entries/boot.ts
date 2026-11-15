@@ -86,6 +86,7 @@ export async function boot(options: BootOptions = {}): Promise<BootResult> {
               autoOpenSetting: !options.forceOpen,
               updatesSetting: !options.selfUpdating,
               originalUrl: url.href,
+              platform,
               onSettingsChange: (s) => void store.save(s),
               onSnoozeUpdate: snoozeOffer,
               loadFonts: (f) => ensureFonts(document, f, __GEIST__, CHANNEL && new URL('fonts/', CHANNEL).href),

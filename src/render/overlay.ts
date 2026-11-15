@@ -9,6 +9,7 @@ import type { UpdateOffer } from '../update.ts';
 import { heightFromMessage, playerFor } from './players.ts';
 import { quietPage } from './quiet.ts';
 import { textKey } from '../dom.ts';
+import { createFeedbackPage, type FeedbackPage } from './feedback.ts';
 import { applyHidden, describe, fingerprint, startPicking } from './picker.ts';
 import { applyAdded, insertFromPage, stableSelector, startPagePicking } from './pagepicker.ts';
 
@@ -53,6 +54,8 @@ export interface OverlayOptions {
   /** Builds the "report a problem" link for the current article (no link when unset); `note` describes
    *  what the reader marked with Tandai. */
   reportUrl?: (article: Article, note?: string) => string | undefined;
+  /** Which wrapper this is (web, ios, android…), listed in the details sent with a report. */
+  platform?: string;
   /** The reader chose "not now" on the update bar. */
   onSnoozeUpdate?: (version: string) => void;
   /** Load the faces this font setting needs (see render/fonts.ts). Called on every render; must be cheap. */
@@ -113,6 +116,7 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
       articleView(t),
       settingsPanel(t),
     );
+    if (feedback) root.append(feedback.el);
     reopen.replaceChildren(broom(16), doc.createTextNode(t.reopen));
     reopen.title = t.reopenLong;
     reopen.setAttribute('aria-label', t.reopenLong);
@@ -373,37 +377,24 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
       ...general(),
       group(t.inArticle, rows('hero', 'summaries', 'links', 'embeds', 'sweepLine')),
     );
-    const pick = h(doc, 'button', { type: 'button', class: 'btn' }, t.pickAction);
-    pick.addEventListener('click', (e) => {
+    const give = h(doc, 'button', { type: 'button', class: 'btn' }, t.fbAction);
+    give.addEventListener('click', (e) => {
       e.stopPropagation();
       setPanel(false);
-      startPick();
+      openFeedback();
     });
-    panel.append(h(doc, 'div', { class: 'group report' }, h(doc, 'span', { class: 'text' }, t.pickPrompt), pick));
+    panel.append(h(doc, 'div', { class: 'group report' }, h(doc, 'span', { class: 'text' }, t.fbPrompt), give));
     const hiddenCount = keysHere('hidden').size;
     if (hiddenCount) {
       const show = h(doc, 'button', { type: 'button', class: 'btn' }, t.hiddenShow);
       show.addEventListener('click', () => change({ hidden: settings.hidden.filter((k) => !k.startsWith(sitePrefix())) }));
       panel.append(h(doc, 'div', { class: 'report hidden-row' }, h(doc, 'span', { class: 'text' }, t.hiddenCount(hiddenCount)), show));
     }
-    const fromPage = h(doc, 'button', { type: 'button', class: 'btn' }, t.addPick);
-    fromPage.addEventListener('click', (e) => {
-      e.stopPropagation();
-      setPanel(false);
-      startPagePick();
-    });
-    panel.append(h(doc, 'div', { class: 'group report' }, h(doc, 'span', { class: 'text' }, t.addPrompt), fromPage));
     const addedCount = keysHere('added').size;
     if (addedCount) {
       const remove = h(doc, 'button', { type: 'button', class: 'btn' }, t.addedRemove);
       remove.addEventListener('click', () => change({ added: settings.added.filter((k) => !k.startsWith(sitePrefix())) }));
       panel.append(h(doc, 'div', { class: 'report hidden-row' }, h(doc, 'span', { class: 'text' }, t.addedCount(addedCount)), remove));
-    }
-    const report = opts.reportUrl?.(article);
-    if (report) {
-      panel.append(h(doc, 'div', { class: 'group report' },
-        h(doc, 'span', { class: 'text' }, t.report),
-        h(doc, 'a', { class: 'btn', href: report, target: '_blank', rel: 'noopener' }, t.reportAction)));
     }
     // Version, so bug reports say which build they came from.
     panel.append(h(doc, 'p', { class: 'version' }, `Sapu Berita ${VERSION}`));
@@ -508,6 +499,41 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
     setTimeout(() => done.remove(), 20_000);
   };
 
+  // ── Beri masukan: the feedback page (render/feedback.ts), a full view over the article ──
+  let feedback: FeedbackPage | null = null;
+  const openFeedback = () => {
+    stopPicking?.();
+    const t = strings(settings.lang);
+    const themes = { auto: t.themeAuto, light: t.themeLight, sepia: t.themeSepia, dark: t.themeDark };
+    const fonts = { serif: t.fontSerif, sans: t.fontSans, legible: t.fontLegible };
+    feedback = createFeedbackPage({
+      doc, t,
+      hostname: doc.location?.hostname ?? '',
+      details: () => [
+        [t.fbDLink, opts.originalUrl ?? doc.location?.href ?? ''],
+        [t.fbDSite, doc.location?.hostname ?? ''],
+        [t.fbDVersion, VERSION],
+        [t.fbDPlatform, opts.platform ?? ''],
+        [t.fbDTheme, themes[settings.theme]],
+        [t.fbDSize, `${settings.size + 1}/${SIZE_STEPS}`],
+        [t.fbDFont, fonts[settings.font]],
+        [t.fbDRule, article.ruleId ?? ''],
+        [t.fbDPages, String(article.pages)],
+      ],
+      reportUrl: (note) => opts.reportUrl?.(article, note),
+      close: () => closeFeedback(),
+      hidePart: () => { closeFeedback(false); startPick(); },
+      addPart: () => { closeFeedback(false); startPagePick(); },
+    });
+    root.append(feedback.el);
+    feedback.focus();
+  };
+  const closeFeedback = (refocus = true) => {
+    feedback?.el.remove();
+    feedback = null;
+    if (refocus) (root.querySelector('.aa') as HTMLElement | null)?.focus({ preventScroll: true });
+  };
+
   const setPanel = (open: boolean) => {
     panelOpen = open;
     const panel = root.querySelector('.panel') as HTMLElement | null;
@@ -521,7 +547,10 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
   root.addEventListener('click', () => panelOpen && setPanel(false));
   attachGallery(root, () => strings(settings.lang));
   root.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && panelOpen) {
+    if (e.key === 'Escape' && feedback) {
+      e.stopPropagation();
+      feedback.back();
+    } else if (e.key === 'Escape' && panelOpen) {
       e.stopPropagation();
       setPanel(false);
     }
@@ -557,6 +586,7 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
     }
   };
   const hide = () => {
+    closeFeedback(false);
     stopPicking?.();
     unquiet?.();
     unquiet = undefined;
