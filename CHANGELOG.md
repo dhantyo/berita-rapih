@@ -4,7 +4,7 @@ Versions follow [semver](https://semver.org): MAJOR.MINOR.PATCH. While the versi
 
 The first four releases were published as 0.1.0-beta.1 to beta.4 and renamed on 2026-11-13 to the scheme below; the app files inside those releases still report their original beta names.
 
-## [Unreleased]
+## [0.6.0] - 2026-11-15
 
 - **One place for feedback:** Aa now has a single **Beri masukan** row. It opens a page with four choices: *Atur isi artikel* (the editor, below), *Laporkan masalah* (quick choices plus a note; the details sent along are shown before sending), *Usulkan situs*, and *Ide atau saran*.
 - **The editor (Atur isi artikel):** it opens on the original page and paints what the reader takes in green, what it leaves out in red (struck through) and where the title, author, editor, date, main photo and logo come from in blue. Tap a part to select it, then **Masukkan** or **Buang**; drag a corner of the outline to make the selection bigger or smaller (it snaps to the page block that fits). To fix a header, tap its blue chip (Judul, Penulis, Editor, Tanggal) and then tap where it is written on the page. **Asli / Bersih** at the top switches between the page and the clean result at any time. **Kembalikan** goes back to the official rules (after a confirm); **Kirim usulan** sends your rule as a suggestion. Entries the official rule already covers are dropped quietly. This replaces Tandai and Pilih di halaman asli.
