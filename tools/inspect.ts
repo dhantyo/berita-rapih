@@ -65,7 +65,7 @@ for (const url of urls) {
         title: text('h1'),
         meta: [...root.querySelectorAll('.meta > span')].map((s) => s.textContent?.trim()).join(' · '),
         logo: src.startsWith('data:') ? '(inline SVG from the page)' : src.replace(/[?&]sapu=1$/, ''),
-        logoDrawn: logo ? `${logo.dataset.state}${logo.dataset.onDark ? `, on dark: ${logo.dataset.onDark}` : ''}` : text('.outlet-name') ? 'name only' : 'none',
+        logoDrawn: logo ? `${logo.dataset.state}${logo.dataset.onDark ? `, on light: ${logo.dataset.onLight}, on dark: ${logo.dataset.onDark}${logo.dataset.plateOnLight ? ', plate on light' : ''}${logo.dataset.plateOnDark ? ', plate on dark' : ''}${logo.dataset.badge === 'true' ? ', badge' : ''}, fill ${logo.dataset.fill}, ${logo.style.width} x ${logo.style.height}` : ''}` : text('.outlet-name') ? 'name only' : 'none',
         intro: text('.deck'),
         summary: text('.content blockquote > b'),
         summaryPoints: root.querySelectorAll('.content blockquote li').length,

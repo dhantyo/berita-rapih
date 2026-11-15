@@ -92,9 +92,15 @@ button { font: inherit; color: inherit; }
   .root[data-theme="auto"] .logo[data-on-light="ink"] img { filter: none; opacity: 1; }
   .root[data-theme="auto"] .logo[data-on-dark="white"] img { filter: brightness(0) invert(1); opacity: 0.92; }
 }
+/* A logo with a knocked-out glyph keeps its colours; where its body would vanish it gets a plate of the opposite tone. */
+.logo[data-plate-on-light="true"] { background: rgb(24 24 24); box-shadow: 0 0 0 4px rgb(24 24 24); margin: 4px; border-radius: 2px; }
+.root[data-theme="dark"] .logo[data-plate-on-dark="true"] { background: rgb(255 255 255); box-shadow: 0 0 0 4px rgb(255 255 255); margin: 4px; border-radius: 2px; }
+@media (prefers-color-scheme: dark) {
+  .root[data-theme="auto"] .logo[data-plate-on-dark="true"] { background: rgb(255 255 255); box-shadow: 0 0 0 4px rgb(255 255 255); margin: 4px; border-radius: 2px; }
+}
 /* Plate fallback (server forbids pixel reads): whole logo on the site's own dark header colour, or white in dark themes. */
 .logo[data-state="plate"] { display: inline-flex; align-items: center; border-radius: 4px; padding: 3px 0; background: var(--plate); }
-.logo[data-state="plate"] img { height: 22px; width: auto; max-width: 150px; object-fit: contain; }
+.logo[data-state="plate"] img { height: 22px; width: auto; max-width: 210px; object-fit: contain; }
 .root[data-theme="sepia"] .logo[data-state="plate"], .root[data-theme="dark"] .logo[data-state="plate"] { padding: 4px 8px; }
 @media (prefers-color-scheme: dark) { .root[data-theme="auto"] .logo[data-state="plate"] { padding: 4px 8px; } }
 .logo[data-state="plate"][data-plate="dark"] { background: var(--logo-ground, rgb(24 24 24)); padding: 4px 8px; }

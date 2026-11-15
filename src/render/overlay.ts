@@ -1,7 +1,7 @@
 import type { Article } from '../types.ts';
 import { SIZE_STEPS, type Font, type Lang, type Settings, type Switch, type Theme } from '../settings.ts';
 import { strings, type Strings } from './i18n.ts';
-import { analyzeLoadedLogo, corsLogoUrl, opticalHeight, recolourNeeds } from './logo.ts';
+import { analyzeLoadedLogo, corsLogoUrl, opticalHeight, plateNeeds, recolourNeeds } from './logo.ts';
 import { PLATFORM_NAMES, type Platform } from '../clean/embeds.ts';
 import { OVERLAY_CSS } from './styles.ts';
 import { attachGallery, GALLERY_CSS } from './gallery.ts';
@@ -172,10 +172,14 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
       shown.alt = name;
       shown.addEventListener('error', () => outlet.replaceChildren(h(doc, 'span', { class: 'outlet-name' }, name)), { once: true });
       shown.addEventListener('load', () => {
-        if (shown.naturalWidth / Math.max(1, shown.naturalHeight) < 1.6) {
+        const aspect = shown.naturalWidth / Math.max(1, shown.naturalHeight);
+        if (aspect < 1.6) {
           outlet.classList.add('square');
           shown.alt = '';
           showName();
+        } else {
+          // Not trimmable (pixels unreadable), but still sized optically instead of one fixed small height.
+          shown.style.height = `${opticalHeight(aspect)}px`;
         }
       }, { once: true });
       shown.src = src;
@@ -198,7 +202,7 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
       if (!a) return fail();
       const aspect = a.box.w / a.box.h;
       const square = aspect < 1.6;
-      const height = square ? 30 : opticalHeight(aspect);
+      const height = square ? 30 : opticalHeight(aspect, undefined, a.fill);
       const scale = height / a.box.h;
       // Crop to the drawn pixels: a window the size of the box, the full image shifted inside it.
       mark.style.width = `${a.box.w * scale}px`;
@@ -210,7 +214,11 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
       const needs = recolourNeeds(a);
       mark.dataset.onLight = needs.onLight ? 'ink' : 'own';
       mark.dataset.onDark = needs.onDark ? 'white' : 'own';
+      const plates = plateNeeds(a);
+      if (plates.onLight) mark.dataset.plateOnLight = 'true';
+      if (plates.onDark) mark.dataset.plateOnDark = 'true';
       mark.dataset.badge = String(a.badge);
+      mark.dataset.fill = String(a.fill?.toFixed(2));
       mark.dataset.state = 'fitted';
       if (square) {
         outlet.classList.add('square');
