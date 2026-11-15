@@ -4,7 +4,8 @@
   "name": "Kontan",
   "domains": ["kontan.co.id"],
   "articleUrl": "^/news/[a-z0-9-]+",
-  "body": [".tmpt-desk-kon"],
+  "body": [".tmpt-desk-kon", ".content-pos"],
+  "bodyAll": true,
   "remove": [
     ".source-or-editor",
     ".listbut-shr",
@@ -16,7 +17,7 @@
     ".bor-top",
     ".ads-inreads",
     "p:has(a.track-gnews)",
-    ".article-column", ".persona-widget"
+    ".article-column", ".persona-widget", "#showcase"
   ],
   "pagination": { "method": "none" },
   "samples": [
@@ -24,5 +25,5 @@
     "https://industri.kontan.co.id/news/ancaman-serangan-siber-meningkat-dunia-usaha-perlu-memperkuat-mitigasi"
   ],
   "verified": "2026-11-15",
-  "notes": "Subdomain per channel (nasional., industri., keuangan., investasi., ...). Body is .tmpt-desk-kon, but its markup is unbalanced so tags, 'Video Terkait' and share bar end up inside it and are removed. Known quirk: the header logo is on a CDN without CORS so the reader falls back to the same-origin Kontan Academy banner image. Kontan Plus premium articles are paywalled: only free articles were checked. /feed/news/<channel> returns 403 to plain clients, so no feed."
+  "notes": "Phones get a different page than desktop: the article is split over several .content-pos sections (hence bodyAll), with the Terpopuler showcase widget (#showcase, unbalanced markup) leaking into one of them; desktop uses .tmpt-desk-kon. Subdomain per channel (nasional., industri., keuangan., investasi., ...). Body is .tmpt-desk-kon, but its markup is unbalanced so tags, 'Video Terkait' and share bar end up inside it and are removed. Known quirk: the header logo is on a CDN without CORS so the reader falls back to the same-origin Kontan Academy banner image. Kontan Plus premium articles are paywalled: only free articles were checked. /feed/news/<channel> returns 403 to plain clients, so no feed."
 }
