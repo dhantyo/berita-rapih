@@ -3,7 +3,7 @@
   "id": "kontan",
   "name": "Kontan",
   "domains": ["kontan.co.id"],
-  "articleUrl": "^/news/[a-z0-9-]+",
+  "articleUrl": "^/(news|video)/[A-Za-z0-9_-]+",
   "body": [".tmpt-desk-kon", ".content-pos"],
   "bodyAll": true,
   "remove": [
@@ -20,10 +20,19 @@
     ".article-column", ".persona-widget", "#showcase"
   ],
   "pagination": { "method": "none" },
+  "variants": [
+    {
+      "when": "^/video/",
+      "body": [".des_detail"],
+      "bodyAll": false,
+      "dropParagraphs": ["^(KONTAN - )?https?://www\\.kontan\\.co\\.id/?$", "^(#\\S+\\s*)+$"]
+    }
+  ],
   "samples": [
     "https://nasional.kontan.co.id/news/dirjen-pajak-bimo-sebut-indonesia-belum-terapkan-wealth-tax-ini-alasannya",
-    "https://industri.kontan.co.id/news/ancaman-serangan-siber-meningkat-dunia-usaha-perlu-memperkuat-mitigasi"
+    "https://industri.kontan.co.id/news/ancaman-serangan-siber-meningkat-dunia-usaha-perlu-memperkuat-mitigasi",
+    "https://tv.kontan.co.id/video/5EgMhljX3yA"
   ],
   "verified": "2026-11-15",
-  "notes": "Phones get a different page than desktop: the article is split over several .content-pos sections (hence bodyAll), with the Terpopuler showcase widget (#showcase, unbalanced markup) leaking into one of them; desktop uses .tmpt-desk-kon. Subdomain per channel (nasional., industri., keuangan., investasi., ...). Body is .tmpt-desk-kon, but its markup is unbalanced so tags, 'Video Terkait' and share bar end up inside it and are removed. Known quirk: the header logo is on a CDN without CORS so the reader falls back to the same-origin Kontan Academy banner image. Kontan Plus premium articles are paywalled: only free articles were checked. /feed/news/<channel> returns 403 to plain clients, so no feed."
+  "notes": "Kontan TV (tv.kontan.co.id/video/<youtube id>): body is .des_detail (first paragraph is just a kontan.co.id link); the page has no JSON-LD VideoObject usable as a player, only a YouTube og:image thumbnail and a link, which the reader turns into the video. Phones get a different page than desktop: the article is split over several .content-pos sections (hence bodyAll), with the Terpopuler showcase widget (#showcase, unbalanced markup) leaking into one of them; desktop uses .tmpt-desk-kon. Subdomain per channel (nasional., industri., keuangan., investasi., ...). Body is .tmpt-desk-kon, but its markup is unbalanced so tags, 'Video Terkait' and share bar end up inside it and are removed. Known quirk: the header logo is on a CDN without CORS so the reader falls back to the same-origin Kontan Academy banner image. Kontan Plus premium articles are paywalled: only free articles were checked. /feed/news/<channel> returns 403 to plain clients, so no feed."
 }
