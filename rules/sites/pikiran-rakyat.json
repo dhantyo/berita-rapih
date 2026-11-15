@@ -1,0 +1,20 @@
+{
+  "$schema": "../schema.json",
+  "id": "pikiran-rakyat",
+  "name": "Pikiran Rakyat",
+  "domains": ["pikiran-rakyat.com"],
+  "articleUrl": "^/[a-z0-9-]+/pr-\\d+/[a-z0-9-]+",
+  "body": ["section.read__content"],
+  "remove": [".ads", ".read__related"],
+  "pagination": {
+    "method": "param",
+    "fullpage": "page=all",
+    "onlyIf": ".paging__all a"
+  },
+  "samples": [
+    "https://www.pikiran-rakyat.com/news/pr-0110559757/trump-xi-jinping-dan-putin-dijadwalkan-bertemu-di-shenzhen-bahas-senjata-nuklir",
+    "https://www.pikiran-rakyat.com/ekonomi/pr-0110559342/bsu-november-2026-belum-cair-simak-penjelasan-yassierli-dan-syarat-penerimanya"
+  ],
+  "verified": "2026-11-15",
+  "notes": "Body is section.read__content (the first .read__content on the page is a header div, so the tag is part of the selector). Baca Juga lines are <p><strong>Baca Juga: ...</strong></p>, covered by rules/common.json. Long stories split into ?page=N and the site's own 'Lihat Semua' link is ?page=all. No RSS feed found (/rss, /rss.xml, /feed all 404), so the canary uses the samples. Plain downloads sometimes get 403 from Cloudflare; the phone user agent works."
+}

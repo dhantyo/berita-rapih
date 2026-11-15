@@ -1,0 +1,16 @@
+{
+  "$schema": "../schema.json",
+  "id": "kumparan",
+  "name": "kumparan",
+  "domains": ["kumparan.com"],
+  "articleUrl": "^/(?!topic/|user/|video-story/)[A-Za-z0-9_.-]+/[a-z0-9-]+-\\d[A-Za-z0-9]{8,}$",
+  "body": ["main[data-qa-id=\"article-main\"]"],
+  "remove": ["[data-qa-id*=\"ads\"]", "[data-qa-id=\"image-figure\"] span"],
+  "pagination": { "method": "none" },
+  "samples": [
+    "https://kumparan.com/kumparannews/prabowo-tiba-di-ktt-asean-filipina-naik-bajaj-bareng-pm-vietnam-28Znea8A6iE",
+    "https://kumparan.com/kumparanbisnis/jelang-pembukaan-pendaftaran-cpns-2026-kuota-capai-158-ribu-anggaran-tersedia-28ZljY5yCuB"
+  ],
+  "verified": "2026-11-15",
+  "notes": "Client-rendered React app with styled-components hashes (never use them); the stable hooks are data-qa-id attributes. Body is main[data-qa-id=article-main], paragraphs p[data-qa-id=story-paragraph], ad slots carry data-qa-id with 'ads'. All story pages are in one page. Article URLs are /<channel>/<slug>-<id> where the id starts with a digit. kumparan.com redirects phones to m.kumparan.com (covered by the domain). No RSS feed (/rss is 404), so the canary uses the samples."
+}
