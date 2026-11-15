@@ -91,12 +91,8 @@ export function logoAlternates(doc: Document, except: string | undefined): strin
     const own = `${src} ${img.getAttribute('alt') ?? ''} ${img.getAttribute('class') ?? ''}`;
     const home = img.closest('a');
     if (!/logo/i.test(own) || !home || !isHomeLink(doc, home.getAttribute('href'))) continue;
-    try {
-      const abs = new URL(src, doc.baseURI).href;
-      if (abs !== except && !out.includes(abs)) out.push(abs);
-    } catch {
-      // ignore malformed src
-    }
+    const abs = absoluteLogoUrl(src, doc.baseURI);
+    if (abs && abs !== except && !out.includes(abs)) out.push(abs);
   }
   return out.slice(0, 3);
 }
@@ -118,6 +114,24 @@ export function groundForSrc(doc: Document, src: string): string | undefined {
   return undefined;
 }
 
+/**
+ * Absolute URL of a logo <img src>. A Next.js image-optimiser URL (/_next/image?url=…&w=…) is unwrapped to
+ * the original file: the optimiser may serve it upscaled (Jawa Pos: a 300px logo stretched to 1200 and blurry),
+ * and the original is what the site itself stores.
+ */
+export function absoluteLogoUrl(src: string, base: string): string | undefined {
+  try {
+    const u = new URL(src, base);
+    if (/\/_next\/image\/?$/.test(u.pathname)) {
+      const inner = u.searchParams.get('url');
+      if (inner) return new URL(inner, u).href;
+    }
+    return u.href;
+  } catch {
+    return undefined;
+  }
+}
+
 function isHomeLink(doc: Document, href: string | null): boolean {
   if (!href) return false;
   try {
@@ -135,13 +149,8 @@ function toLogo(doc: Document, img: Element): FoundLogo | undefined {
   }
   const src = img.getAttribute('src') || img.getAttribute('data-src');
   if (!src || src.startsWith('data:')) return undefined;
-  let abs: string;
-  try {
-    abs = new URL(src, doc.baseURI).href;
-  } catch {
-    return undefined;
-  }
-  return { src: abs, darkGround: darkGroundOf(img) };
+  const abs = absoluteLogoUrl(src, doc.baseURI);
+  return abs ? { src: abs, darkGround: darkGroundOf(img) } : undefined;
 }
 
 /**

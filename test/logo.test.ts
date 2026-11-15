@@ -72,3 +72,13 @@ describe('inline SVG mastheads (Tirto)', () => {
     expect(decodeURIComponent(found!.src)).toContain('<path');
   });
 });
+
+describe('Next.js image-optimiser logos (Jawa Pos)', () => {
+  it('uses the original file, not the optimiser copy that may be upscaled and blurry', () => {
+    const doc = documentFromHtml(
+      '<header><a href="/"><img alt="Logo JawaPos" src="/_next/image?url=https%3A%2F%2Fcdn.example.com%2Fassets%2Flogo.webp&w=1200&q=75"></a></header>',
+      'https://www.example.com/politik/1',
+    );
+    expect(findLogo(doc)?.src).toBe('https://cdn.example.com/assets/logo.webp');
+  });
+});
