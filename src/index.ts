@@ -9,7 +9,9 @@ import { needsNetwork, paginate, type Extractor } from './paginate/index.ts';
 import { clean, dropPatterns, isDroppedText } from './clean/index.ts';
 import { sanitize } from './clean/sanitize.ts';
 import { prependMainVideo } from './clean/embeds.ts';
+import { applyPersonal, applyPersonalContent, matchPersonalSite } from './personal.ts';
 
+export type { PersonalRule } from './personal.ts';
 export type { Article, Context, RunResult, RuleSet } from './types.ts';
 export { renderOverlay, type OverlayHandle } from './render/overlay.ts';
 export { loadRules, refreshRulesIfStale } from './rules/load.ts';
@@ -27,10 +29,14 @@ export type ProgressCallback = (result: RunResult, morePagesLoading: boolean) =>
  */
 export async function run(ctx: Context, onProgress?: ProgressCallback): Promise<RunResult> {
   try {
-    const rule = findRule(ctx.rules, ctx.url);
+    // The reader's own rule: a new site only where no official rule matched (a pagination-only import doesn't count),
+    // otherwise extra removals merged over the official one.
+    const official = findRule(ctx.rules, ctx.url);
+    const mine = (!official || official.generic) && matchPersonalSite(ctx.personal, ctx.url, ctx.rules);
+    const rule = mine || (official && ctx.personal ? applyPersonal(official, ctx.personal) : official);
     if (!rule) return report({ ok: false, reason: 'not-article' });
 
-    const extracted = extractMetadata(ctx.doc);
+    const extracted = extractMetadata(ctx.doc, ctx.personal?.fields);
     // The site's own masthead logo (auto-detected, carries regional brands) beats the generic JSON-LD one.
     const masthead = findLogo(ctx.doc, rule.logo);
     const meta = masthead
@@ -91,6 +97,7 @@ function finishArticle(
   const swept = clean(container, rule, ctx.rules, adblockSelectors(ctx.rules, ctx.url.hostname), ctx.url);
   if (meta.video) prependMainVideo(container, meta.video);
   const content = sanitize(container);
+  applyPersonalContent(content, ctx.personal, ctx.doc);
   const quality = assessQuality(content, ctx.rules.common.quality);
   if (!quality.ok) return { ok: false, reason: 'low-quality', detail: JSON.stringify(quality) };
   return { ok: true, article: { meta, content, source, pages, swept, ruleId: rule.id } };

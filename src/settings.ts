@@ -1,5 +1,6 @@
 // Reader settings: one shape for every platform, stored through whatever the wrapper provides.
 import { hostMatches } from './rules/match.ts';
+import { migrateLegacy, normalizePersonal, type PersonalRule } from './personal.ts';
 
 export type Theme = 'auto' | 'light' | 'sepia' | 'dark';
 export type Font = 'serif' | 'sans' | 'legible';
@@ -25,7 +26,9 @@ export interface Settings {
   summaries: boolean;
   /** Quoted social posts play in the article (official embeds); off = a card with a link. */
   embeds: boolean;
-  /** Blocks the reader hid with "Tandai", as "<site rule>:<fingerprint>" (render/picker.ts). */
+  /** The reader's own edits per outlet (src/personal.ts). Kept out of the shared cookie like the lists below. */
+  personal: PersonalRule[];
+  /** Legacy (before personal rules): read once and folded into `personal` on load, never written any more. Blocks the reader hid with "Tandai", as "<site rule>:<fingerprint>" (render/picker.ts). */
   hidden: string[];
   /** Parts of the original page the reader added to the clean view, as "<site rule>:<selector>" (render/pagepicker.ts). */
   added: string[];
@@ -45,6 +48,7 @@ export const DEFAULT_SETTINGS: Settings = {
   links: true,
   summaries: true,
   embeds: true,
+  personal: [],
   hidden: [],
   added: [],
 };
@@ -101,7 +105,7 @@ export function outletStore(domain: string | undefined, doc: Document = document
       // Only what differs from the defaults: the cookie travels with every request to the outlet.
       // Hidden and added blocks stay out of it (they can be many); they live in the per-subdomain copy.
       const changed = Object.fromEntries(
-        Object.entries(settings).filter(([k, v]) => k !== 'hidden' && k !== 'added' && DEFAULT_SETTINGS[k as keyof Settings] !== v),
+        Object.entries(settings).filter(([k, v]) => k !== 'personal' && k !== 'hidden' && k !== 'added' && DEFAULT_SETTINGS[k as keyof Settings] !== v),
       );
       doc.cookie = `${name}=${encodeURIComponent(JSON.stringify(changed))}; Domain=${domain}; Path=/; Max-Age=34560000; SameSite=Lax${secure}`;
     } catch {
@@ -112,7 +116,7 @@ export function outletStore(domain: string | undefined, doc: Document = document
     async load() {
       const local = await localStorageStore.load();
       const shared = domain ? readCookie() : undefined;
-      const settings = shared ? { ...shared, hidden: local?.hidden, added: local?.added } : local;
+      const settings = shared ? { ...shared, personal: local?.personal, hidden: local?.hidden, added: local?.added } : local;
       if (settings) writeCookie(settings); // renew, and share settings saved before this existed
       return settings;
     },
@@ -154,7 +158,7 @@ export function normalizeSettings(raw: Partial<Settings> | undefined): Settings 
   for (const k of SWITCHES) if (typeof r[k] === 'boolean') out[k] = r[k] as boolean;
   // Newest last; a bounded list of short keys.
   const keys = (v: unknown) => (Array.isArray(v) ? v.filter((k): k is string => typeof k === 'string' && k.length <= 200).slice(-MAX_HIDDEN) : []);
-  out.hidden = keys(r.hidden);
-  out.added = keys(r.added);
+  // Old lists fold into personal rules and are no longer written (Settings.hidden/added stay empty).
+  out.personal = migrateLegacy(normalizePersonal(r.personal), keys(r.hidden), keys(r.added));
   return out;
 }

@@ -55,6 +55,7 @@ interface PersonalRule {
 
 - Stored in settings (`personal: PersonalRule[]`, bounded), migrating today's `hidden` / `added` lists into it. Kept out of the shared bookmark cookie (it can grow); on the bookmark it's per subdomain (localStorage).
 - Applied in the pipeline (extraction), not only at render: `add` → like lead/trail by page position, `remove` → extra remove selectors / fingerprints, `fields` → read before JSON-LD fallbacks.
+  Implementation (src/personal.ts): selector `remove` → the rule's `remove` (`applyPersonal`); fingerprints and `add` act on the finished article (`applyPersonalContent`), in `run()` and again in the overlay whenever the lists change, so Tandai, Pilih and Kembalikan stay instant; `fields` → `extractMetadata(doc, fields)`. A `remove` entry starting `t:`/`i:` is a fingerprint, anything else a selector. Old `hidden`/`added` settings are folded into personal rules on load and no longer written.
 - **Kirim usulan** sends the rule as JSON in the report (`note`), ready to apply to `rules/sites/<id>.json`.
 - **Auto-retire**: an entry whose effect the official rule already has (selector already in its `remove`, part already in the clean view, field already right) is dropped quietly.
 - Aa shows "Versi pribadi aktif di situs ini" with **Kembalikan** (reset) when a personal rule exists.

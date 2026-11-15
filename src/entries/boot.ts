@@ -10,6 +10,8 @@ import {
 } from '../index.ts';
 import { normalizeSettings, outletDomain, outletStore, type SettingsStore } from '../settings.ts';
 import type { RuleSet } from '../types.ts';
+import { findRule } from '../rules/match.ts';
+import { personalForPage } from '../personal.ts';
 import { ensureFonts } from '../render/fonts.ts';
 import { cachedManifest, isSnoozed, latestManifest, offerFor, reportLink, snoozeOffer, type Platform } from '../update.ts';
 
@@ -63,12 +65,17 @@ export async function boot(options: BootOptions = {}): Promise<BootResult> {
   let overlay: OverlayHandle | null = null;
   let pending: Promise<void> = Promise.resolve();
 
+  // The reader's own rule for this outlet is part of extraction, so settings load first (a local read, not a delay).
+  const settings0 = await settingsReady;
+  // Cached remote rules if newer than the bundled ones; refreshed below only if the reader allows updates.
+  const rules = loadRules(bundledRules);
+  const personal = personalForPage(settings0.personal, findRule(rules, url)?.id, url);
   const result = await run(
     {
       doc: document,
       url,
-      // Cached remote rules if newer than the bundled ones; refreshed below only if the reader allows updates.
-      rules: loadRules(bundledRules),
+      rules,
+      personal,
       fetchDocument: (u) => fetchSameOriginDocument(u, url.origin),
       log: debug,
     },
