@@ -8,6 +8,8 @@ Work queued for the weekly run ([MAINTAINING.md](MAINTAINING.md)). One line per 
 - **Say why extraction failed, in reports.** When the reader can't open an article, the report should carry the reason (`not-article`, `no-body`, blocked…). Source: maintainer.
 - **Kontan: wrong or missing logo.** Source: maintainer.
 - **Pikiran Rakyat: pages 2+ aren't merged.** The site is behind Cloudflare, so the page fetches fail. Source: maintainer.
+- **Store buttons on the install page** once the Chrome, Edge and Firefox listings are live (their URLs come from the dashboards). Source: maintainer.
+- **Upload new versions to the stores from CI** (Chrome Web Store API, Edge Add-ons API, `web-ext sign`), with their API keys as repository secrets. Source: maintainer.
 
 ## Pinned by the user
 

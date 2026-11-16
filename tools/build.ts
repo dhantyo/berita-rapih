@@ -6,7 +6,7 @@
 //   dist/apple-loader.js       what goes in the Shortcut: downloads the latest core and runs it
 //   dist/bookmarklet.txt       the same loader as a Safari/Chrome bookmark
 import { build, type Plugin } from 'esbuild';
-import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { execSync } from 'node:child_process';
 import { ROOT } from './lib/rules.ts';
@@ -97,7 +97,23 @@ manifest.content_scripts[0].matches = domains.filter((d) => !covered(d)).map((d)
 const { version } = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')) as { version: string };
 manifest.version = version.split('-')[0];
 manifest.version_name = version;
+// Icons drawn by tools/store-assets.ts.
+manifest.icons = Object.fromEntries([16, 32, 48, 128].map((s) => [String(s), `icons/icon-${s}.png`]));
 writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
+
+// Firefox (desktop and Android, via addons.mozilla.org): the same extension plus Gecko's own keys.
+// Firefox has no version_name; data_collection_permissions (required for new add-ons) needs 140+ / Android 142+.
+const firefox = join(ROOT, 'dist/extension-firefox');
+rmSync(firefox, { recursive: true, force: true });
+mkdirSync(join(firefox, 'icons'), { recursive: true });
+const { version_name: _label, ...firefoxManifest } = manifest;
+firefoxManifest.browser_specific_settings = {
+  gecko: { id: 'sapu-berita@dhantyo.github.io', strict_min_version: '140.0', data_collection_permissions: { required: ['none'] } },
+  gecko_android: { strict_min_version: '142.0' },
+};
+writeFileSync(join(firefox, 'manifest.json'), JSON.stringify(firefoxManifest, null, 2) + '\n');
+copyFileSync(join(ROOT, 'apps/extension/content.js'), join(firefox, 'content.js'));
+for (const s of [16, 32, 48, 128]) copyFileSync(join(ROOT, `apps/extension/icons/icon-${s}.png`), join(firefox, `icons/icon-${s}.png`));
 
 // Android app assets: the WebView script and the list of news hosts the router keeps in-app.
 // Every other link goes straight to the user's normal browser.

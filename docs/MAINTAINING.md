@@ -56,7 +56,7 @@ Goal: whatever is broken is fixed and shipped the same day, with no one watching
 4. **Commit** each fix on `master`:
    - one changelog line under `## [Unreleased]`, in plain words a reader would use;
    - `Fixes #N` in the commit message when it came from an issue.
-5. **Release** once, if anything a reader would notice was fixed:
+5. **Release** once, if anything a reader would notice was fixed. Store uploads ([STORES.md](STORES.md)) are still done by hand; mention a release that needs one in the report.
    - `npm run release -- <next patch>`, then `gh run watch` until the release run is green. At most one release a day.
    - If `[Unreleased]` holds anything that isn't a daily fix (for example a weekly merge the user hasn't released), don't release; say so in the report.
 6. **Queue** everything else in [BACKLOG.md](BACKLOG.md): one line per item, with its source (sheet ID or issue number).

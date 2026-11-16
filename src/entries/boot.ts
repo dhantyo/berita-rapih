@@ -44,6 +44,8 @@ export interface BootOptions {
   platform?: Platform;
   /** This code was just downloaded from the release channel (Apple loader): never offer an update. */
   selfUpdating?: boolean;
+  /** Installed from a browser store, which updates it: no update offer, but the daily rules check stays a setting. */
+  storeInstall?: boolean;
 }
 
 /**
@@ -60,7 +62,7 @@ export async function boot(options: BootOptions = {}): Promise<BootResult> {
   const checkForUpdates = async (shown: OverlayHandle) => {
     if (!CHANNEL) return;
     refreshRulesIfStale(new URL('rules.json', CHANNEL).href);
-    if (options.selfUpdating) return;
+    if (options.selfUpdating || options.storeInstall) return;
     const offer = offerFor(await latestManifest(CHANNEL), VERSION, platform);
     if (offer && !isSnoozed(offer.version)) shown.offerUpdate(offer);
   };

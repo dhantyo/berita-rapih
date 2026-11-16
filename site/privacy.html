@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privasi · Sapu Berita</title>
+<meta name="description" content="Sapu Berita tidak mengumpulkan data apa pun tentang kamu.">
+<meta name="color-scheme" content="light dark">
+<style>
+@font-face { font-family: "Sapu Geist"; src: url(fonts/geist.woff2) format("woff2"); font-weight: 100 900; font-display: swap; }
+:root {
+  --bg: rgb(255 255 255); --ink: rgb(18 18 18); --muted: rgb(88 88 88); --rule: rgb(0 0 0 / 0.1); --accent: rgb(176 122 18);
+  --sans: "Sapu Geist", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: rgb(18 18 18); --ink: rgb(232 232 230); --muted: rgb(170 170 166); --rule: rgb(255 255 255 / 0.12); --accent: rgb(222 172 70); }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.6 var(--sans); }
+a { color: inherit; text-decoration-color: var(--accent); text-underline-offset: 0.2em; }
+main { max-width: 680px; margin: 0 auto; padding: 32px 16px 72px; }
+.brand { display: inline-block; font: 700 19px/1 var(--sans); letter-spacing: -0.03em; text-decoration: none; margin-bottom: 40px; }
+h1 { font: 700 clamp(2rem, 6vw, 2.8rem)/1.08 var(--sans); letter-spacing: -0.04em; margin: 0 0 12px; }
+h2 { font: 650 20px/1.3 var(--sans); letter-spacing: -0.02em; margin: 32px 0 8px; }
+.lead { font-size: 1.15rem; color: var(--muted); margin: 0 0 8px; }
+section + section { margin-top: 56px; padding-top: 40px; border-top: 1px solid var(--rule); }
+ul { padding-left: 1.2em; }
+li + li { margin-top: 6px; }
+.small { color: var(--muted); font-size: 15px; }
+</style>
+</head>
+<body>
+<main>
+  <a class="brand" href="./">Sapu Berita</a>
+
+  <section lang="id">
+    <h1>Privasi</h1>
+    <p class="lead">Sapu Berita tidak mengumpulkan data apa pun tentang kamu. Tidak ada akun, tidak ada pelacak, tidak ada server milik kami.</p>
+
+    <h2>Yang terjadi di perangkatmu</h2>
+    <ul>
+      <li>Sapu Berita hanya berjalan di situs berita yang didukung. Artikel dirapikan langsung di perangkatmu; isinya tidak dikirim ke mana pun.</li>
+      <li>Pengaturan baca (ukuran huruf, tema, dan bagian artikel yang kamu atur sendiri) disimpan di perangkatmu saja.</li>
+    </ul>
+
+    <h2>Yang diunduh</h2>
+    <ul>
+      <li>Sekali sehari, Sapu Berita mengambil dua file kecil dari situs ini: info versi terbaru dan perbaikan situs berita. Permintaan itu tidak membawa data apa pun tentang kamu. Bisa dimatikan di <b>Aa → Cek update</b>.</li>
+      <li>Huruf Serif dan Jelas diunduh dari situs ini saat pertama kali kamu memilihnya.</li>
+    </ul>
+
+    <h2>Kalau kamu memberi masukan</h2>
+    <p>Hanya kalau kamu sendiri menekan <b>Kirim</b>, sebuah formulir terbuka di tab baru, berisi link artikel, versi Sapu Berita, jenis perangkat, dan apa yang kamu tulis. Kami memakainya hanya untuk memperbaiki Sapu Berita. Tidak ada nama atau email yang diminta.</p>
+
+    <p class="small">Kode Sapu Berita terbuka untuk dicek siapa saja: <a href="https://github.com/dhantyo/sapu-berita">github.com/dhantyo/sapu-berita</a>. Pertanyaan? Buka <a href="https://github.com/dhantyo/sapu-berita/issues">issue di GitHub</a>.</p>
+  </section>
+
+  <section lang="en">
+    <h1>Privacy</h1>
+    <p class="lead">Sapu Berita collects no data about you. No accounts, no trackers, no servers of our own.</p>
+
+    <h2>What happens on your device</h2>
+    <ul>
+      <li>Sapu Berita only runs on supported news sites. Articles are cleaned up on your device; their content is not sent anywhere.</li>
+      <li>Reading settings (text size, theme, and parts of articles you adjusted yourself) are stored on your device only.</li>
+    </ul>
+
+    <h2>What is downloaded</h2>
+    <ul>
+      <li>Once a day, Sapu Berita fetches two small files from this site: the latest version number and fixes for news sites. The request carries nothing about you. It can be turned off in <b>Aa → Check for updates</b>.</li>
+      <li>The Serif and Legible fonts are downloaded from this site the first time you pick them.</li>
+    </ul>
+
+    <h2>If you send feedback</h2>
+    <p>Only when you press <b>Send</b> yourself, a form opens in a new tab with the article link, the Sapu Berita version, your device type and what you wrote. We use it only to improve Sapu Berita. No name or email is asked for.</p>
+
+    <p class="small">Sapu Berita's code is open for anyone to check: <a href="https://github.com/dhantyo/sapu-berita">github.com/dhantyo/sapu-berita</a>. Questions? Open an <a href="https://github.com/dhantyo/sapu-berita/issues">issue on GitHub</a>.</p>
+  </section>
+</main>
+</body>
+</html>
