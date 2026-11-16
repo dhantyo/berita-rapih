@@ -29,6 +29,10 @@ Look:
 - The editor's bottom bar shows one thing at a time: the hint and colour key, or what you picked with **Buang**/**Tampilkan** and **Batal**. **Lainnya** (Kembalikan, Kirim usulan) is tucked in the corner.
 - When the editor opens, the title isn't hidden under the site's own sticky header (Detik, Kompas).
 
+Sites:
+
+- ANTARA on a computer: the "Pewarta / Editor / Copyright" footer and the no-crawling notice no longer show up at the end of the article.
+
 ## [0.6.0] - 2026-11-15
 
 - **One place for feedback:** Aa now has a single **Beri masukan** row. It opens a page with four choices: *Atur isi artikel* (the editor, below), *Laporkan masalah* (quick choices plus a note; the details sent along are shown before sending), *Usulkan situs*, and *Ide atau saran*.
