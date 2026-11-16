@@ -149,6 +149,11 @@
       "default": false,
       "description": "The site blocks non-browser requests (HTTP 403), so the daily canary can't fetch it. Verified in a real browser instead."
     },
+    "readabilityBody": {
+      "type": "boolean",
+      "default": false,
+      "description": "The site has no stable body hook, so `body` is a placeholder that never matches and the article is read with Readability on purpose. The daily canary then accepts a Readability result instead of reporting the rule as broken."
+    },
     "feed": {
       "type": "string",
       "format": "uri",

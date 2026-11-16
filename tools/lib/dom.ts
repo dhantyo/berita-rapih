@@ -25,7 +25,8 @@ export function documentFromHtml(html: string, url: string): Document {
 }
 
 export async function fetchHtml(url: string): Promise<{ html: string; finalUrl: string }> {
-  const res = await fetch(url, { headers: { 'user-agent': USER_AGENT, 'accept-language': 'id-ID,id;q=0.9' } });
+  // A site that stalls the connection must not hang the canary.
+  const res = await fetch(url, { headers: { 'user-agent': USER_AGENT, 'accept-language': 'id-ID,id;q=0.9' }, signal: AbortSignal.timeout(30_000) });
   if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
   return { html: await res.text(), finalUrl: res.url || url };
 }

@@ -13,6 +13,7 @@
     "^foto: ",
     "^pertanyaan yang sering ditanyakan$"
   ],
+  "readabilityBody": true,
   "pagination": {
     "method": "none"
   },

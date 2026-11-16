@@ -30,6 +30,8 @@ export interface SiteRule extends RuleOverrides {
   variants?: Array<RuleOverrides & { when: string }>;
   logo?: string[];
   noCanary?: boolean;
+  /** No stable body hook: the body comes from Readability on purpose, so the canary accepts that. */
+  readabilityBody?: boolean;
   feed?: string;
   samples?: string[];
   verified?: string;

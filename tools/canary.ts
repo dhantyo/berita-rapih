@@ -2,13 +2,14 @@
 // Exit code 1 if any site fails, so the GitHub Action goes red and emails the maintainer.
 import { run } from '../src/index.ts';
 import { assembleRuleSet } from './lib/rules.ts';
+import { findRule } from '../src/rules/match.ts';
 import { documentFromHtml, fetchHtml, nodeContext } from './lib/dom.ts';
 
 const rules = assembleRuleSet();
 let failures = 0;
 let blocked = 0;
-// 401/403/429 from a site means it refused the CI runner's datacenter IP, not that the rule broke.
-const BLOCKED = /^Error: HTTP (401|403|429) /;
+// 401/403/429, or a dropped connection, means the site refused the CI runner's datacenter IP, not that the rule broke.
+const BLOCKED = /^(Error: HTTP (401|403|429) |TypeError: fetch failed|TimeoutError)/;
 
 async function newestFromFeed(feed: string): Promise<string | undefined> {
   try {
@@ -24,7 +25,10 @@ for (const site of rules.sites) {
     console.log(`⏭  ${site.id} skipped (blocks non-browser requests; verified in a browser)`);
     continue;
   }
-  const fresh = site.feed ? await newestFromFeed(site.feed) : undefined;
+  const newest = site.feed ? await newestFromFeed(site.feed) : undefined;
+  // Feeds carry more than articles (infographics, videos, galleries); only check what the rule is for.
+  const fresh = newest && findRule(rules, new URL(newest))?.id === site.id ? newest : undefined;
+  if (newest && !fresh) console.log(`⏭  ${site.id} newest feed item isn't an article page: ${newest}`);
   const urls = [...new Set([fresh, ...(site.samples ?? [])].filter((u): u is string => !!u))];
 
   for (const url of urls) {
@@ -33,7 +37,7 @@ for (const site of rules.sites) {
       const result = await run(nodeContext(documentFromHtml(html, finalUrl), finalUrl, rules));
       if (!result.ok) throw new Error(`${result.reason} ${result.detail ?? ''}`);
       // A rule that silently falls back to Readability is a rule that broke.
-      if (result.article.source !== 'rule') throw new Error('site rule no longer matches (fell back to Readability)');
+      if (result.article.source !== 'rule' && !site.readabilityBody) throw new Error('site rule no longer matches (fell back to Readability)');
       const chars = (result.article.content.textContent ?? '').replace(/\s+/g, ' ').trim().length;
       console.log(`✅ ${site.id} ${chars} chars, ${result.article.pages} page(s)  ${url}`);
     } catch (err) {

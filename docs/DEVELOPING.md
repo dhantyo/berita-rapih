@@ -83,4 +83,5 @@ The APK signing key is only in the repository's Actions secrets (`SAPU_KEYSTORE_
 - [Architecture](ARCHITECTURE.md): the pipeline, wrappers, rule lifecycle
 - [Writing rules](RULES.md): fixing a site after a redesign
 - [Prior art](PRIOR-ART.md): what we reuse and why
+- [Maintaining](MAINTAINING.md): the daily and weekly maintenance runs; [Backlog](BACKLOG.md)
 - `PRODUCT.md`, `DESIGN.md`: product principles and the overlay's design system
