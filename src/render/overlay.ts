@@ -330,7 +330,14 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
     panel.addEventListener('click', (e) => e.stopPropagation());
     const close = h(doc, 'button', { type: 'button', class: 'icon-btn', 'aria-label': t.close }, cross());
     close.addEventListener('click', () => setPanel(false));
-    panel.append(h(doc, 'div', { class: 'panel-head' }, h(doc, 'h2', {}, t.settings), close));
+    // Feedback is also one tap from the top, so nobody has to scroll past every setting to find it.
+    const feedbackTop = h(doc, 'button', { type: 'button', class: 'btn quiet head-feedback' }, t.fbShort);
+    feedbackTop.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setPanel(false);
+      openFeedback();
+    });
+    panel.append(h(doc, 'div', { class: 'panel-head' }, h(doc, 'h2', {}, t.settings), h(doc, 'div', { class: 'head-actions' }, feedbackTop, close)));
 
     // Text size
     const smaller = h(doc, 'button', { type: 'button', class: 'icon-btn', 'aria-label': t.smaller }, 'A−') as HTMLButtonElement;

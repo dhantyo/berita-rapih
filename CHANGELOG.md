@@ -4,6 +4,19 @@ Versions follow [semver](https://semver.org): MAJOR.MINOR.PATCH. While the versi
 
 The first four releases were published as 0.1.0-beta.1 to beta.4 and renamed on 2026-11-13 to the scheme below; the app files inside those releases still report their original beta names.
 
+## [Unreleased]
+
+Editor fixes from trying it as a reader:
+
+- It opens at the article, not at the top of the page (Kompas opened on a screen-high ad). Some sites block page scrolling from scripts; the editor now scrolls a way they can't.
+- Tapping a paragraph picks that paragraph. On many sites an invisible wrapper sits over the text, so a tap used to pick the whole article ("Sebagian tampil") with no way to remove it; now the smallest coloured part under your finger is picked.
+- *Buang* on the first paragraph of Detik (and other sites whose dateline is joined into it) works; before, it said "Dibuang" but the paragraph stayed.
+- What you picked is scrolled above the bottom bar instead of hiding under it.
+- Big empty ad slots show as a slim dashed red band instead of a screen of red.
+- A picked ad is described in words ("iklan atau bagian tanpa teks") instead of the page's ad code.
+- A colour key (Tampil · Dibuang · Sumber judul, penulis, tanggal) in the bar; the row of header sources fades at the edge so it reads as scrollable.
+- Aa has a **Masukan** button at the top, next to ✕, so feedback is one tap away.
+
 ## [0.6.0] - 2026-11-15
 
 - **One place for feedback:** Aa now has a single **Beri masukan** row. It opens a page with four choices: *Atur isi artikel* (the editor, below), *Laporkan masalah* (quick choices plus a note; the details sent along are shown before sending), *Usulkan situs*, and *Ide atau saran*.

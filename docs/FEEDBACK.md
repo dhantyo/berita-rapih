@@ -73,3 +73,10 @@ Code: src/newsite.ts (pure: domain, body from marks, draft rule, prompt decision
 - **Next articles.** boot finds the rule with `personalForPage` (a new-site rule for this host), `matchPersonalSite` matches the path, and the reader opens normally; no Readability, the saved selectors extract. Aa shows "Versi pribadi aktif" and **Kembalikan** drops the whole personal rule, the new site included (the offer returns).
 - **Kirim usulan** sends a draft `rules/sites/<id>.json` in the note (id = first label of the domain; `name` from og:site_name; `pagination: none`; `samples` = this URL; `verified` = today; notes "Drafted by a reader with Sapu Berita's editor"), then the field picks on a line of their own. Fingerprint removals are left out (they are for one article); removals are trimmed to fit the link. Validated against rules/schema.json in test/newsite.test.ts. Works from the editor before Selesai too (the draft is made from what is green now).
 - **Limits.** The rule is per browser origin (localStorage of the subdomain), like every personal rule; the junk Readability left out is not removed by the saved rule unless a selector names it, so a page that needs more should be sent as a suggestion. Live check: tools/live-newsite.ts (era.id).
+
+### Usability notes (from a hands-on pass, 0.6.1)
+
+- A tap picks the smallest coloured part under the finger (geometry first), not the DOM target: pages lay invisible wrappers over their text.
+- Removal fingerprints come from the clean view's block (its text can differ from the page's, e.g. a joined dateline).
+- Scrolling uses `scrollingElement.scrollTop`, since some pages replace `window.scrollTo`; the opening anchor skips fixed/sticky copies of the headline.
+- Red parts taller than 160px without readable text are drawn as a slim dashed band; descriptions ignore scripts and page code.

@@ -23,6 +23,18 @@ const MAX_CHARS = 6000;
 /** A pick may never swallow most of the article. */
 const MAX_SHARE = 0.6;
 
+/** A copy of a page part without its scripts and styles, whose text is what a reader would see. */
+function cleanCopy(el: Element): Element {
+  const copy = el.cloneNode(true) as Element;
+  for (const junk of copy.querySelectorAll('script, style, noscript, template')) junk.remove();
+  return copy;
+}
+/** Has readable text (not just ad or page code such as googletag.cmd.push(…)). */
+function readable(el: Element): boolean {
+  const text = collapse(cleanCopy(el).textContent);
+  return text.length >= 3 && !/googletag|function\s*\(|\bvar\s+\w+\s*=|=>|\{\s*\}|window\./.test(text);
+}
+
 export interface EditorContext {
   doc: Document;
   /** The reader's host element: taps inside it are ours. */
@@ -226,7 +238,9 @@ export function startEditor(ctx: EditorContext): Editor {
         continue;
       }
       b.shown = true;
-      Object.assign(b.node.style, { display: '', left: `${r.left - 2}px`, top: `${r.top - 2}px`, width: `${r.width + 4}px`, height: `${r.height + 4}px` });
+      const slim = b.kind === 'out' && r.height > 160 && !readable(b.el);
+      b.node.classList.toggle('slim', slim);
+      Object.assign(b.node.style, { display: '', left: `${r.left - 2}px`, top: `${r.top - 2}px`, width: `${r.width + 4}px`, height: `${slim ? 30 : r.height + 4}px` });
       if (b.kind === 'src') b.node.classList.toggle('low', r.top < 26);
     }
     if (selected?.isConnected) {
@@ -247,6 +261,17 @@ export function startEditor(ctx: EditorContext): Editor {
     selected = el;
     message = '';
     renderBar();
+    // The bar (now possibly taller, with actions) must not cover what was picked: scroll it up into view,
+    // without pushing its top under the editor's top bar.
+    if (el) {
+      const r = el.getBoundingClientRect();
+      const free = viewBottom() - 12;
+      const topLimit = top.getBoundingClientRect().bottom + 12;
+      if (r.bottom > free && r.top > topLimit) {
+        const scroller = doc.scrollingElement ?? doc.documentElement;
+        scroller.scrollTop += Math.min(r.bottom - free, r.top - topLimit);
+      }
+    }
     place();
   };
 
@@ -257,7 +282,14 @@ export function startEditor(ctx: EditorContext): Editor {
     const target = e.target as Element | null;
     if (!usable(target)) return;
     if (fieldMode) return assignField(target);
-    const hit = markAt(target, marks);
+    // Pages often lay invisible wrappers over their text, so the tapped element can be the whole article body.
+    // What the reader means is the coloured part under their finger: the smallest one wins.
+    const under = boxes
+      .filter((b) => b.kind !== 'src' && b.shown)
+      .map((b) => ({ el: b.el, r: b.el.getBoundingClientRect() }))
+      .filter(({ r }) => e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom)
+      .sort((a, b) => a.r.width * a.r.height - b.r.width * b.r.height)[0]?.el;
+    const hit = under ? { el: under } : markAt(target, marks);
     const el = hit?.el ?? (collapse(target.textContent).length <= MAX_CHARS ? target : null);
     if (!el) return;
     narrower.length = 0;
@@ -369,7 +401,9 @@ export function startEditor(ctx: EditorContext): Editor {
     if (statusOf(part, marks).inside === 0) return afterEdit(t.edRemoved);
     const green = leavesOf(part).filter((l) => marks.cleanOf.has(l.el));
     const bySelector = removalFor(part, stableSelector(part), doc);
-    const entries = bySelector && !/^[ti]:/.test(bySelector) ? [bySelector] : green.slice(0, 12).map((l) => fingerprint(l.el));
+    // Fingerprints come from the clean view's own block: the reader may have changed its text (Detik's dateline
+    // "Jakarta -" is joined into the first paragraph), and hiding matches what the clean view shows.
+    const entries = bySelector && !/^[ti]:/.test(bySelector) ? [bySelector] : green.slice(0, 12).map((l) => fingerprint(marks.cleanOf.get(l.el) ?? l.el));
     const keep = entries.filter((e): e is string => !!e);
     if (keep.length && keep.length === Math.min(entries.length, green.length || 1)) {
       ctx.edit((p) => ({ ...p, remove: keep.reduce((list, e) => withEntry(list, e), p.remove) }));
@@ -475,12 +509,16 @@ export function startEditor(ctx: EditorContext): Editor {
       } else if (selected) {
         const s = statusOf(selected, marks);
         const kind = s.inside && s.outside ? 'mix' : s.inside ? 'in' : 'out';
-        const what = describe(selected) || t.edPhoto;
+        const what = readable(selected) ? describe(cleanCopy(selected)) : selected.querySelector('img') || selected.tagName === 'IMG' ? t.edPhoto : t.edNoText;
         text.append(
           h(doc, 'span', { class: `ed-state ${kind}` }, kind === 'in' ? t.edIn : kind === 'out' ? t.edOut : t.edMixed),
           h(doc, 'span', { class: 'ed-what' }, what),
         );
-      } else text.textContent = ctx.newSite ? t.nsHint(doc.location?.hostname ?? '') : t.edHint;
+      } else {
+        text.textContent = ctx.newSite ? t.nsHint(doc.location?.hostname ?? '') : t.edHint;
+        // The colour key, so green, red and blue never need guessing.
+        text.append(h(doc, 'span', { class: 'ed-key' }, ...t.edKey.map(([k, label]) => h(doc, 'span', { class: `ed-key-item ${k}` }, label))));
+      }
       line.append(text, done);
       lines.push(line);
 
@@ -640,10 +678,31 @@ export function startEditor(ctx: EditorContext): Editor {
   layer.querySelector<HTMLElement>('[data-ed="view-clean"]')?.focus({ preventScroll: true });
   // Start at the article: scroll so its title (or first green part) sits just under the top bar.
   const anchorEl = sources.find((s) => s.key === 'title')?.el ?? marks.green[0];
-  if (anchorEl && win.scrollY < 1) {
-    const y = anchorEl.getBoundingClientRect().top - 70;
-    if (y > win.innerHeight * 0.6) win.scrollTo(0, y);
-  }
+  // After the page is back from behind the reader (its scrolling is restored a frame later), and again once
+  // late ads above the article have pushed it down.
+  // The anchor must be in the page's flow: sites repeat the headline in a fixed/sticky bar (Kompas), and that
+  // copy always looks "on screen".
+  const floating = (el: Element) => {
+    for (let n: Element | null = el; n && n !== doc.body; n = n.parentElement) {
+      if (/^(fixed|sticky)$/.test(win.getComputedStyle(n).position)) return true;
+    }
+    return false;
+  };
+  const inFlow = [sources.find((s) => s.key === 'title')?.el, ...marks.green].find(
+    (el): el is Element => !!el && el.getBoundingClientRect().height > 0 && !floating(el),
+  );
+  const toArticle = () => {
+    const anchorEl = inFlow;
+    if (closed || !anchorEl?.isConnected) return;
+    const r = anchorEl.getBoundingClientRect();
+    if (r.top < 60 || r.top > win.innerHeight * 0.45) {
+      // Set the position directly: some pages replace window.scrollTo (Kompas), which then does nothing.
+      const y = Math.max(0, win.scrollY + r.top - 70);
+      (doc.scrollingElement ?? doc.documentElement).scrollTop = y;
+    }
+  };
+  win.requestAnimationFrame(() => win.requestAnimationFrame(toArticle));
+  win.setTimeout(() => !selected && toArticle(), 900);
   void ctx.official().then((view) => {
     if (closed || !view) return;
     official = view;
