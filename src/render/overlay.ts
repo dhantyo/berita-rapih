@@ -11,6 +11,7 @@ import { quietPage } from './quiet.ts';
 import { parseNewsDate } from './dates.ts';
 import { textKey } from '../dom.ts';
 import { createFeedbackPage, type FeedbackPage } from './feedback.ts';
+import { createBackStack, type BackLayer } from './backstack.ts';
 import { barHiddenAfterScroll } from './barscroll.ts';
 import { applyPersonalContent, editPersonal, personalFor, personalMeta, resetPersonal, type PersonalRule } from '../personal.ts';
 import { startEditor, type Editor } from './editor.ts';
@@ -328,13 +329,14 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
   const settingsPanel = (t: Strings) => {
     const panel = h(doc, 'section', { class: 'panel', id: 'sb-panel', role: 'dialog', 'aria-label': t.settings, 'data-open': String(panelOpen) });
     panel.addEventListener('click', (e) => e.stopPropagation());
+    swipeToClose(panel);
+    panel.append(h(doc, 'div', { class: 'grabber', 'aria-hidden': 'true' }));
     const close = h(doc, 'button', { type: 'button', class: 'icon-btn', 'aria-label': t.close }, cross());
     close.addEventListener('click', () => setPanel(false));
     // Feedback is also one tap from the top, so nobody has to scroll past every setting to find it.
     const feedbackTop = h(doc, 'button', { type: 'button', class: 'btn quiet head-feedback' }, t.fbShort);
     feedbackTop.addEventListener('click', (e) => {
       e.stopPropagation();
-      setPanel(false);
       openFeedback();
     });
     panel.append(h(doc, 'div', { class: 'panel-head' }, h(doc, 'h2', {}, t.settings), h(doc, 'div', { class: 'head-actions' }, feedbackTop, close)));
@@ -396,7 +398,6 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
     const give = h(doc, 'button', { type: 'button', class: 'btn' }, t.fbAction);
     give.addEventListener('click', (e) => {
       e.stopPropagation();
-      setPanel(false);
       openFeedback();
     });
     panel.append(h(doc, 'div', { class: 'group report' }, h(doc, 'span', { class: 'text' }, t.fbPrompt), give));
@@ -473,6 +474,10 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
   };
   const openEditor = () => {
     if (editor) return;
+    // The editor takes over the feedback page's (or the panel's) history entry: Back closes it.
+    const from = feedbackLayer ?? panelLayer;
+    feedbackLayer = panelLayer = undefined;
+    editorLayer = from ? from.hand(() => closeEditorFromBack()) : backStack.push(() => closeEditorFromBack());
     closeFeedback(false);
     if (panelOpen) setPanel(false);
     editor = startEditor({
@@ -492,6 +497,9 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
         reopen.style.display = 'none';
       },
       onClose: () => {
+        if (!editorClosingFromBack) editorLayer?.release();
+        editorLayer = undefined;
+        editorClosingFromBack = false;
         editor = null;
         show();
         (root.querySelector('.aa') as HTMLElement | null)?.focus({ preventScroll: true });
@@ -499,9 +507,25 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
     });
   };
 
+  // ── Back (render/backstack.ts): the panel, the feedback page and the editor each own a history entry ──
+  const backStack = createBackStack(doc.defaultView!);
+  let panelLayer: BackLayer | undefined;
+  let feedbackLayer: BackLayer | undefined;
+  let editorLayer: BackLayer | undefined;
+  let editorClosingFromBack = false;
+  const closeEditorFromBack = () => {
+    editorClosingFromBack = true;
+    editor?.close();
+  };
+
   // ── Beri masukan: the feedback page (render/feedback.ts), a full view over the article ──
   let feedback: FeedbackPage | null = null;
   const openFeedback = () => {
+    // Opened from the Aa panel: take over its history entry, so Back closes the feedback page.
+    const fromPanel = panelLayer;
+    panelLayer = undefined;
+    feedbackLayer = fromPanel ? fromPanel.hand(() => closeFeedback(true, true)) : backStack.push(() => closeFeedback(true, true));
+    if (panelOpen) setPanel(false);
     const t = strings(settings.lang);
     const themes = { auto: t.themeAuto, light: t.themeLight, sepia: t.themeSepia, dark: t.themeDark };
     const fonts = { serif: t.fontSerif, sans: t.fontSans, legible: t.fontLegible };
@@ -522,17 +546,65 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
       reportUrl: (note) => opts.reportUrl?.(article, note),
       close: () => closeFeedback(),
       editArticle: () => openEditor(),
+      pushBack: (onBack) => backStack.push(onBack),
     });
     root.append(feedback.el);
     feedback.focus();
   };
-  const closeFeedback = (refocus = true) => {
+  const closeFeedback = (refocus = true, fromBack = false) => {
+    if (!fromBack) feedbackLayer?.release();
+    feedbackLayer = undefined;
     feedback?.el.remove();
     feedback = null;
     if (refocus) (root.querySelector('.aa') as HTMLElement | null)?.focus({ preventScroll: true });
   };
 
-  const setPanel = (open: boolean) => {
+  /**
+   * On phones the panel is a tray from the bottom, so it closes like one: drag it down from the top of its
+   * content (or flick it) and it follows the finger, then closes past a threshold or springs back.
+   */
+  const swipeToClose = (panel: HTMLElement) => {
+    const phone = () => !!doc.defaultView?.matchMedia?.('(max-width: 600px)').matches;
+    let startY = 0;
+    let startT = 0;
+    let dy = 0;
+    let dragging = false;
+    panel.addEventListener('touchstart', (e) => {
+      if (!phone() || panel.scrollTop > 0 || e.touches.length !== 1) return;
+      startY = e.touches[0]!.clientY;
+      startT = Date.now();
+      dy = 0;
+      dragging = true;
+    }, { passive: true });
+    panel.addEventListener('touchmove', (e) => {
+      if (!dragging) return;
+      dy = e.touches[0]!.clientY - startY;
+      if (dy <= 0) {
+        panel.style.transform = '';
+        return; // dragging up scrolls the tray's content as usual
+      }
+      e.preventDefault();
+      panel.style.transition = 'none';
+      panel.style.transform = `translateY(${dy}px)`;
+    }, { passive: false });
+    const end = () => {
+      if (!dragging) return;
+      dragging = false;
+      panel.style.transition = '';
+      panel.style.transform = '';
+      const flick = dy > 40 && dy / Math.max(1, Date.now() - startT) > 0.6;
+      if (dy > 110 || flick) setPanel(false);
+    };
+    panel.addEventListener('touchend', end);
+    panel.addEventListener('touchcancel', end);
+  };
+
+  const setPanel = (open: boolean, fromBack = false) => {
+    if (open && !panelOpen) panelLayer = backStack.push(() => setPanel(false, true));
+    if (!open && panelOpen) {
+      if (!fromBack) panelLayer?.release();
+      panelLayer = undefined;
+    }
     panelOpen = open;
     const panel = root.querySelector('.panel') as HTMLElement | null;
     panel?.setAttribute('data-open', String(open));

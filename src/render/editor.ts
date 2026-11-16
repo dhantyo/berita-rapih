@@ -32,6 +32,8 @@ function cleanCopy(el: Element): Element {
 /** Has readable text (not just ad or page code such as googletag.cmd.push(…)). */
 function readable(el: Element): boolean {
   const text = collapse(cleanCopy(el).textContent);
+  // An ad slot's own label ("Advertisement", "Iklan", "Scroll to continue…") isn't content either.
+  if (/^(advertisement|advertisment|iklan|ads?|sponsored|scroll (to|untuk) .{0,40}|gulir .{0,40})$/i.test(text)) return false;
   return text.length >= 3 && !/googletag|function\s*\(|\bvar\s+\w+\s*=|=>|\{\s*\}|window\./.test(text);
 }
 
@@ -160,6 +162,22 @@ export function startEditor(ctx: EditorContext): Editor {
     const r = el.getBoundingClientRect();
     return r.width >= 1 && r.height >= 1 && r.right > 0 && r.left < doc.documentElement.clientWidth + 1;
   };
+  // Sites repeat the headline (and more) in fixed/sticky bars; those copies are not where the page says it.
+  const floating = (el: Element) => {
+    for (let n: Element | null = el; n && n !== doc.body; n = n.parentElement) {
+      if (/^(fixed|sticky)$/.test(win.getComputedStyle(n).position)) return true;
+    }
+    return false;
+  };
+  /** Where the page stops being covered from above: our top bar, then any of the site's fixed or sticky headers under it. */
+  const coveredTop = () => {
+    let y = top.getBoundingClientRect().bottom;
+    for (const n of doc.elementsFromPoint(win.innerWidth / 2, y + 2)) {
+      if (n === doc.body || n === doc.documentElement || ours(n)) continue;
+      if (floating(n)) y = Math.max(y, n.getBoundingClientRect().bottom);
+    }
+    return y;
+  };
   const viewBottom = () => Math.min(win.innerHeight, bar.getBoundingClientRect().top || win.innerHeight);
   /** An element's box clipped to what can be seen and touched (above the bar). */
   const clipped = (el: Element): Rect => {
@@ -197,7 +215,7 @@ export function startEditor(ctx: EditorContext): Editor {
   let boxes: Box[] = [];
 
   const compute = () => {
-    sources = findHeaderSources(doc, ctx.meta(), ctx.personal()?.fields, visible, ours);
+    sources = findHeaderSources(doc, ctx.meta(), ctx.personal()?.fields, (el) => visible(el) && !floating(el), ours);
     const mine = ctx.personal()?.remove.filter((s) => !/^[ti]:/.test(s)) ?? [];
     marks = computeMarks(ctx.content(), doc, {
       removeSelectors: [...(official?.removeSelectors ?? []), ...mine],
@@ -464,11 +482,12 @@ export function startEditor(ctx: EditorContext): Editor {
       b.addEventListener('click', () => setMode(m));
       seg.append(b);
     }
-    top.replaceChildren(h(doc, 'span', { class: 'ed-title' }, ctx.newSite ? t.nsTitle : t.edTitle), seg);
+    const done = button(t.edDone, 'primary ed-done', 'done', finish);
+    top.replaceChildren(h(doc, 'span', { class: 'ed-title' }, ctx.newSite ? t.nsTitle : t.edTitle), seg, done);
   };
 
   const fieldChips = () => {
-    const wrap = h(doc, 'div', { class: 'ed-chips' });
+    const wrap = h(doc, 'div', { class: 'ed-chips' }, h(doc, 'span', { class: 'ed-chips-label' }, t.edSources));
     const lone = (key: string) => sources.find((s) => s.key === key);
     for (const f of HEADER_CHIPS) {
       const src = lone(f === 'date' ? 'date' : f);
@@ -495,11 +514,10 @@ export function startEditor(ctx: EditorContext): Editor {
   const renderBar = () => {
     renderTop();
     const active = (layer.getRootNode() as ShadowRoot | Document).activeElement?.getAttribute?.('data-ed');
-    const done = button(t.edDone, 'primary', 'done', finish);
     const lines: HTMLElement[] = [];
     if (mode === 'clean') {
       bar.dataset.mode = 'clean';
-      bar.replaceChildren(h(doc, 'div', { class: 'ed-line' }, h(doc, 'p', { class: 'ed-text' }, t.edCleanHint), done));
+      bar.replaceChildren(h(doc, 'div', { class: 'ed-line' }, h(doc, 'p', { class: 'ed-text' }, t.edCleanHint)));
     } else {
       bar.dataset.mode = 'original';
       const line = h(doc, 'div', { class: 'ed-line' });
@@ -519,7 +537,11 @@ export function startEditor(ctx: EditorContext): Editor {
         // The colour key, so green, red and blue never need guessing.
         text.append(h(doc, 'span', { class: 'ed-key' }, ...t.edKey.map(([k, label]) => h(doc, 'span', { class: `ed-key-item ${k}` }, label))));
       }
-      line.append(text, done);
+      // The corner of the first line: Lainnya when nothing is picked, a way to let go of a pick otherwise.
+      const corner = selected || fieldMode || confirming
+        ? undefined
+        : button(t.edMore, 'quiet ed-more', 'more', () => { moreOpen = !moreOpen; renderBar(); }, { 'aria-expanded': String(moreOpen) });
+      line.append(text, ...(corner ? [corner] : []));
       lines.push(line);
 
       if (confirming) {
@@ -536,12 +558,12 @@ export function startEditor(ctx: EditorContext): Editor {
           if (canAdd(s)) actions.append(button(t.edAdd, 'ed-add', 'add', addPart));
           if (canRemove(s)) actions.append(button(t.edRemove, 'ed-remove', 'remove', removePart));
           if (!actions.childElementCount && s.inside && !canRemove(s)) actions.append(h(doc, 'span', { class: 'ed-note' }, t.edTooBig));
-          if (actions.childElementCount) lines.push(actions);
+          actions.append(button(t.edDeselect, 'quiet', 'deselect', () => select(null)));
+          lines.push(actions);
         }
         const p = ctx.personal();
-        const more = button(t.edMore, 'quiet ed-more', 'more', () => { moreOpen = !moreOpen; renderBar(); }, { 'aria-expanded': String(moreOpen) });
-        lines.push(h(doc, 'div', { class: 'ed-sources' }, h(doc, 'div', { class: 'ed-label-row' }, h(doc, 'span', {}, t.edSources), more), fieldChips()));
-        if (moreOpen) {
+        if (!selected && !fieldMode && !moreOpen) lines.push(fieldChips());
+        if (moreOpen && !selected && !fieldMode) {
           const send = h(doc, 'a', { class: 'btn', target: '_blank', rel: 'noopener', 'data-ed': 'send' }, t.edSend);
           const note = () => {
             if (!p) return '';
@@ -680,29 +702,28 @@ export function startEditor(ctx: EditorContext): Editor {
   const anchorEl = sources.find((s) => s.key === 'title')?.el ?? marks.green[0];
   // After the page is back from behind the reader (its scrolling is restored a frame later), and again once
   // late ads above the article have pushed it down.
-  // The anchor must be in the page's flow: sites repeat the headline in a fixed/sticky bar (Kompas), and that
-  // copy always looks "on screen".
-  const floating = (el: Element) => {
-    for (let n: Element | null = el; n && n !== doc.body; n = n.parentElement) {
-      if (/^(fixed|sticky)$/.test(win.getComputedStyle(n).position)) return true;
-    }
-    return false;
-  };
+  // The anchor must be in the page's flow (see floating): the sticky copy of a headline always looks "on screen".
   const inFlow = [sources.find((s) => s.key === 'title')?.el, ...marks.green].find(
     (el): el is Element => !!el && el.getBoundingClientRect().height > 0 && !floating(el),
   );
   const toArticle = () => {
     const anchorEl = inFlow;
     if (closed || !anchorEl?.isConnected) return;
+    // Set the position directly: some pages replace window.scrollTo (Kompas), which then does nothing.
+    const scroller = doc.scrollingElement ?? doc.documentElement;
     const r = anchorEl.getBoundingClientRect();
-    if (r.top < 60 || r.top > win.innerHeight * 0.45) {
-      // Set the position directly: some pages replace window.scrollTo (Kompas), which then does nothing.
-      const y = Math.max(0, win.scrollY + r.top - 70);
-      (doc.scrollingElement ?? doc.documentElement).scrollTop = y;
-    }
+    if (r.top < 60 || r.top > win.innerHeight * 0.45) scroller.scrollTop = Math.max(0, win.scrollY + r.top - 70);
+    // The site's own sticky header (often shown only once scrolled) may still cover the anchor.
+    const covered = coveredTop();
+    const after = anchorEl.getBoundingClientRect().top;
+    if (after < covered + 8) scroller.scrollTop = Math.max(0, scroller.scrollTop - (covered + 12 - after));
   };
+  // Pages settle late (sticky headers slide in once scrolled), so look again, unless the reader has started moving.
+  let touched = false;
+  const touch = () => { touched = true; };
+  for (const type of ['wheel', 'touchstart', 'keydown']) win.addEventListener(type, touch, { once: true, passive: true });
   win.requestAnimationFrame(() => win.requestAnimationFrame(toArticle));
-  win.setTimeout(() => !selected && toArticle(), 900);
+  for (const ms of [900, 1700]) win.setTimeout(() => !selected && !touched && toArticle(), ms);
   void ctx.official().then((view) => {
     if (closed || !view) return;
     official = view;

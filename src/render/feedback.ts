@@ -61,6 +61,8 @@ export interface FeedbackContext {
   close: () => void;
   /** "Atur isi artikel": leave this page and open the editor on the original page. */
   editArticle: () => void;
+  /** A sub page opened: Back returns to the choices (render/backstack.ts). */
+  pushBack?: (onBack: () => void) => { release(): void };
 }
 
 export interface FeedbackPage {
@@ -82,7 +84,12 @@ export function createFeedbackPage(ctx: FeedbackContext): FeedbackPage {
     choices: t.fbTitle, report: t.fbReportTitle, site: t.fbSiteTitle, idea: t.fbIdeaTitle,
   };
 
+  let sub: { release(): void } | undefined;
   const show = (next: View) => {
+    if (next !== 'choices' && !sub) sub = ctx.pushBack?.(() => {
+      sub = undefined; // popped by Back
+      show('choices');
+    });
     view = next;
     const back = h(doc, 'button', { type: 'button', class: 'icon-btn', 'aria-label': t.fbBack }, backArrow(doc));
     back.addEventListener('click', goBack);
@@ -98,8 +105,10 @@ export function createFeedbackPage(ctx: FeedbackContext): FeedbackPage {
   };
 
   const goBack = () => {
-    if (view === 'choices') ctx.close();
-    else show('choices');
+    if (view === 'choices') return ctx.close();
+    sub?.release();
+    sub = undefined;
+    show('choices');
   };
 
   const focusFirst = () => (el.querySelector('.fb-body textarea, .fb-body input, .fb-body button, .fb-bar button') as HTMLElement | null)?.focus({ preventScroll: true });
@@ -111,11 +120,13 @@ export function createFeedbackPage(ctx: FeedbackContext): FeedbackPage {
     b.addEventListener('click', () => (typeof to === 'function' ? to() : show(to)));
     return b;
   };
-  const choices = () => h(doc, 'div', { class: 'fb-choices' },
+  const choices = () => h(doc, 'div', {},
+    h(doc, 'p', { class: 'fb-lead' }, t.fbHomeLead),
+    h(doc, 'div', { class: 'fb-choices' },
     choice(t.fbEditTitle, t.fbEditDesc, ctx.editArticle),
     choice(t.fbReportTitle, t.fbReportDesc, 'report'),
     choice(t.fbSiteTitle, t.fbSiteDesc, 'site'),
-    choice(t.fbIdeaTitle, t.fbIdeaDesc, 'idea'));
+    choice(t.fbIdeaTitle, t.fbIdeaDesc, 'idea')));
 
   /** A "Kirim" link that stays inert (no href) until `ready()` and the destination exist. */
   const sender = (ready: () => boolean, note: () => string) => {
@@ -168,7 +179,8 @@ export function createFeedbackPage(ctx: FeedbackContext): FeedbackPage {
     return h(doc, 'div', {},
       h(doc, 'p', { class: 'fb-lead' }, t.fbReportLead),
       chipRow, field,
-      h(doc, 'div', { class: 'fb-box' }, h(doc, 'h3', {}, t.fbSentWith), list),
+      // Nothing hidden, but folded: the form stays the main thing on the page.
+      h(doc, 'details', { class: 'fb-box' }, h(doc, 'summary', {}, t.fbSentWithCount(details.length)), list),
       sendRow(send.a, true));
   };
 

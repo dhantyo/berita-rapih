@@ -80,3 +80,11 @@ Code: src/newsite.ts (pure: domain, body from marks, draft rule, prompt decision
 - Removal fingerprints come from the clean view's block (its text can differ from the page's, e.g. a joined dateline).
 - Scrolling uses `scrollingElement.scrollTop`, since some pages replace `window.scrollTo`; the opening anchor skips fixed/sticky copies of the headline.
 - Red parts taller than 160px without readable text are drawn as a slim dashed band; descriptions ignore scripts and page code.
+- The anchor also clears the site's own fixed/sticky header (`coveredTop`: what sits under our top bar), checked again at 900 and 1700 ms because such headers slide in once the page is scrolled; skipped once the reader touches, scrolls or types.
+- Bars: the top bar holds the title (hidden at phone width), Asli/Bersih and **Selesai**. The bottom bar shows one state: idle (hint, colour key, *Sumber:* chips, **Lainnya** in the corner) or a pick (description, Buang/Tampilkan, **Batal**). Lainnya and the chips are hidden while something is picked.
+
+### Back (render/backstack.ts)
+
+Each layer (Aa panel, feedback page, editor) owns one history entry (`pushState`, URL unchanged); `popstate` closes the top layer. Closing by a button calls `history.back()` and the next `popstate` is ignored (`ownPops`). Moving on from one layer to the next (panel → feedback → editor) hands over the same entry (`hand`), so Back always closes what is showing and one more Back leaves the site as before. A feedback sub-page pushes its own entry, so Back returns to the choices first. If `pushState` throws (sandboxed frames), Back simply isn't wired.
+
+On a phone (≤ 600px) the Aa tray follows a downward drag when scrolled to its top and closes past 110px or on a flick.

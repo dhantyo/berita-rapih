@@ -254,6 +254,12 @@ svg { flex: none; }
     padding-bottom: max(18px, env(safe-area-inset-bottom)); transform: translateY(16px); }
 }
 .panel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+/* The tray's handle (phones): says "this slides down". */
+.panel .grabber { display: none; }
+@media (max-width: 600px) {
+  .panel .grabber { display: block; position: sticky; top: -14px; z-index: 1; height: 22px; margin: -14px -16px 0; background: var(--panel); }
+  .panel .grabber::before { content: ""; position: absolute; left: 50%; top: 8px; width: 36px; height: 4px; margin-left: -18px; border-radius: 2px; background: var(--rule-strong); }
+}
 .panel .report { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .panel .report .text { font: 14px/1.3 var(--sans); }
 .panel .hidden-row { padding: 0 0 12px; }
@@ -313,14 +319,17 @@ svg { flex: none; }
 .ed-sources { display: flex; flex-direction: column; gap: 6px; }
 .ed-label-row { display: flex; align-items: center; justify-content: space-between; font: 600 12px/1.3 var(--sans); color: var(--muted); }
 .ed-label-row .btn { min-height: 28px; padding: 2px 8px; font-size: 13px; }
-.ed-chips { display: flex; flex-wrap: nowrap; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+.ed-chips { display: flex; flex-wrap: nowrap; align-items: center; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+.ed-chips-label { flex: none; margin-right: 2px; font: 600 12px/1.3 var(--sans); color: var(--muted); }
+.ed-top .ed-done { flex: none; min-height: 36px; padding: 0 16px; background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 650; }
+@media (max-width: 600px) { .ed-top .ed-title { display: none; } }
 /* More chips than fit: the right edge fades, so the row reads as scrollable. */
 .ed-chips { -webkit-mask-image: linear-gradient(to right, black 85%, transparent); mask-image: linear-gradient(to right, black 85%, transparent); padding-right: 28px; }
 .ed-chip { flex: none; display: inline-flex; flex-direction: column; align-items: flex-start; min-height: 34px; padding: 5px 12px; border: 1px solid var(--ed-blue); border-radius: 17px; background: transparent; color: var(--ink); cursor: pointer; font: 600 13px/1.25 var(--sans); }
 .ed-chip:hover { background: color-mix(in srgb, var(--ed-blue) 12%, transparent); }
 .ed-chip[aria-pressed="true"] { background: var(--ed-blue); color: var(--ed-on); }
 .ed-chip-value { font: 400 11px/1.3 var(--sans); opacity: 0.85; }
-.ed-chip.static { cursor: default; border-style: dashed; font-weight: 500; color: var(--muted); }
+.ed-chip.static { justify-content: center; cursor: default; border-style: dashed; font-weight: 500; color: var(--muted); }
 .root[data-editing] .bar { display: none; }
 .root[data-editing] .column { padding-top: 66px; }
 .root[data-editing]::after { content: ""; display: block; height: 130px; }
@@ -376,13 +385,15 @@ a.btn.primary { text-decoration: none; }
 .fb-bar .icon-btn { color: var(--ink); }
 .fb-body { width: min(100% - 32px, 34em); margin: 0 auto; padding: 18px 0 max(40px, env(safe-area-inset-bottom)); font: 15px/1.5 var(--sans); }
 .fb-lead { margin: 0 0 14px; font: 14px/1.45 var(--sans); color: var(--muted); }
-.fb-choices { display: flex; flex-direction: column; gap: 10px; }
+/* The choices read like the Aa panel: rows on hairlines, not boxed cards. */
+.fb-choices { display: flex; flex-direction: column; border-top: 1px solid var(--rule); }
 .fb-choice {
-  display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; padding: 16px; text-align: left; cursor: pointer;
-  border: 1px solid var(--rule-strong); border-radius: 14px; background: transparent;
-  transition: background-color 160ms var(--ease), border-color 160ms var(--ease);
+  display: flex; align-items: center; justify-content: space-between; gap: 14px; width: 100%; min-height: 64px; padding: 14px 4px; text-align: left; cursor: pointer;
+  border: 0; border-bottom: 1px solid var(--rule); border-radius: 0; background: transparent; color: var(--ink);
+  transition: background-color 160ms var(--ease);
 }
 .fb-choice:hover { background: var(--chip); }
+.fb-choice:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 .fb-choice-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .fb-choice-title { font: 600 16px/1.3 var(--sans); }
 .fb-choice-desc { font: 400 14px/1.35 var(--sans); color: var(--muted); }
@@ -398,12 +409,19 @@ a.btn.primary { text-decoration: none; }
 .fb-field label { display: block; margin: 0 0 8px; font: 600 12px/1.3 var(--sans); color: var(--muted); }
 .fb-text { display: block; width: 100%; box-sizing: border-box; padding: 11px 12px; border: 1px solid var(--rule-strong); border-radius: 10px; background: transparent; color: var(--ink); font: 16px/1.45 var(--sans); resize: vertical; }
 .fb-text:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-.fb-box { margin: 0 0 20px; padding: 12px 14px; border: 1px solid var(--rule); border-radius: 12px; background: var(--chip); }
-.fb-box h3 { margin: 0 0 8px; font: 600 12px/1.3 var(--sans); color: var(--muted); }
+/* What goes along with a report: one line, opened on request. */
+.fb-box { margin: 0 0 8px; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.fb-box summary { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 44px; cursor: pointer; list-style: none; font: 500 13px/1.3 var(--sans); color: var(--muted); }
+.fb-box summary::-webkit-details-marker { display: none; }
+.fb-box summary::after { content: ""; width: 7px; height: 7px; margin-right: 4px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg) translateY(-2px); transition: transform 160ms var(--ease); }
+.fb-box[open] summary::after { transform: rotate(-135deg) translateY(-2px); }
+.fb-box .fb-details { padding: 0 0 12px; }
 .fb-details { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 12px; margin: 0; font: 13px/1.4 var(--sans); }
 .fb-details dt { color: var(--muted); }
 .fb-details dd { margin: 0; overflow-wrap: anywhere; }
-.fb-send-row { display: flex; flex-direction: column; align-items: stretch; gap: 10px; }
+/* Kirim stays in reach at the bottom while the reader types. */
+.fb-send-row { position: sticky; bottom: 0; display: flex; flex-direction: column; align-items: stretch; gap: 8px; margin-top: 12px;
+  padding: 14px 0 max(14px, env(safe-area-inset-bottom)); background: linear-gradient(transparent, var(--bg) 22%); }
 a.btn.fb-send { justify-content: center; height: 44px; border-radius: 22px; font-size: 15px; background: var(--accent); border-color: var(--accent); color: rgb(18 18 18); text-decoration: none; }
 .fb-send:hover { background: var(--accent); filter: brightness(1.06); }
 .fb-send[aria-disabled="true"] { opacity: 0.4; cursor: default; pointer-events: none; }

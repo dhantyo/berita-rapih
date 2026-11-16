@@ -17,6 +17,18 @@ Editor fixes from trying it as a reader:
 - A colour key (Tampil · Dibuang · Sumber judul, penulis, tanggal) in the bar; the row of header sources fades at the edge so it reads as scrollable.
 - Aa has a **Masukan** button at the top, next to ✕, so feedback is one tap away.
 
+Back and closing:
+
+- **Back closes what is open** instead of leaving the site: Aa, the feedback page (a sub-page goes back to the four choices first) and the editor. The page address doesn't change.
+- On a phone, the Aa tray can be **swiped down** to close; it has a handle at the top.
+- The editor's **Selesai** sits in the top bar, next to Asli/Bersih, on phone and desktop alike.
+
+Look:
+
+- The feedback page lists its four choices as rows, like the Aa panel, instead of boxed cards. What a report sends along is folded into one line you can open, and **Kirim** stays at the bottom while you type.
+- The editor's bottom bar shows one thing at a time: the hint and colour key, or what you picked with **Buang**/**Tampilkan** and **Batal**. **Lainnya** (Kembalikan, Kirim usulan) is tucked in the corner.
+- When the editor opens, the title isn't hidden under the site's own sticky header (Detik, Kompas).
+
 ## [0.6.0] - 2026-11-15
 
 - **One place for feedback:** Aa now has a single **Beri masukan** row. It opens a page with four choices: *Atur isi artikel* (the editor, below), *Laporkan masalah* (quick choices plus a note; the details sent along are shown before sending), *Usulkan situs*, and *Ide atau saran*.
