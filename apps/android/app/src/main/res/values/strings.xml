@@ -16,7 +16,7 @@
     <string name="back">Kembali</string>
 
     <string name="welcome_title">Baca berita tanpa gangguan</string>
-    <string name="welcome_lead">Sapu Berita membuka link berita dalam versi bersih: tanpa iklan, tanpa \"Baca Juga\", dan semua halaman langsung digabung.</string>
+    <string name="welcome_lead">Sapu Berita membuka link berita dalam versi bersih: tanpa iklan dan pop-up, dan artikel yang dipecah jadi beberapa halaman langsung digabung.</string>
     <string name="welcome_point_1">Link berita dari WhatsApp, Telegram, dan lainnya langsung terbuka bersih.</string>
     <string name="welcome_point_2">Browser kamu tetap seperti biasa. Link lain tidak berubah.</string>
     <string name="welcome_point_3">Tanpa akun, tanpa server. Semua jalan di ponselmu.</string>

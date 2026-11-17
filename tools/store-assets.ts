@@ -53,7 +53,7 @@ mkdirSync(store, { recursive: true });
 await shoot(join(store, 'promo-440x280.png'), 440, 280, page(440, 280, `
 <div style="height:100%;display:flex;flex-direction:column;justify-content:center;gap:18px;padding:0 40px">
   <div style="display:flex;align-items:center;gap:14px">${mark(56)}<span style="font:700 34px/1 Geist;letter-spacing:-0.02em">Sapu Berita</span></div>
-  <div style="font:500 21px/1.3 Geist;max-width:340px">Baca berita Indonesia tanpa iklan dan tanpa “Baca Juga”.</div>
+  <div style="font:600 25px/1.25 Geist;letter-spacing:-0.01em;max-width:340px">Baca beritanya.<br>Sapu sisanya.</div>
 </div>`, CREAM));
 
 // Screenshots, 1280×800.
@@ -68,7 +68,7 @@ const phones = (title: string, sub: string, shots: string[]) => page(1280, 800, 
   ${shots.map((s) => `<img src="${img(s)}" style="height:680px;border-radius:28px;box-shadow:0 18px 50px rgb(60 40 10 / 0.25)">`).join('')}
 </div>`, CREAM);
 await shoot(join(store, 'screenshot-2-phone.png'), 1280, 800,
-  phones('Artikelnya saja.', 'Iklan, “Baca Juga” dan pop-up hilang. Halaman 2, 3 dan seterusnya digabung jadi satu.', ['phone-light.png', 'phone-dark.png']));
+  phones('Satu artikel, satu halaman.', 'Halaman 2, 3 dan seterusnya digabung otomatis. Iklan dan pop-up disapu.', ['phone-light.png', 'phone-dark.png']));
 await shoot(join(store, 'screenshot-3-settings.png'), 1280, 800,
   phones('Atur sesukamu.', 'Ukuran huruf, jenis huruf, terang atau gelap. Bagian yang salah bisa kamu perbaiki sendiri.', ['phone-settings.png']));
 

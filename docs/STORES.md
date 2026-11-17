@@ -46,16 +46,18 @@ Each account is the owner's to create. Then:
 **Name:** Sapu Berita
 
 **Summary** (132 characters max):
-> Baca berita Indonesia tanpa iklan dan tanpa "Baca Juga". Halaman 2, 3 dan seterusnya digabung jadi satu.
+> Baca beritanya, sapu sisanya. Iklan dan pop-up hilang, artikel yang dipecah jadi beberapa halaman digabung jadi satu.
 
 **Category:** News & Weather (Chrome, Edge); Feeds, News & Blogging (Firefox).
 
 **Description:**
 
-> Sapu Berita merapikan artikel di situs berita Indonesia. Begitu kamu membuka artikel, yang tampil hanya beritanya: judul, penulis, foto utama dan isinya.
+> Baca beritanya. Sapu sisanya.
 >
-> • Iklan, pop-up, "Baca Juga" dan video yang menyela hilang
-> • Artikel yang dipotong jadi beberapa halaman digabung jadi satu
+> Sapu Berita merapikan artikel di situs berita Indonesia. Begitu kamu membuka artikel, yang tampil hanya beritanya: judul, penulis, foto utama dan isinya, dalam satu halaman.
+>
+> • Artikel yang dipecah jadi beberapa halaman langsung digabung jadi satu
+> • Iklan, pop-up dan video yang menyela hilang, begitu juga daftar link "Baca Juga" di tengah cerita
 > • Atur ukuran dan jenis huruf, tema terang, sepia atau gelap
 > • Ada bagian yang salah? Atur sendiri lewat Aa → Atur isi artikel, atau kirim masukan
 > • Satu tombol untuk kembali ke tampilan asli situs
@@ -68,7 +70,7 @@ Each account is the owner's to create. Then:
 >
 > ---
 >
-> Sapu Berita cleans up articles on Indonesian news sites: no ads, no "Baca Juga" links, and multi-page articles merged into one. No accounts, no tracking, everything runs on your device.
+> Read the news. Sweep the rest. Sapu Berita turns articles on Indonesian news sites into one clean page: no ads or pop-ups, and articles split over several pages merged into one. No accounts, no tracking; everything runs on your device.
 
 Check the list of sites against `rules/sites/` before each submission.
 

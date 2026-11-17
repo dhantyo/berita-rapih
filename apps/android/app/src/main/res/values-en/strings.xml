@@ -13,7 +13,7 @@
     <string name="back">Back</string>
 
     <string name="welcome_title">News without the clutter</string>
-    <string name="welcome_lead">Sapu Berita opens news links in a clean version: no ads, no \"Baca Juga\" link lists, and every page merged into one.</string>
+    <string name="welcome_lead">Sapu Berita opens news links in a clean version: no ads or pop-ups, and articles split over several pages merged into one.</string>
     <string name="welcome_point_1">News links from WhatsApp, Telegram and other apps open clean.</string>
     <string name="welcome_point_2">Your browser stays as it is. Other links don\'t change.</string>
     <string name="welcome_point_3">No account, no server. Everything runs on your phone.</string>

@@ -4,6 +4,11 @@ Versions follow [semver](https://semver.org): MAJOR.MINOR.PATCH. While the versi
 
 The first four releases were published as 0.1.0-beta.1 to beta.4 and renamed on 2026-11-13 to the scheme below; the app files inside those releases still report their original beta names.
 
+## [Unreleased]
+
+- Feedback goes to a simple form that needs no account (with an optional screenshot), instead of GitHub. Installed copies switch within a day.
+- New wording on the install page, in the stores and in the app: "Baca beritanya. Sapu sisanya."
+
 ## [0.6.2] - 2026-11-17
 
 - The extension has an icon, and each release now includes packages for the Chrome Web Store, Edge Add-ons and Firefox Add-ons (desktop and Android). Installed from a store, it updates by itself. Privacy page: https://dhantyo.github.io/sapu-berita/privacy.html

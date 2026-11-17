@@ -33,10 +33,9 @@ There are two runs:
 
 ## Inputs
 
-1. **Reader feedback sheet.** The Tally form's answers land in a Google Sheet; the run prompt says which one. Read it with the Google Sheets connector.
-   - The answers tab is Tally's.
-   - The `Triage` tab is ours: submission ID, date, status (`fixed`, `weekly`, `duplicate`, `cannot-reproduce`, `wontfix`), a one-line summary, and a link to the commit or backlog entry.
-   - A submission is new if its ID is not in `Triage` yet.
+1. **Reader feedback sheet.** The Tally form's answers land in a Google Sheet; the run prompt gives its file ID. Read it with the Google Drive connector's `read_file_content` (the Sheets connector has no access to it). Columns: Submission ID, Respondent ID, Submitted at, url, site, version, platform, note, screenshot link, extra comment.
+   - Our triage log is `triage.tsv` in the private repo, checked out at `.saved-pages/` (`npm run fixtures:pull` clones it). Columns: submission ID, date, status (`fixed`, `weekly`, `duplicate`, `cannot-reproduce`, `wontfix`), a one-line summary, and a link to the commit or backlog entry. Commit and push it there with `git -c safe.directory=<that folder> …` (exFAT).
+   - A submission is new if its ID is not in `triage.tsv` yet.
    - The `note` field is the text the app built from what the reader picked and typed on the feedback page; the kind of feedback is in it.
 2. **GitHub issues:** `gh issue list --state open`. Labels: `broken article`, `site request`, `enhancement`, `bug`.
 3. **Canary:** `gh run list --workflow canary.yml --limit 3`. For a failed run, `gh run view <id> --log-failed` names the sites.
@@ -48,7 +47,7 @@ There are two runs:
 Goal: whatever is broken is fixed and shipped the same day, with no one watching. When there is nothing new, the run should be cheap.
 
 1. **Gather** all four inputs with cheap commands. If nothing is new and the canary is green, report that in one line and stop. Don't open other docs.
-2. **Triage** each new item as: duplicate, cannot reproduce, fix now, weekly, or won't do. Record it in the `Triage` tab, or on the issue via its labels.
+2. **Triage** each new item as: duplicate, cannot reproduce, fix now, weekly, or won't do. Record it in `triage.tsv`, or on the issue via its labels.
 3. **Fix** what meets the safe-fix bar below:
    - Reproduce it first on the live page: `npm run inspect -- <url>`, with the phone UA for sites whose mobile layout differs (Tribun, Liputan6).
    - Fix it. Add a fixture when it pins the fix (`npm run capture`, then `npm run fixtures:push`).
@@ -79,7 +78,7 @@ If you are not sure, it is not safe: queue it.
 
 Goal: additions and bigger changes, ready for the user's approval. The budget has just reset. Spend it on the 1 to 3 most valuable items, not on everything.
 
-1. **Read** [BACKLOG.md](BACKLOG.md), the `Triage` rows with status `weekly`, and open `site request` / `enhancement` issues.
+1. **Read** [BACKLOG.md](BACKLOG.md), the `triage.tsv` rows with status `weekly`, and open `site request` / `enhancement` issues.
    - Rank them by how many readers asked, how many readers it helps, and how much effort it takes.
    - Skip the *Pinned* section unless the user asked for it.
 2. **Branch** `weekly/YYYY-MM-DD` off `master`, then build the items.

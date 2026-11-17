@@ -1,6 +1,6 @@
 # Sapu Berita on Android
 
-Read Indonesian news without ads or "Baca Juga" link lists, with every page of an article merged into one. Set it up once, and news links you tap in WhatsApp, Telegram or anywhere else open clean. **Your browser stays as it is**; Sapu Berita only opens links to news articles.
+Read Indonesian news without ads or pop-ups, with articles that are split over several pages merged into one. Set it up once, and news links you tap in WhatsApp, Telegram or anywhere else open clean. **Your browser stays as it is**; Sapu Berita only opens links to news articles.
 
 > **Beta.** For now the app comes as an APK file from GitHub, not from the Play Store.
 

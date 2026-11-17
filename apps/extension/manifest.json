@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Sapu Berita",
   "version": "0.6.2",
-  "description": "Baca berita Indonesia tanpa iklan dan tanpa \"Baca Juga\"; semua halaman digabung jadi satu.",
+  "description": "Baca beritanya, sapu sisanya. Iklan dan pop-up hilang, artikel yang dipecah jadi beberapa halaman digabung jadi satu.",
   "permissions": [
     "storage"
   ],

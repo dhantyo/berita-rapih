@@ -2,7 +2,7 @@
 
 # Sapu Berita
 
-**Read Indonesian news in peace.** No ads, no "Baca Juga" link lists in the middle of the story, and multi-page articles merged into one.
+**Read the news. Sweep the rest.** Indonesian news articles as one clean page: ads and pop-ups gone, and articles split over several pages merged into one.
 
 [Install page](https://dhantyo.github.io/sapu-berita/) · [Download](../../releases/latest) · [Android](docs/install-android.md) · [iPhone, iPad, Mac](docs/install-apple.md) · [Supported sites](#supported-sites)
 

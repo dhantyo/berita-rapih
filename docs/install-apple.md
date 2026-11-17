@@ -1,6 +1,6 @@
 # Sapu Berita on iPhone, iPad and Mac
 
-Read Indonesian news without ads or "Baca Juga" link lists, with every page of an article merged into one. Free, no App Store, and **always the latest version**: both options below download the newest Sapu Berita each time you use them, so there's nothing to update.
+Read Indonesian news without ads or pop-ups, with articles that are split over several pages merged into one. Free, no App Store, and **always the latest version**: both options below download the newest Sapu Berita each time you use them, so there's nothing to update.
 
 The easiest way to install is the [install page](https://dhantyo.github.io/sapu-berita/#pasang), which shows the right steps for your device. Menu names below are as they appear on a device set to English, with the Indonesian name in brackets.
 
