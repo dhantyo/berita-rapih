@@ -62,7 +62,7 @@ Each account is the owner's to create. Then:
 > • Ada bagian yang salah? Atur sendiri lewat Aa → Atur isi artikel, atau kirim masukan
 > • Satu tombol untuk kembali ke tampilan asli situs
 >
-> Berjalan di Detik, Kompas, Tribun, CNN Indonesia, Liputan6, Kumparan, CNBC Indonesia, Republika, Antara dan situs berita besar lainnya. Perbaikan untuk situs berita datang otomatis setiap hari.
+> Bekerja di hampir 30 situs berita besar Indonesia (daftar lengkapnya: https://github.com/dhantyo/sapu-berita#supported-sites). Perbaikan untuk tiap situs datang sendiri setiap hari.
 >
 > Tanpa akun, tanpa pelacak, tanpa server. Semua terjadi di perangkatmu. Sapu Berita tidak melewati paywall: yang dirapikan hanya yang memang sudah ditampilkan situsnya.
 >
@@ -72,7 +72,7 @@ Each account is the owner's to create. Then:
 >
 > Read the news. Sweep the rest. Sapu Berita turns articles on Indonesian news sites into one clean page: no ads or pop-ups, and articles split over several pages merged into one. No accounts, no tracking; everything runs on your device.
 
-Check the list of sites against `rules/sites/` before each submission.
+Don't list outlet names in a store description: the Chrome Web Store rejected 0.6.3 for it as keyword spam ("Yellow Argon"). Link to the supported-sites list instead.
 
 **Single purpose** (Chrome):
 > Shows articles on Indonesian news sites in a clean reading view, without ads and with all pages merged.
