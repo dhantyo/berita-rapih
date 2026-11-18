@@ -80,15 +80,52 @@ In a store install, "Cek update" still fetches the daily site fixes (`rules.json
 - `personal`: the reader's own rules per outlet, made in the editor (`src/personal.ts`).
 - `hidden`, `added`: lists from before 0.6, read once, folded into `personal`, then never written again.
 
-## Planned (in BACKLOG.md, not built yet)
+## Target structure (decided 2026-11-19, built by the UI sweep)
 
-- **Tawarkan Sapu Berita di situs berita lain** (Umum, extension only, off by default). When it's switched on, the extension asks for access to all sites. An article on an unsupported site then shows a small offer card by itself. Switching it off gives the access back.
-- **"Jangan tawarkan di situs ini"** on that card, a per-site list. It needs a place in the panel to undo it, for example a list of silenced sites under the switch.
-- **Toolbar popup** (extension): open the reader, open settings (the same panel, reused), a switch for the current site, and "Coba Sapu Berita di halaman ini" on article pages of unsupported sites.
-- **"Kirim perubahan"** gets a short confirmation when an edit is sent. The setting itself stays as it is.
-- **The UI sweep** may regroup or rename anything above. Update this file when it does.
+The panel is reordered by how often each thing is used. Every section gets a title, each thing appears once, and things about the current site sit together. The sweep may change the look and the wording, but not this order or grouping unless it finds a real problem. Changes from 0.7.0 are in *italics*.
 
-## Notes for the sweep
+**Header:** Pengaturan · Masukan · close. *This is the only feedback entry; the "Ada masukan?" row at the bottom goes.*
+
+**1. Tampilan** *(new section title)*
+- **Ukuran teks:** A− · dots · A+. *Each dot can be tapped to jump to that size.*
+- **Jenis huruf:** Sans · Serif · Jelas
+- **Tema:** Otomatis · Terang · Sepia · Gelap
+
+**2. Di dalam artikel** (unchanged): Foto utama · Kotak ringkasan · Tampilkan link · Putar media · Catatan di akhir artikel
+
+**3. *Situs ini (detik.com)*** *(new)*
+- ***Atur isi artikel**: opens the editor directly. Today it hides behind Masukan, yet it's a reading tool as much as a way to send feedback. The Masukan page keeps its own way in.*
+- **Kembalikan**: only when the reader has their own edits for this site, with the line "Perubahan buatanmu sedang dipakai di situs ini". *Moved here from the bottom.*
+
+**4. Umum**
+- Buka otomatis (extension, Android)
+- Sembunyikan bar saat menggulir. *The bar follows the scroll (planned).*
+- *Tawarkan Sapu Berita di situs berita lain (planned; extension only, off). It asks for access to all sites only when switched on. Under it, when any exist: "Situs yang tidak ditawarkan" with a way to undo each.*
+- Kirim perubahan ke pengembang. *Renamed from "Kirim perubahan dari Atur isi artikel", and it shows "terkirim" after each send (planned). It stays a global switch, so it lives here, not under Situs ini.*
+
+**5. *Lainnya*** *(new, at the bottom)*
+- **Bahasa:** Indonesia · English. *Moved down: set once, rarely changed.*
+- ***Update otomatis**, renamed from "Cek update". The hint depends on the build: "Perbaikan situs, sekali sehari" for a store install, where the store brings new versions, and "Versi baru dan perbaikan situs, sekali sehari" for a hand install or the Android app. The bookmark keeps hiding it, because it loads the newest version on every tap.* (extension, Android)
+- *Links: Halaman Sapu Berita · Privasi · Apa yang baru (the changelog)*, then the version.
+
+**Which build shows what**
+
+| Build | Not shown |
+|---|---|
+| Extension | nothing |
+| Android app | Tawarkan… (the app opens news links by itself) |
+| Bookmark / iOS Shortcut | Buka otomatis, Tawarkan…, Update otomatis |
+
+**Left out on purpose:**
+- **A per-site on/off switch, in the panel or the popup.** Nobody asked for it, and Buka otomatis plus the Sapu button already cover "not here". Add it if feedback asks.
+- **A list of every site with the reader's own edits.** Each site's Kembalikan is enough for now.
+
+## Planned elsewhere (in BACKLOG.md, not built yet)
+
+- **Toolbar popup** (extension): open the reader, open settings (the same panel, reused), and "Coba Sapu Berita di halaman ini" plus "Sarankan situs ini" on article pages of unsupported sites.
+- **Offer card** on articles from unsupported sites, only when "Tawarkan…" is on, with "Jangan tawarkan di situs ini".
+
+## Notes from the 0.7.0 panel (what the target fixes)
 
 - The look controls have no group title, while the two switch groups do.
 - Feedback appears twice: the header button and the row near the bottom.
