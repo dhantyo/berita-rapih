@@ -14,7 +14,37 @@ All three come from the GitHub release assets. Listing images live in `docs/stor
 
 ## Updating a listing after a release
 
-Upload the new package in each store's dashboard. Chrome and Edge review it in hours to a few days. Firefox usually signs it within minutes, and a human may review it later. Automating these uploads from CI is possible later, once each store's API keys are in the repository secrets.
+Once a store's keys are in the repository secrets (below), the release workflow submits the new package to it by itself: the `stores` job in `.github/workflows/ci.yml` runs after every release tag except pre-releases. Chrome and Edge review it in hours to a few days. Firefox usually signs it within minutes, and a human may review it later.
+
+The APIs only send the package. Description, screenshots and the privacy tabs are still changed by hand in each dashboard, which is only needed when those change.
+
+A store without keys is skipped, and its package is uploaded by hand from the release assets as before. A store still reviewing the previous version may refuse the new one. With daily releases that is common and harmless, because the next release catches up, so it shows as a warning on the run and in its summary rather than a failed run. The daily maintenance run reads those warnings and reports the ones that aren't a pending review, such as an expired key.
+
+### Automatic store uploads
+
+Each store needs its own keys, created once by the account owner. Put each value straight into the repository secrets, never in chat or a file: either **Settings → Secrets and variables → Actions → New repository secret** on GitHub, or in a terminal in the repository, `gh secret set NAME`, which asks for the value.
+
+**Chrome Web Store** (about 10 minutes, Google changes these screens often; [fregante's guide with pictures](https://github.com/fregante/chrome-webstore-upload-keys)):
+1. At https://console.cloud.google.com, create a project (any name, e.g. `sapu-berita-upload`).
+2. **Google Auth Platform → Get started**. Any app name, your email. Audience: **External** (Internal needs a Workspace account). Finish.
+3. **Audience → Publish app**, so the status is **In production**. Otherwise the refresh token stops working after 7 days. Google doesn't need to verify an app only you use.
+4. **Clients → Create client → Desktop app**. Save the client ID and client secret.
+5. Enable the API: https://console.cloud.google.com/apis/library/chromewebstore.googleapis.com → **Enable**.
+6. In a terminal: `npx chrome-webstore-upload-keys`. Enter the client ID and secret, sign in with the account that owns the store listing, and continue past "Google hasn't verified this app". It prints the refresh token.
+7. Publisher ID: in the Chrome Web Store developer dashboard, the long ID in the address bar after `/devconsole/`.
+8. Secrets: `CWS_CLIENT_ID`, `CWS_CLIENT_SECRET`, `CWS_REFRESH_TOKEN`, `CWS_PUBLISHER_ID`.
+
+**Firefox Add-ons:**
+1. https://addons.mozilla.org/developers/addon/api/key/ → **Generate new credentials**.
+2. Secrets: `AMO_API_KEY` (the "JWT issuer") and `AMO_API_SECRET` (the "JWT secret").
+
+**Edge Add-ons:**
+1. Partner Center → **Microsoft Edge → Publish API**. If it offers "enable the new experience", click **Enable**.
+2. **Create API credentials**. Copy the client ID and the API key; the key is shown only once.
+3. Secrets: `EDGE_CLIENT_ID`, `EDGE_API_KEY`.
+4. The key expires after 72 days, and Partner Center emails before it does. To renew: on the same page, **New API key**, then `gh secret set EDGE_API_KEY` with the new one.
+
+The extension IDs (Chrome `cnpcdeijcckcobfngmglmdfgfcdlnglc`, Edge product `52c939f3-79ef-4a25-b7cd-d309ecd843b9`, Firefox `sapu-berita@dhantyo.github.io` from the manifest) are public and live in the workflow itself. Firefox gets the source zip and the reviewer's build notes with every version.
 
 ## First submission
 

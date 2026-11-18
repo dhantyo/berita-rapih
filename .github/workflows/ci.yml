@@ -148,6 +148,79 @@ jobs:
         with:
           path: channel/
 
+  # Submit the release's extension zips to the three stores (docs/STORES.md, "Automatic store uploads"). Each store
+  # skips itself until its secrets exist; pre-releases (v1.2.3-beta.1) never go to the stores. A store still reviewing
+  # the previous version may refuse the upload; daily releases make that common, and the next release catches up, so
+  # a refusal is a warning on the run (read by the daily maintenance run), not a failure that emails.
+  stores:
+    if: startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, '-')
+    needs: release
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      CWS_CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
+      CWS_CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+      CWS_REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
+      CWS_PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}
+      AMO_API_KEY: ${{ secrets.AMO_API_KEY }}
+      AMO_API_SECRET: ${{ secrets.AMO_API_SECRET }}
+      EDGE_CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
+      EDGE_API_KEY: ${{ secrets.EDGE_API_KEY }}
+    steps:
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - id: zips
+        name: Download the release zips
+        run: |
+          V="${GITHUB_REF_NAME#v}"
+          gh release download "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" -p "sapu-berita-extension-$V.zip" -p "sapu-berita-firefox-$V.zip" -p "sapu-berita-source-$V.zip"
+          mkdir firefox && unzip -q "sapu-berita-firefox-$V.zip" -d firefox
+          echo "V=$V" >> "$GITHUB_ENV"
+      - id: chrome
+        name: Chrome Web Store
+        continue-on-error: true
+        if: ${{ steps.zips.outcome == 'success' && env.CWS_REFRESH_TOKEN != '' }}
+        run: npx -y chrome-webstore-upload-cli@4.0.2 --source "sapu-berita-extension-$V.zip"
+        env:
+          EXTENSION_ID: cnpcdeijcckcobfngmglmdfgfcdlnglc
+          CLIENT_ID: ${{ env.CWS_CLIENT_ID }}
+          CLIENT_SECRET: ${{ env.CWS_CLIENT_SECRET }}
+          REFRESH_TOKEN: ${{ env.CWS_REFRESH_TOKEN }}
+          PUBLISHER_ID: ${{ env.CWS_PUBLISHER_ID }}
+      # Listed channel: AMO signs it and lists it after review. Only the version's own fields are sent (build notes
+      # for the reviewer); the listing text stays as it is on AMO. Doesn't wait for approval.
+      - id: firefox
+        name: Firefox Add-ons
+        continue-on-error: true
+        if: ${{ steps.zips.outcome == 'success' && env.AMO_API_SECRET != '' }}
+        run: |
+          cat > amo.json <<'JSON'
+          { "version": { "approval_notes": "Node 22. `npm ci && npm run build`; the add-on is `dist/extension-firefox/`. content.js is an esbuild bundle (not minified) of src/entries/extension.ts. The innerHTML warnings come from bundled libraries: @mozilla/readability, DOMPurify and PhotoSwipe." } }
+          JSON
+          npx -y web-ext@10.8.0 sign --source-dir firefox --artifacts-dir amo-out --channel listed \
+            --upload-source-code "sapu-berita-source-$V.zip" --amo-metadata amo.json --approval-timeout 0 \
+            --api-key "$AMO_API_KEY" --api-secret "$AMO_API_SECRET"
+      # Edge's API key expires every 72 days; Partner Center emails before it does (renewing: docs/STORES.md).
+      - id: edge
+        name: Edge Add-ons
+        continue-on-error: true
+        if: ${{ steps.zips.outcome == 'success' && env.EDGE_API_KEY != '' }}
+        uses: wdzeng/edge-addon@9881f57720358040d079eaa06a4596dc9c273eb6 # v2.1.1
+        with:
+          product-id: 52c939f3-79ef-4a25-b7cd-d309ecd843b9
+          zip-path: sapu-berita-extension-${{ env.V }}.zip
+          client-id: ${{ env.EDGE_CLIENT_ID }}
+          api-key: ${{ env.EDGE_API_KEY }}
+      - name: Report
+        if: always()
+        run: |
+          for r in "Chrome Web Store=${{ steps.chrome.outcome }}" "Firefox Add-ons=${{ steps.firefox.outcome }}" "Edge Add-ons=${{ steps.edge.outcome }}"; do
+            echo "- ${r%%=*}: ${r#*=}" >> "$GITHUB_STEP_SUMMARY"
+            [ "${r#*=}" = failure ] && echo "::warning::${r%%=*} refused $GITHUB_REF_NAME (still reviewing the previous version, or an expired key; see the step log)"
+          done
+          true
+
   # Publish the release channel. Needs GitHub Pages enabled with "GitHub Actions" as the source.
   channel:
     needs: release

@@ -58,8 +58,9 @@ Goal: whatever is broken is fixed and shipped the same day, with no one watching
 4. **Commit** each fix on `master`:
    - one changelog line under `## [Unreleased]`, in plain words a reader would use;
    - `Fixes #N` in the commit message when it came from an issue.
-5. **Release** once, if anything a reader would notice was fixed. Store uploads ([STORES.md](STORES.md)) are still done by hand; mention a release that needs one in the report.
+5. **Release** once, if anything a reader would notice was fixed.
    - `npm run release -- <next patch>`, then `gh run watch` until the release run is green. At most one release a day.
+   - The `stores` job submits the package to every store that has keys ([STORES.md](STORES.md)). Read its summary (`gh run view <id>`). A store marked `failure` because it is still reviewing the previous version needs nothing. Any other refusal (expired or wrong key, a rejected package) goes in the report, with the step log's error line. A store marked `skipped` has no keys yet and is still uploaded by hand: mention that the release needs it.
    - If `[Unreleased]` holds anything that isn't a daily fix (for example a weekly merge the user hasn't released), don't release; say so in the report.
 6. **Queue** everything else in [BACKLOG.md](BACKLOG.md): one line per item, with its source (sheet ID or issue number).
 7. **Report** in at most 10 lines: what came in, what shipped (version), what was queued, and what needs the user.
