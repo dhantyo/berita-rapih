@@ -6,7 +6,7 @@ Work queued for the weekly run ([MAINTAINING.md](MAINTAINING.md)). One line per 
 
 ### First: after 0.7.0 (released 2026-11-18)
 
-1. **Chrome Web Store (the user does it; extensions can't script that dashboard):** upload `sapu-berita-extension-0.7.0.zip`, replace the screenshots with the four in `docs/store/`, tick **Web history** and **Website content** in the privacy tab, and change "Aa →" in the description (new text in docs/STORES.md).
+1. Done on 2026-11-19: the user uploaded 0.7.0 to the Chrome Web Store with the new description, screenshots and privacy answers. Check it went live.
 2. Done on 2026-11-18: Firefox 0.7.0 submitted with its source zip (listing screenshots and description updated); Edge 0.7.0 submitted (in review; privacy tab, screenshots and description updated). Check both went live.
 3. **Automatic store uploads (the user creates the keys):** done 2026-11-19: all eight secrets are set. After the first release that uses them, check each store got the new version (the run's Stores summary, then each dashboard).
 4. Two weeks after 0.7.0 (from 2026-12-02), if the old Tally sheet is quiet, tell the user the Tally form can be deleted.
