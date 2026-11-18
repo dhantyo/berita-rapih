@@ -4,16 +4,11 @@ Work queued for the weekly run ([MAINTAINING.md](MAINTAINING.md)). One line per 
 
 ## Weekly queue
 
-### First: finish the contributions batch (built 2026-11-18, PR weekly/2026-11-18)
+### First: after 0.7.0 (released 2026-11-18)
 
-Built early, on the user's word, in the session that planned it: the Google Form and its sheet, the pick-first editor, picking in Bersih, the one-time send question with its setting, the gear icon, the Indonesian text pass, the privacy page, the Firefox manifest, the store texts and new screenshots (`node tools/screenshots.ts`, then `node tools/store-assets.ts`). What is left, in order, once the user approves the PR:
-
-1. Merge. Point the repository variable at the new form (not before the merge: master's CI would hand the new template to 0.6 copies, which don't fill `{kind}` and `{detail}`):
-   `gh variable set SAPU_REPORT_URL --body 'https://docs.google.com/forms/d/e/1FAIpQLSc9RX8WT8IDwv8vESjdiQTT3RetOp6L2hGphXQMpY-zMLEuDA/viewform?usp=pp_url&entry.1679581615={kind}&entry.1868248012={url}&entry.300525631={site}&entry.368900275={version}&entry.1562198632={platform}&entry.1402800012={note}&entry.909966618={detail}'`
-   Then `npm run release -- 0.7.0` (MINOR): the release builds it in and writes it into update.json as `form`.
-2. Upload `sapu-berita-extension-0.7.0.zip` to the Chrome Web Store and Edge Add-ons, and `sapu-berita-firefox-0.7.0.zip` (with the source zip) to AMO, with the four new images in `docs/store/`.
-3. Store privacy tabs: tick **Web history** and **Website content** (docs/STORES.md). The user does Chrome's; Edge's can be done through Brave.
-4. Two weeks after 0.7.0, if the old Tally sheet is quiet, tell the user it can be deleted.
+1. Upload `sapu-berita-extension-0.7.0.zip` to the Chrome Web Store and Edge Add-ons, and `sapu-berita-firefox-0.7.0.zip` (with the source zip) to AMO, with the four images in `docs/store/`.
+2. Store privacy tabs: tick **Web history** and **Website content** (docs/STORES.md). The user does Chrome's; Edge's can be done through Brave.
+3. Two weeks after 0.7.0 (from 2026-12-02), if the old Tally sheet is quiet, tell the user the Tally form can be deleted.
 
 ### Other items
 
