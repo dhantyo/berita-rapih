@@ -43,11 +43,16 @@ if (!unreleased![1]!.trim()) fail('the "## [Unreleased]" section is empty');
 const restore = () => sh('git checkout -- .');
 
 const today = new Date().toISOString().slice(0, 10);
+// Only the first `count` occurrences are ours (package-lock.json: the root and its "" package). A dependency
+// may happen to have the same version number; it must keep it (0.6.3 once renamed @mozilla/readability's).
 const setVersion = (path: string, count: number) => {
-  const text = readFileSync(path, 'utf8');
+  let text = readFileSync(path, 'utf8');
   const needle = `"version": "${current}"`;
-  if (text.split(needle).length - 1 < count) fail(`${path} doesn't list version ${current}`);
-  writeFileSync(path, text.split(needle).join(`"version": "${version}"`));
+  for (let i = 0; i < count; i++) {
+    if (!text.includes(needle)) fail(`${path} doesn't list version ${current}`);
+    text = text.replace(needle, `"version": "${version}"`);
+  }
+  writeFileSync(path, text);
 };
 setVersion(pkgPath, 1);
 setVersion(lockPath, 2);
