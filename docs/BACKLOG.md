@@ -39,6 +39,11 @@ The user has already agreed to this design. Build all of it in this run, on one 
    - `docs/img/*` (README and install page);
    - `docs/store/*` (redraw with `node tools/store-assets.ts`);
    - then upload them to the three listings.
+   - Use these articles (picked with the user: light topics, calm photos, no politics, several outlets):
+     - light phone: Kompas, https://www.kompas.com/food/read/2026/11/18/203014675/10-hidangan-sup-terbaik-di-asia-tenggara-ada-3-dari-indonesia
+     - dark phone: Detik Travel, https://travel.detik.com/cerita-perjalanan/d-8758455/hidden-gem-paramotor-di-cikarang-wisatawan-serasa-main-pubg
+     - desktop: Tribun, https://m.tribunnews.com/travel/7905546/batagor-indonesia-masuk-10-besar-hidangan-seafood-terbaik-dunia-versi-tasteatlas (2 pages, so the shot can show pages merged)
+     - Fallback if one is gone: same rules (food, travel or tips; no politics, crime, disasters, religion or people in controversy). `npm run inspect -- <url> --shot <dir>` shows the reader.
 9. **Release (MINOR), after the user approves the PR.** Then upload the new package to all three stores.
 
 ### Other items
