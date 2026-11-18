@@ -8,6 +8,8 @@ The extension is listed in three stores. Each store installs it in one click and
 | Microsoft Edge Add-ons | Edge | free | `sapu-berita-extension-X.Y.Z.zip` |
 | Firefox Add-ons (AMO) | Firefox on desktop and Android | free | `sapu-berita-firefox-X.Y.Z.zip`, plus `sapu-berita-source-X.Y.Z.zip` as the source |
 
+When a listing goes live, put its URL in `STORE` near the top of the script in `site/index.html` (buttons and mentions for a store without a URL stay hidden), and in README.md and docs/install-android.md. Live now: Chrome Web Store, Edge Add-ons (also on Edge for Android). Firefox: awaiting review.
+
 All three come from the GitHub release assets. Listing images live in `docs/store/` and are redrawn with `node tools/store-assets.ts`, which also draws the extension icons. The privacy policy is at https://dhantyo.github.io/sapu-berita/privacy.html (`site/privacy.html`).
 
 ## Updating a listing after a release

@@ -1,12 +1,28 @@
 # Sapu Berita on Android
 
-Read Indonesian news without ads or pop-ups, with articles that are split over several pages merged into one. Set it up once, and news links you tap in WhatsApp, Telegram or anywhere else open clean. **Your browser stays as it is**; Sapu Berita only opens links to news articles.
+Read Indonesian news without ads or pop-ups, with articles that are split over several pages merged into one.
 
-> **Beta.** For now the app comes as an APK file from GitHub, not from the Play Store.
+## Install: the extension in Edge or Firefox
+
+Chrome for Android doesn't let you install extensions, but **Edge** and **Firefox** do, and Sapu Berita is an official extension in both.
+
+1. Install [Edge](https://play.google.com/store/apps/details?id=com.microsoft.emmx) (or Firefox, once Mozilla has approved the listing) from the Play Store.
+2. In that browser, open the [Edge Add-ons page](https://microsoftedge.microsoft.com/addons/detail/bhdciokajcobbbajokfomgjoonofcdbj) and tap **Get**.
+3. Open news articles as usual. Sapu Berita runs on its own and updates itself.
+
+**So links from WhatsApp open clean too:** make that browser your default (**Settings → Apps → Default apps → Browser app**; names differ a little per phone).
+
+## Staying with Chrome: a bookmark
+
+Follow the Android tab on the [install page](https://dhantyo.github.io/sapu-berita/): you save a special bookmark, then run it on each article by typing **Sapu** in the address bar and picking the bookmark.
+
+## The Android app (early beta)
+
+There's also a small app that opens news links from any app straight in the clean view. It's an APK from GitHub, not from the Play Store, so it isn't advertised on the install page for now. The steps below are for people who already use it or want to try it.
 
 Menu names are shown as they appear on a phone set to English, with the Indonesian name in brackets.
 
-## Install
+### Install the app
 
 1. On your phone, open the [Releases](https://github.com/dhantyo/sapu-berita/releases/latest) page and download **sapu-berita-….apk**.
 2. Open the downloaded file. If your phone asks, allow **Install unknown apps** (*Instal aplikasi tidak dikenal*) for the browser or file manager you used, then tap **Install**.
@@ -20,7 +36,7 @@ Menu names are shown as they appear on a phone set to English, with the Indonesi
 
 **Can't find "Add link"?** Phone makers word this screen differently. Go to **Settings → Apps → Sapu Berita** and look for **Open by default** or **Set as default** (*Buka secara default*, *Atur sebagai default*), then the list of supported links.
 
-## Use
+### Use
 
 Nothing else to do. Open news links as usual:
 - **Articles** from Detik, Kompas, Tribunnews (including its regional sites), CNN Indonesia, CNBC Indonesia, Liputan6, Merdeka, Suara, Okezone, Viva, iNews, JPNN, ANTARA, Republika, Bisnis.com and Tirto open clean in Sapu Berita.
@@ -28,7 +44,7 @@ Nothing else to do. Open news links as usual:
 
 In an article, **Aa** sets text size, font, light, sepia or dark theme, and language (for every site at once). **Asli** shows the original page.
 
-## Updates
+### Updates
 
 When a new version is out, a box appears above the article: **"Sapu Berita … sudah tersedia"** (is available).
 1. Tap **Update**. The new APK downloads in your browser.
@@ -36,7 +52,7 @@ When a new version is out, a box appears above the article: **"Sapu Berita … s
 
 Fixes for news sites arrive on their own, without updating the app.
 
-## Good to know
+### Good to know
 
 - If a site's official app is installed (the Detik app, for example), that app keeps opening that site's links; Android doesn't let another app take over. Other sites still go through Sapu Berita.
 - Instagram, Facebook and TikTok open links in their own built-in browser, so those don't go through Sapu Berita. Use **⋮ → Open in browser**.

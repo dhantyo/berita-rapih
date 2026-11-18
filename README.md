@@ -4,7 +4,7 @@
 
 **Read the news. Sweep the rest.** Indonesian news articles as one clean page: ads and pop-ups gone, and articles split over several pages merged into one.
 
-[Install page](https://dhantyo.github.io/sapu-berita/) · [Download](../../releases/latest) · [Android](docs/install-android.md) · [iPhone, iPad, Mac](docs/install-apple.md) · [Supported sites](#supported-sites)
+[Install page](https://dhantyo.github.io/sapu-berita/) · [Chrome](https://chromewebstore.google.com/detail/cnpcdeijcckcobfngmglmdfgfcdlnglc) · [Edge](https://microsoftedge.microsoft.com/addons/detail/bhdciokajcobbbajokfomgjoonofcdbj) · [Android](docs/install-android.md) · [iPhone, iPad, Mac](docs/install-apple.md) · [Supported sites](#supported-sites)
 
 <img src="docs/img/phone-light.png" width="250" alt="A cleaned-up Kompas article, light theme"> <img src="docs/img/phone-dark.png" width="250" alt="The same article, dark theme"> <img src="docs/img/phone-settings.png" width="250" alt="Settings panel: text size, font, theme, language">
 
@@ -25,14 +25,14 @@ The **Original** button always takes you back to the publisher's page.
 
 ## Install
 
-| Device | How it works | Guide |
+| Device | How it works | Get it |
 |---|---|---|
-| **Android** | A small app that opens news links from WhatsApp, Telegram and other apps straight in the clean view. Your browser stays as it is. | [Android guide](docs/install-android.md) |
+| **Computer** (Chrome, Brave, Opera, Vivaldi, Edge) | An extension that runs automatically on every supported article and updates itself. | [Chrome Web Store](https://chromewebstore.google.com/detail/cnpcdeijcckcobfngmglmdfgfcdlnglc) · [Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/bhdciokajcobbbajokfomgjoonofcdbj) |
+| **Android** | The same extension, in Edge (or Firefox, once Mozilla approves it). Chrome for Android doesn't allow extensions; there you can use a bookmark instead. | [Android guide](docs/install-android.md) |
 | **iPhone, iPad** | A Safari bookmark today, an Apple Shortcut (Share → Sapu Berita) soon. Always the latest version. | [Apple guide](docs/install-apple.md) |
-| **Mac** | One button in Safari's Favourites bar. Always the latest version. | [Apple guide](docs/install-apple.md) |
-| **Chrome, Brave, Edge, Firefox** (desktop) | The same one-click bookmark, or an extension that runs automatically. | [Install page](https://dhantyo.github.io/sapu-berita/), [extension guide](apps/extension/README.md) |
+| **Mac with Safari** | One button in Safari's Favourites bar. Always the latest version. | [Apple guide](docs/install-apple.md) |
 
-The [install page](https://dhantyo.github.io/sapu-berita/) picks the right steps for your device. All downloads are also on the [Releases](../../releases/latest) page.
+The [install page](https://dhantyo.github.io/sapu-berita/) picks the right steps for your device and browser.
 
 ## Supported sites
 
@@ -42,12 +42,9 @@ Detik · Kompas · Tribunnews (including regional sites) · CNN Indonesia · CNB
 
 ## Updates
 
-Sapu Berita tells you when there's a new version: a small "Sapu Berita X is available · Update" box appears above the article.
-
 - **Site fixes** (when a news site changes its layout) arrive automatically, without updating the app.
-- **Android:** tap **Update** → the new APK downloads → open it → **Update**. Your settings are kept.
+- **Extension from a store:** nothing to do; the store updates it.
 - **iPhone, iPad, Mac:** nothing to do. The Shortcut and the bookmark always run the newest version.
-- **Extension:** tap **Update** → download the new zip, replace the old folder, click ↻.
 
 ## Privacy
 

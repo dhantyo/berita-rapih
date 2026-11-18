@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sapu Berita</title>
-<meta name="description" content="Baca beritanya, sapu sisanya. Iklan dan pop-up hilang, artikel yang dipecah jadi beberapa halaman digabung jadi satu.">
+<meta name="description" content="Sapu Berita membuat artikel dari situs berita Indonesia tampil sebagai satu halaman yang bersih: tanpa iklan, tanpa pop-up, dan semua halaman digabung jadi satu.">
 <meta name="color-scheme" content="light dark">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b07a12' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 4 13 11M11.2 9.2l3.6 3.6M11.2 9.2C8 10 5.4 12.6 4 19c6.4-1.4 9-4 9.8-7.2M6.8 16.4 9.6 13.6M9 17.6l2.2-2.2'/%3E%3C/svg%3E">
 <style>
@@ -67,15 +67,24 @@ ol.steps b { font-weight: 650; }
 .ghost { display: inline-flex; align-items: center; height: 44px; padding: 0 18px; border-radius: 22px; border: 1px solid var(--rule-strong); background: none; color: var(--ink); font: 600 15px/1 var(--sans); text-decoration: none; cursor: pointer; }
 .ghost[aria-disabled="true"] { color: var(--muted); cursor: default; }
 .note { font-size: 15px; color: var(--muted); margin: 10px 0 0; }
-.note.span, .panel .span, .howto { grid-column: 1 / -1; }
-.option { margin: 0 0 4px; font: 600 12px/1.3 var(--sans); letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
-.option-b { padding-top: 28px; border-top: 1px solid var(--rule); }
-ol.steps.option-b { padding-top: 28px; }
-.howto { margin-top: 12px; padding: 22px 24px 8px; border-radius: 16px; background: var(--chip); }
-.howto h3 { margin-top: 0; }
-.howto .note { margin: 0 0 16px; }
+.note.span, .panel .span { grid-column: 1 / -1; }
 .linkish { border: 0; background: none; padding: 0; color: var(--ink); font: inherit; font-weight: 600; text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 0.2em; cursor: pointer; }
 .panel h3.sub { margin-top: 18px; }
+:where([hidden]) { display: none !important; }
+.hero-sub { margin: 16px 0 0; font-size: 15px; color: var(--muted); }
+.hero-sub a { color: var(--ink); font-weight: 600; }
+.btns { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 4px; }
+.btns.big { margin: 0 0 10px; }
+.btns .cta { height: 46px; padding: 0 22px; font-size: 16px; }
+.tip { margin: 0; padding: 16px 18px; border-radius: 14px; background: var(--chip); font-size: 15px; text-wrap: pretty; }
+.use { margin: 0; color: var(--muted); font-size: 15px; text-wrap: pretty; }
+.use b { color: var(--ink); }
+.alt { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; margin-top: 20px; padding-top: 32px; border-top: 1px solid var(--rule); }
+.inline { color: var(--ink); font-weight: 600; text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 0.2em; }
+.safari-first .safari-block { order: -1; }
+details.more { border-top: 1px solid var(--rule); padding-top: 18px; }
+details.more summary { cursor: pointer; font-weight: 650; }
+details.more p { color: var(--muted); margin: 10px 0 0; max-width: 62ch; }
 .toast { min-height: 1.6em; font-size: 15px; color: var(--accent); margin: 8px 0 0; }
 
 /* What it is: text beside a drawn before/after (no real news page shown). */
@@ -115,6 +124,7 @@ ol.steps.option-b { padding-top: 28px; }
 .mock .merged { flex: none; display: flex; align-items: center; gap: 6px; margin: 2px 0; font: 600 8.5px/1 var(--sans); color: var(--accent); white-space: nowrap; }
 .mock .merged::before, .mock .merged::after { content: ""; flex: 1; border-top: 1px dashed var(--accent); }
 .sweep { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 20px; background: var(--accent); color: var(--on-accent); }
+.about ol.flow { margin-top: 64px; }
 .about h3 { font: 700 clamp(1.3rem, 2.6vw, 1.65rem)/1.2 var(--sans); letter-spacing: -0.03em; margin: 72px 0 26px; }
 ol.flow { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; counter-reset: f; }
 ol.flow li { position: relative; counter-increment: f; padding-top: 46px; }
@@ -122,11 +132,6 @@ ol.flow li::before { content: counter(f); position: absolute; top: 0; left: 0; w
 ol.flow li:not(:last-child)::after { content: ""; position: absolute; top: 15px; left: 44px; right: -18px; border-top: 1px solid var(--rule-strong); }
 ol.flow h4 { font: 650 18px/1.3 var(--sans); letter-spacing: -0.02em; margin: 0 0 6px; }
 ol.flow p { margin: 0; color: var(--muted); text-wrap: pretty; }
-.local { margin: 32px 0 0; max-width: 62ch; }
-.modes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 32px; margin: 0; }
-.modes div { padding: 14px 0; border-top: 1px solid var(--rule); }
-.modes dt { font-weight: 650; }
-.modes dd { margin: 2px 0 0; color: var(--muted); }
 
 .swept { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 48px; margin: 0; }
 .swept div { padding: 14px 0; border-bottom: 1px solid var(--rule); }
@@ -134,7 +139,6 @@ ol.flow p { margin: 0; color: var(--muted); text-wrap: pretty; }
 .swept dd { margin: 2px 0 0; color: var(--muted); }
 .sites { color: var(--muted); max-width: 70ch; }
 .privacy { max-width: 62ch; }
-footer .ai { flex-basis: 100%; }
 footer { padding: 32px 0 48px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 15px; display: flex; flex-wrap: wrap; gap: 8px 24px; }
 
 @media (max-width: 760px) {
@@ -143,6 +147,9 @@ footer { padding: 32px 0 48px; border-top: 1px solid var(--rule); color: var(--m
   .shots img { width: 170px; border-radius: 20px; }
   .shots img:last-child { top: 40px; }
   .panel { grid-template-columns: 1fr; gap: 8px; }
+  .alt { grid-template-columns: 1fr; gap: 8px; }
+  .panel .tip { margin-bottom: 18px; }
+  .about ol.flow { margin-top: 44px; }
   .swept { grid-template-columns: 1fr; }
   .about-grid { grid-template-columns: 1fr; gap: 36px; }
   .mock .x { display: none; }
@@ -152,7 +159,6 @@ footer { padding: 32px 0 48px; border-top: 1px solid var(--rule); color: var(--m
   ol.flow { grid-template-columns: 1fr; gap: 22px; }
   ol.flow li { padding: 3px 0 0 46px; }
   ol.flow li:not(:last-child)::after { top: 38px; bottom: -18px; left: 15px; right: auto; border-top: 0; border-left: 1px solid var(--rule-strong); }
-  .modes { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) { .cta { transition: none; } }
 </style>
@@ -173,8 +179,9 @@ footer { padding: 32px 0 48px; border-top: 1px solid var(--rule); color: var(--m
   <div class="hero">
     <div>
       <h1 data-t="h1">Baca beritanya.<br>Sapu sisanya.</h1>
-      <p class="lead" data-t="lead">Detik, Kompas, Tribun dan 25 situs lain jadi satu halaman yang bersih. Tanpa iklan, tanpa pop-up, tanpa klik "halaman berikutnya".</p>
-      <a class="cta" href="#pasang" data-t="cta">Pasang gratis</a>
+      <p class="lead" data-t="lead">Sapu Berita membuat artikel dari Detik, Kompas, Tribun, dan 25 situs berita lainnya tampil sebagai satu halaman yang bersih: tanpa iklan, tanpa pop-up, dan tanpa harus klik "halaman berikutnya".</p>
+      <a class="cta" id="hero-cta" href="#pasang" data-t="ctaAny">Pasang gratis</a>
+      <p class="hero-sub"><span data-t="heroSub">Gratis dan tanpa akun. Memakai perangkat lain?</span> <a href="#pasang" data-t="heroAll">Lihat semua cara pemasangan</a></p>
     </div>
     <div class="shots" aria-hidden="true">
       <img src="img/phone-light.png" alt="" width="390" height="780">
@@ -183,13 +190,99 @@ footer { padding: 32px 0 48px; border-top: 1px solid var(--rule); color: var(--m
   </div>
 </div>
 
+<section id="pasang">
+  <div class="wrap">
+    <h2 data-t="install">Cara memasang Sapu Berita</h2>
+    <div class="devices" role="tablist" aria-label="Perangkat">
+      <button type="button" role="tab" data-device="android" aria-selected="false">Android</button>
+      <button type="button" role="tab" data-device="iphone" aria-selected="false">iPhone &amp; iPad</button>
+      <button type="button" role="tab" data-device="computer" aria-selected="false" data-t="computerTab">Komputer</button>
+    </div>
+
+    <div class="panel" role="tabpanel" data-panel="android" hidden>
+      <div>
+        <h3 data-t="androidTitle">Di Android, install lewat Edge atau Firefox</h3>
+        <p class="why" data-t="androidWhy">Chrome versi Android tidak mengizinkan user untuk memasang extension. Edge dan Firefox mengizinkannya, dan Sapu Berita sudah tersedia sebagai extension resmi di kedua browser tersebut.</p>
+        <p class="tip" data-t="androidTip"><b>Supaya link dari WhatsApp juga langsung tampil bersih</b>, jadikan Edge atau Firefox sebagai browser utama di HP kamu. Caranya: buka <b>Setelan → Aplikasi → Aplikasi default → Aplikasi browser</b>, lalu pilih browser tersebut. Nama menunya bisa sedikit berbeda di tiap HP.</p>
+      </div>
+      <ol class="steps">
+        <li><span data-t="android1" data-have="android1Have">Install <b>Edge</b> atau <b>Firefox</b> dari Play Store.</span>
+          <span class="btns" data-hide-have><a class="ghost" href="https://play.google.com/store/apps/details?id=com.microsoft.emmx" data-t="playEdge">Edge di Play Store</a> <a class="ghost" href="https://play.google.com/store/apps/details?id=org.mozilla.firefox" data-store-needs="firefox" data-t="playFirefox">Firefox di Play Store</a></span></li>
+        <li><span data-t="android2">Buka halaman ini di browser tersebut, lalu tambahkan Sapu Berita.</span>
+          <span class="btns"><a class="ghost" data-store="edge" data-t="addEdge">Tambahkan ke Edge</a> <a class="ghost" data-store="firefox" data-t="addFirefox">Tambahkan ke Firefox</a></span></li>
+        <li data-t="android3">Setelah itu, buka artikel berita seperti biasa dan Sapu Berita akan langsung bekerja.</li>
+      </ol>
+
+      <div class="span alt">
+        <div>
+          <h3 data-t="chromeTitle">Kalau kamu tetap ingin memakai Chrome</h3>
+          <p class="why" data-t="chromeWhy">Sapu Berita tetap bisa dipakai di Chrome lewat sebuah bookmark khusus. Bedanya, Sapu Berita tidak berjalan otomatis: kamu perlu menjalankan bookmark tersebut setiap kali membuka artikel.</p>
+        </div>
+        <div>
+          <ol class="steps">
+            <li><span data-t="abm1">Salin link khusus Sapu Berita:</span><br><button type="button" class="ghost" data-copy="bookmarklet" data-t="copy">Salin link Sapu Berita</button><span class="toast" role="status" aria-live="polite"></span></li>
+            <li data-t="abm2">Simpan halaman ini sebagai bookmark: di Chrome, ketuk <b>⋮</b> di pojok kanan atas, lalu ketuk ikon bintang <b>☆</b>.</li>
+            <li data-t="abm3">Ubah bookmark tersebut: ketuk <b>⋮ → Bookmark</b>, lalu ketuk <b>⋮</b> di samping bookmark yang baru disimpan dan pilih <b>Edit</b>. Ganti namanya menjadi <b>Sapu Berita</b>, hapus alamat yang ada, lalu tempel link yang tadi kamu salin.</li>
+          </ol>
+          <p class="use" data-t="abmUse"><b>Cara memakainya:</b> saat artikel berita sudah terbuka, ketuk kolom alamat, ketik <b>Sapu</b>, lalu pilih bookmark <b>Sapu Berita</b> dari saran yang muncul. Chrome hanya menjalankan bookmark seperti ini dari kolom alamat, bukan dari daftar bookmark.</p>
+        </div>
+      </div>
+      <p class="note span" data-store-needs="chrome"><span data-t="kiwi">Memakai Kiwi, Lemur, atau browser lain yang bisa meng-install extension Chrome? Sapu Berita juga bisa dipasang langsung dari Chrome Web Store.</span> <a data-store="chrome" class="inline" data-t="openCws">Buka di Chrome Web Store</a></p>
+    </div>
+
+    <div class="panel" role="tabpanel" data-panel="iphone" hidden>
+      <div data-when="shortcut" class="span">
+        <h3 data-t="iosTitle">Di iPhone dan iPad, pasang sebagai Shortcut</h3>
+        <p class="why" data-t="iosWhy">Buka artikel di Safari, ketuk Bagikan, lalu pilih Sapu Berita. Kamu akan selalu mendapatkan versi terbaru tanpa perlu update.</p>
+        <p class="action"><a class="cta" data-link="shortcut" href="#" aria-disabled="true" data-t="iosButton">Tambahkan Shortcut</a></p>
+        <ol class="steps">
+          <li data-t="ios1">Ketuk <b>Tambahkan Shortcut</b>.</li>
+          <li data-t="ios2">Buka <b>Pengaturan → Apps → Shortcuts → Lanjutan</b>, lalu nyalakan <b>Izinkan Menjalankan Skrip</b>.</li>
+          <li data-t="ios3">Di artikel berita, ketuk <b>Bagikan → Sapu Berita</b>. Saat pertama kali memakainya di sebuah situs, pilih <b>Izinkan Selalu</b>.</li>
+        </ol>
+      </div>
+      <div>
+        <h3 data-t="bmTitle">Di iPhone dan iPad, pasang sebagai bookmark di Safari</h3>
+        <p class="why" data-t="bmWhy">Apple tidak mengizinkan extension seperti Sapu Berita berjalan di Safari kecuali lewat aplikasi di App Store, jadi untuk sekarang Sapu Berita dipasang sebagai bookmark. Pemasangannya cukup sekali dan butuh sekitar satu menit, dan kamu akan selalu mendapatkan versi terbaru.</p>
+      </div>
+      <div>
+        <ol class="steps">
+          <li><span data-t="bm1">Salin link khusus Sapu Berita:</span><br><button type="button" class="ghost" data-copy="bookmarklet" data-t="copy">Salin link Sapu Berita</button><span class="toast" role="status" aria-live="polite"></span></li>
+          <li data-t="bm2">Simpan halaman ini sebagai bookmark: ketuk <b>Bagikan</b> (ikon kotak dengan panah ke atas), lalu pilih <b>Tambah Bookmark</b> dan ketuk <b>Simpan</b>.</li>
+          <li data-t="bm3">Ubah bookmark tersebut: buka daftar bookmark (ikon buku), ketuk <b>Edit</b>, lalu ketuk bookmark yang baru disimpan. Ganti judulnya menjadi <b>Sapu Berita</b>, hapus alamat yang ada, lalu tempel link yang tadi kamu salin. Ketuk <b>Selesai</b>.</li>
+        </ol>
+        <p class="use" data-t="bmUse"><b>Cara memakainya:</b> saat artikel berita sudah terbuka di Safari, buka daftar bookmark (ikon buku), lalu ketuk <b>Sapu Berita</b>. Jalankan dari daftar bookmark, bukan dari kolom alamat, karena iPhone akan menolaknya dari kolom alamat. Bookmark ini juga tidak bisa berjalan di mode <b>Private</b>.</p>
+      </div>
+      <p class="note span" data-t="orion"><b>Cara lain (eksperimental):</b> browser <b>Orion</b> bisa meng-install extension Chrome dan Firefox di iPhone. Dukungannya masih dalam tahap beta, dan Sapu Berita belum dites di sana.</p>
+    </div>
+
+    <div class="panel" role="tabpanel" data-panel="computer" hidden>
+      <div>
+        <h3 data-t="compTitle">Di komputer, pasang sebagai extension</h3>
+        <p class="why" data-t="compWhy">Cukup pasang sekali. Setelah itu, setiap kali kamu membuka artikel dari situs yang didukung, artikelnya langsung tampil bersih tanpa perlu klik apa pun. Update-nya juga terpasang secara otomatis.</p>
+        <p class="btns big"><a class="ghost" data-store="chrome" data-t="addChrome">Tambahkan ke Chrome</a> <a class="ghost" data-store="edge" data-t="addEdge">Tambahkan ke Edge</a> <a class="ghost" data-store="firefox" data-t="addFirefox">Tambahkan ke Firefox</a></p>
+        <p class="note" data-store-needs="chrome" data-t="chromeAlso">Tombol Chrome juga bisa dipakai untuk Brave, Opera, dan Vivaldi.</p>
+      </div>
+      <div class="safari-block">
+        <h3 data-t="safariTitle">Memakai Safari di Mac?</h3>
+        <p class="why" data-t="safariWhy">Seret tombol di bawah ini ke bar Favorit, lalu klik tombol tersebut setiap kali membuka artikel berita. Kalau bar Favorit belum terlihat, tekan <b>⇧⌘B</b>.</p>
+        <p class="action"><a class="bookmarklet" data-link="bookmarklet" href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 4 13 11M11.2 9.2l3.6 3.6M11.2 9.2C8 10 5.4 12.6 4 19c6.4-1.4 9-4 9.8-7.2M6.8 16.4 9.6 13.6M9 17.6l2.2-2.2"/></svg>Sapu Berita</a></p>
+        <p class="toast" data-drag-hint role="status" aria-live="polite"></p>
+      </div>
+      <details class="span more">
+        <summary data-t="otherTitle">Cara lain: bookmark untuk browser lain</summary>
+        <p data-t="otherWhy">Browser kamu tidak ada di daftar di atas? Seret tombol <b>Sapu Berita</b> dari bagian Safari ke bar bookmark (tekan <b>Ctrl+Shift+B</b> kalau bar bookmark belum terlihat), lalu klik tombol tersebut setiap kali membuka artikel berita.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
 <section class="about" id="apa">
   <div class="wrap">
     <div class="about-grid">
       <div>
         <h2 data-t="aboutTitle">Apa itu Sapu Berita?</h2>
-        <p class="big" data-t="aboutLead">Mode baca untuk situs berita Indonesia. Kamu tetap membuka artikel dari situs aslinya, Sapu Berita yang merapikannya.</p>
-        <p class="body" data-t="aboutBody">Situs berita sekarang penuh iklan, pop-up, dan link "Baca Juga" yang memotong cerita, dan banyak artikel dipecah jadi beberapa halaman supaya kamu klik terus. Sapu Berita mengambil isi beritanya saja (teks, foto, keterangan foto, video dan postingan yang dikutip), lalu menampilkannya bersih di atas halaman itu.</p>
+        <p class="big" data-t="aboutLead">Sapu Berita adalah mode baca untuk situs berita Indonesia. Kamu tetap membuka artikel dari situs aslinya seperti biasa, lalu Sapu Berita merapikan tampilannya langsung di HP atau komputer kamu, tanpa melewati server lain.</p>
       </div>
       <figure class="compare">
         <div class="side">
@@ -224,155 +317,11 @@ footer { padding: 32px 0 48px; border-top: 1px solid var(--rule); color: var(--m
       </figure>
     </div>
 
-    <h3 data-t="howTitle">Cara kerjanya</h3>
     <ol class="flow">
-      <li><h4 data-t="how1t">Kamu buka artikel</h4><p data-t="how1d">Dari WhatsApp, Google, atau langsung dari situsnya, seperti biasa.</p></li>
-      <li><h4 data-t="how2t">Sapu Berita merapikannya</h4><p data-t="how2d">Ia mencari teks artikelnya, membuang iklan dan link sisipan, lalu mengambil halaman 2, 3, dan seterusnya dari situs yang sama.</p></li>
-      <li><h4 data-t="how3t">Kamu baca versi bersihnya</h4><p data-t="how3d">Atur ukuran huruf, jenis huruf, dan tema gelap sesukamu. Ketuk foto untuk memperbesar. Tombol <b>Asli</b> membawamu kembali ke halaman aslinya.</p></li>
+      <li><h4 data-t="how1t">Kamu membuka artikel seperti biasa</h4><p data-t="how1d">Entah dari WhatsApp, Google, atau langsung dari situs beritanya.</p></li>
+      <li><h4 data-t="how2t">Sapu Berita mengambil isi beritanya saja</h4><p data-t="how2d">Teks, foto beserta keterangannya, serta video atau postingan media sosial yang dikutip. Iklan, pop-up, dan link sisipan dibuang, sedangkan halaman 2, 3, dan seterusnya diambil lalu digabung menjadi satu.</p></li>
+      <li><h4 data-t="how3t">Kamu membaca versi bersihnya</h4><p data-t="how3d">Ukuran huruf, jenis huruf, dan tema bisa diatur sesuai selera, dan tombol <b>Asli</b> akan membawamu kembali ke halaman aslinya kapan saja.</p></li>
     </ol>
-    <p class="local" data-t="howLocal">Tidak ada server di tengah: halamannya tetap dimuat dari situs berita itu sendiri, dan semua perapian terjadi di HP atau komputermu.</p>
-
-    <h3 data-t="modesTitle">Cara membukanya</h3>
-    <dl class="modes">
-      <div><dt data-t="m1t">Aplikasi Android</dt><dd data-t="m1d">Link berita dari WhatsApp dan aplikasi lain langsung terbuka bersih.</dd></div>
-      <div><dt data-t="m2t">Ekstensi browser</dt><dd data-t="m2d">Otomatis di Chrome, Brave, dan Edge di komputer.</dd></div>
-      <div><dt data-t="m3t">Bookmark</dt><dd data-t="m3d">Untuk iPhone, iPad, Mac, dan browser lain: ketuk bookmark Sapu Berita saat artikel terbuka.</dd></div>
-    </dl>
-  </div>
-</section>
-
-<section id="pasang">
-  <div class="wrap">
-    <h2 data-t="install">Pasang di perangkatmu</h2>
-    <div class="devices" role="tablist" aria-label="Perangkat">
-      <button type="button" role="tab" data-device="android" aria-selected="false">Android</button>
-      <button type="button" role="tab" data-device="iphone" aria-selected="false">iPhone &amp; iPad</button>
-      <button type="button" role="tab" data-device="mac" aria-selected="false">Mac</button>
-      <button type="button" role="tab" data-device="desktop" aria-selected="false" data-t="desktopTab">Windows &amp; lainnya</button>
-      <button type="button" role="tab" data-device="extension" aria-selected="false" data-t="extTab">Ekstensi browser</button>
-    </div>
-
-    <div class="panel" role="tabpanel" data-panel="android" hidden>
-      <div>
-        <p class="option" data-t="optA">Pilihan 1</p>
-        <h3 data-t="androidTitle">Aplikasi Android (otomatis)</h3>
-        <p class="why" data-t="androidWhy">Link berita dari WhatsApp, Telegram, dan lainnya langsung terbuka bersih. Browser kamu tetap seperti biasa.</p>
-        <p class="action"><a class="cta" data-link="android" href="https://github.com/dhantyo/sapu-berita/releases/latest" data-t="androidButton">Download APK</a></p>
-      </div>
-      <ol class="steps">
-        <li data-t="android1">Buka file yang sudah di-download. Kalau ditanya, izinkan <b>Instal aplikasi tidak dikenal</b>.</li>
-        <li data-t="android2">Buka <b>Sapu Berita</b> dan ikuti 3 langkahnya. Aplikasi menunjukkan persis apa yang harus diketuk.</li>
-        <li data-t="android3">Selesai. Buka link berita seperti biasa.</li>
-      </ol>
-      <div class="option-b">
-        <p class="option" data-t="optB">Pilihan 2</p>
-        <h3 data-t="abmTitle">Bookmark di Chrome (tanpa install)</h3>
-        <p class="why" data-t="abmWhy">Kamu menyalin satu link khusus dan menyimpannya sebagai bookmark di Chrome. Bedanya dengan aplikasi: kamu perlu mengetuk bookmark-nya di setiap artikel.</p>
-      </div>
-      <ol class="steps option-b">
-        <li data-t="abm1"><b>Salin link-nya:</b><br><button type="button" class="ghost" data-copy="bookmarklet" data-t="copy">Salin link Sapu Berita</button><span class="toast" role="status" aria-live="polite"></span></li>
-        <li data-t="abm2"><b>Simpan halaman ini sebagai bookmark:</b> di Chrome, ketuk <b>⋮</b> di pojok kanan atas, lalu ketuk ikon bintang <b>☆</b>.</li>
-        <li data-t="abm3"><b>Ubah bookmark itu:</b> ketuk <b>⋮ → Bookmark</b>, ketuk <b>⋮</b> di samping bookmark yang baru disimpan → <b>Edit</b>. Ganti namanya jadi <b>Sapu Berita</b>, hapus alamat (URL) yang ada, lalu tempel link yang tadi disalin. Ketuk panah kembali untuk menyimpan.</li>
-      </ol>
-      <div class="howto">
-        <h3 data-t="useTitle">Cara pakai bookmark-nya</h3>
-        <p class="why" data-t="useWhat">Bookmark ini bukan alamat web biasa: isinya program kecil yang dijalankan di halaman yang sedang kamu buka. Ia mencari teks artikelnya, membuang iklan dan "Baca Juga", menggabung semua halaman, lalu menampilkan versi bersihnya di atas halaman itu.</p>
-        <ol class="steps">
-          <li data-t="use1">Buka <b>satu artikel berita</b>, misalnya dari link yang dibagikan di WhatsApp. Harus halaman artikelnya, bukan halaman depan situs.</li>
-          <li data-t="use2android">Buka artikelnya di <b>Chrome</b>, ketuk kolom alamat, ketik <b>Sapu</b>, lalu pilih bookmark <b>Sapu Berita</b> dari saran yang muncul. (Chrome hanya menjalankannya dari kolom alamat, tidak dari daftar bookmark.)</li>
-          <li data-t="use3">Artikelnya langsung tampil bersih. Ketuk <b>Asli</b> kalau mau kembali ke halaman aslinya.</li>
-        </ol>
-        <p class="note" data-t="useLimit">Hanya jalan di artikel dari 28 situs yang didukung (Detik, Kompas, Tribun, dan lainnya). Di halaman lain tidak terjadi apa-apa.</p>
-      </div>
-    </div>
-
-    <div class="panel" role="tabpanel" data-panel="iphone" hidden>
-      <div data-when="shortcut" class="span">
-        <h3 data-t="iosTitle">Shortcut di Safari</h3>
-        <p class="why" data-t="iosWhy">Buka artikel di Safari, ketuk Bagikan, lalu Sapu Berita. Selalu versi terbaru, tidak perlu update.</p>
-        <p class="action"><a class="cta" data-link="shortcut" href="#" aria-disabled="true" data-t="iosButton">Tambahkan Shortcut</a></p>
-        <ol class="steps">
-          <li data-t="ios1">Ketuk <b>Tambahkan Shortcut</b>.</li>
-          <li data-t="ios2"><b>Pengaturan → Apps → Shortcuts → Lanjutan</b> → nyalakan <b>Izinkan Menjalankan Skrip</b>.</li>
-          <li data-t="ios3">Di artikel: <b>Bagikan → Sapu Berita</b>. Pertama kali di tiap situs, pilih <b>Izinkan Selalu</b>.</li>
-        </ol>
-      </div>
-      <div>
-        <h3 data-t="bmTitle">Atau: bookmark</h3>
-        <p class="why" data-t="bmWhy" data-when="no-shortcut">Tidak perlu memasang apa pun: kamu menyalin satu link khusus dan menyimpannya sebagai bookmark di Safari. Selalu versi terbaru. (Shortcut-nya segera hadir.)</p>
-      </div>
-      <ol class="steps">
-        <li data-t="bm1"><b>Salin link-nya:</b><br><button type="button" class="ghost" data-copy="bookmarklet" data-t="copy">Salin link Sapu Berita</button><span class="toast" role="status" aria-live="polite"></span></li>
-        <li data-t="bm2"><b>Simpan halaman ini sebagai bookmark:</b> buka toolbar Safari (ketuk <b>•••</b> di bawah layar), lalu ketuk <b>Tambah Bookmark</b> → <b>Simpan</b>. Kalau tidak ada, ketuk <b>Bagikan</b> dulu (kotak dengan panah ke atas).</li>
-        <li data-t="bm3"><b>Ubah bookmark itu:</b> buka daftar bookmark (ikon buku) → <b>Edit</b> → ketuk bookmark yang baru disimpan. Ganti judulnya jadi <b>Sapu Berita</b>, hapus alamat yang ada, lalu tempel link yang tadi disalin. Ketuk <b>Selesai</b>.</li>
-      </ol>
-      <div class="howto">
-        <h3 data-t="useTitle">Cara pakai bookmark-nya</h3>
-        <p class="why" data-t="useWhat">Bookmark ini bukan alamat web biasa: isinya program kecil yang dijalankan di halaman yang sedang kamu buka. Ia mencari teks artikelnya, membuang iklan dan "Baca Juga", menggabung semua halaman, lalu menampilkan versi bersihnya di atas halaman itu.</p>
-        <ol class="steps">
-          <li data-t="use1">Buka <b>satu artikel berita</b>, misalnya dari link yang dibagikan di WhatsApp. Harus halaman artikelnya, bukan halaman depan situs.</li>
-          <li data-t="use2ios">Dengan artikel terbuka di <b>Safari</b>, buka daftar bookmark (ikon buku) dan ketuk <b>Sapu Berita</b>. Jangan lewat kolom alamat: iPhone menolaknya dengan pesan "Cannot Run Script". Tidak jalan di mode <b>Pribadi</b> (Private).</li>
-          <li data-t="use3">Artikelnya langsung tampil bersih. Ketuk <b>Asli</b> kalau mau kembali ke halaman aslinya.</li>
-        </ol>
-        <p class="note" data-t="useLimit">Hanya jalan di artikel dari 28 situs yang didukung (Detik, Kompas, Tribun, dan lainnya). Di halaman lain tidak terjadi apa-apa.</p>
-      </div>
-    </div>
-
-    <div class="panel" role="tabpanel" data-panel="mac" hidden>
-      <div>
-        <h3 data-t="macTitle">Satu tombol di Safari</h3>
-        <p class="why" data-t="macWhy">Seret tombol di bawah ke bar Favorit. Selalu versi terbaru, tanpa pengaturan tambahan.</p>
-        <p class="action"><a class="bookmarklet" data-link="bookmarklet" href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 4 13 11M11.2 9.2l3.6 3.6M11.2 9.2C8 10 5.4 12.6 4 19c6.4-1.4 9-4 9.8-7.2M6.8 16.4 9.6 13.6M9 17.6l2.2-2.2"/></svg>Sapu Berita</a></p>
-        <p class="toast" data-drag-hint role="status" aria-live="polite"></p>
-      </div>
-      <ol class="steps">
-        <li data-t="mac1">Kalau bar Favorit belum terlihat: menu <b>Tampilan → Tampilkan Bar Favorit</b> (⇧⌘B).</li>
-        <li data-t="mac2">Seret tombol <b>Sapu Berita</b> ke bar Favorit.</li>
-        <li data-t="mac3">Di artikel berita, klik <b>Sapu Berita</b> di bar Favorit.</li>
-      </ol>
-      <p class="note span"><span data-t="macExt">Pakai Chrome, Brave, atau Edge di Mac? Ekstensinya jalan otomatis tanpa klik.</span> <button type="button" class="linkish" data-goto="extension" data-t="seeExt">Lihat cara pasang ekstensi</button></p>
-    </div>
-
-    <div class="panel" role="tabpanel" data-panel="desktop" hidden>
-      <div>
-        <h3 data-t="deskTitle">Chrome, Brave, Edge, Firefox</h3>
-        <p class="why" data-t="deskWhy">Paling gampang: seret tombol ini ke bar bookmark, lalu klik di artikel berita.</p>
-        <p class="action"><a class="bookmarklet" data-link="bookmarklet" href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 4 13 11M11.2 9.2l3.6 3.6M11.2 9.2C8 10 5.4 12.6 4 19c6.4-1.4 9-4 9.8-7.2M6.8 16.4 9.6 13.6M9 17.6l2.2-2.2"/></svg>Sapu Berita</a></p>
-        <p class="toast" data-drag-hint role="status" aria-live="polite"></p>
-      </div>
-      <div>
-        <ol class="steps">
-          <li data-t="desk1">Kalau bar bookmark belum terlihat: tekan <b>Ctrl+Shift+B</b>.</li>
-          <li data-t="desk2">Seret tombol <b>Sapu Berita</b> ke bar bookmark.</li>
-          <li data-t="desk3">Di artikel berita, klik <b>Sapu Berita</b>.</li>
-        </ol>
-        <p class="note"><span data-t="extNote">Mau otomatis tanpa klik? Pasang ekstensinya untuk Chrome, Brave, dan Edge.</span> <button type="button" class="linkish" data-goto="extension" data-t="seeExt">Lihat cara pasang ekstensi</button></p>
-      </div>
-    </div>
-    <div class="panel" role="tabpanel" data-panel="extension" id="ekstensi" hidden>
-      <div>
-        <h3 data-t="extTitle">Otomatis di Chrome, Brave, dan Edge</h3>
-        <p class="why" data-t="extWhy">Pasang sekali, lalu setiap artikel dari situs yang didukung langsung terbuka bersih, tanpa klik apa pun. Jalan di Windows, Mac, dan Linux.</p>
-        <p class="action"><a class="cta" data-link="extension" href="https://github.com/dhantyo/sapu-berita/releases/latest" data-t="extButton">Download ekstensi (.zip)</a></p>
-        <p class="note" data-t="extWhyManual">Selama beta, ekstensinya belum ada di Chrome Web Store, jadi dipasang manual. Sekali saja, sekitar satu menit.</p>
-        <p class="note" data-t="extDevNote">Chrome kadang menampilkan pemberitahuan soal ekstensi mode developer saat dibuka. Itu normal untuk ekstensi yang dipasang dengan cara ini; klik saja tutup.</p>
-      </div>
-      <div>
-        <ol class="steps">
-          <li data-t="ext1">Buka file <b>.zip</b> yang sudah di-download dan ekstrak (klik kanan → <b>Extract All</b> di Windows, klik dua kali di Mac). Simpan foldernya di tempat yang tidak akan kamu hapus, misalnya Documents.</li>
-          <li data-t="ext2">Ketik <b>chrome://extensions</b> di kolom alamat (Brave: <b>brave://extensions</b>, Edge: <b>edge://extensions</b>) lalu tekan Enter.</li>
-          <li data-t="ext3">Nyalakan <b>Developer mode</b> (<i>Mode pengembang</i>) di pojok kanan atas.</li>
-          <li data-t="ext4">Klik <b>Load unpacked</b> (<i>Muat yang belum dibuka</i>) dan pilih folder hasil ekstrak tadi.</li>
-          <li data-t="ext5">Buka artikel dari Detik, Kompas, atau situs lain yang didukung. Sapu Berita langsung jalan.</li>
-        </ol>
-        <h3 class="sub" data-t="extUpdTitle">Kalau ada versi baru</h3>
-        <ol class="steps">
-          <li data-t="extUpd1">Di atas artikel muncul kotak <b>"Sapu Berita … sudah tersedia"</b>. Ketuk <b>Update</b> untuk download zip barunya.</li>
-          <li data-t="extUpd2">Ekstrak dan timpa isi folder yang lama.</li>
-          <li data-t="extUpd3">Di <b>chrome://extensions</b>, klik ↻ di kartu Sapu Berita. Pengaturanmu tetap tersimpan.</li>
-        </ol>
-      </div>
-    </div>
   </div>
 </section>
 
@@ -380,12 +329,12 @@ footer { padding: 32px 0 48px; border-top: 1px solid var(--rule); color: var(--m
   <div class="wrap">
     <h2 data-t="sweptTitle">Yang disapu, yang disimpan</h2>
     <dl class="swept">
-      <div><dt data-t="s1t">Iklan dan pop-up</dt><dd data-t="s1d">Termasuk iklan layar penuh yang muncul belakangan.</dd></div>
-      <div><dt data-t="s2t">"Baca Juga" di tengah artikel</dt><dd data-t="s2d">Daftar link yang memotong paragraf hilang.</dd></div>
-      <div><dt data-t="s3t">Halaman 2, 3, 4…</dt><dd data-t="s3d">Digabung jadi satu halaman utuh.</dd></div>
-      <div><dt data-t="s4t">Tombol share dan ajakan</dt><dd data-t="s4d">Google News, newsletter, aplikasi, dan sejenisnya.</dd></div>
-      <div><dt data-t="s5t">Foto dan keterangannya</dt><dd data-t="s5d">Tetap ada, ukurannya pas. Ketuk foto untuk melihatnya layar penuh dan memperbesar.</dd></div>
-      <div><dt data-t="s6t">Posting media sosial yang dikutip</dt><dd data-t="s6d">Tetap ada dan bisa diputar langsung: YouTube, Instagram, TikTok, X, dan Facebook.</dd></div>
+      <div><dt data-t="s1t">Iklan dan pop-up</dt><dd data-t="s1d">Termasuk iklan layar penuh yang baru muncul setelah halaman selesai dimuat.</dd></div>
+      <div><dt data-t="s2t">"Baca Juga" di tengah artikel</dt><dd data-t="s2d">Daftar link yang memotong paragraf dibuang, jadi ceritanya bisa dibaca tanpa terputus.</dd></div>
+      <div><dt data-t="s3t">Halaman 2, 3, 4, dan seterusnya</dt><dd data-t="s3d">Semua halaman diambil dan digabung menjadi satu halaman yang utuh.</dd></div>
+      <div><dt data-t="s4t">Tombol share dan ajakan</dt><dd data-t="s4d">Ajakan untuk mengikuti Google News, berlangganan newsletter, atau download aplikasi juga ikut disapu.</dd></div>
+      <div><dt data-t="s5t">Foto dan keterangannya</dt><dd data-t="s5d">Tetap ada dengan ukuran yang pas. Ketuk foto untuk melihatnya dalam layar penuh dan memperbesarnya.</dd></div>
+      <div><dt data-t="s6t">Postingan media sosial yang dikutip</dt><dd data-t="s6d">Tetap ada dan bisa diputar langsung di dalam artikel: YouTube, Instagram, TikTok, X, dan Facebook.</dd></div>
     </dl>
     <p class="sites"><span data-t="sitesLabel">Situs yang didukung:</span> Detik, Kompas, Tribunnews, CNN Indonesia, CNBC Indonesia, Liputan6, Merdeka, Suara, Okezone, Viva, iNews, JPNN, ANTARA, Republika, Bisnis.com, Tirto, Tribrata News, Kumparan, IDN Times, Sindonews, Jawa Pos, Pikiran Rakyat, Kontan, Katadata, Media Indonesia, Berita Satu, Medcom, Kompas TV.</p>
   </div>
@@ -394,16 +343,22 @@ footer { padding: 32px 0 48px; border-top: 1px solid var(--rule); color: var(--m
 <section>
   <div class="wrap">
     <h2 data-t="privTitle">Privasi</h2>
-    <p class="privacy" data-t="privText">Semua jalan di perangkatmu. Sapu Berita tidak punya server, tidak memakai analitik, dan tidak tahu apa yang kamu baca. Sekali sehari ia mengambil nomor versi terbaru dan aturan situs dari GitHub; tidak ada data tentangmu yang dikirim.</p>
+    <p class="privacy"><span data-t="privText">Semua proses berjalan di perangkat kamu sendiri. Sapu Berita tidak punya server, tidak memakai analitik, dan tidak tahu artikel apa saja yang kamu baca. Sekali sehari, Sapu Berita mengecek apakah ada versi baru dan perbaikan untuk situs berita, tanpa mengirim data apa pun tentang kamu.</span> <a href="privacy.html" data-t="privLink">Baca kebijakan privasi lengkapnya</a></p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2 data-t="aiTitle">Dibuat dengan bantuan AI</h2>
+    <p class="privacy"><span data-t="aiText">Sapu Berita dibuat dengan bantuan AI. Sebagian besar kodenya ditulis bersama AI, lalu dites dan dirilis oleh pengelolanya. Seluruh kode Sapu Berita terbuka di GitHub, jadi siapa pun bisa memeriksa cara kerjanya.</span> <a href="https://github.com/dhantyo/sapu-berita" data-t="aiLink">Lihat kodenya di GitHub</a></p>
   </div>
 </section>
 
 <div class="wrap">
   <footer>
     <a href="https://github.com/dhantyo/sapu-berita">GitHub</a>
-    <a href="https://github.com/dhantyo/sapu-berita/issues/new/choose" data-t="report">Laporkan masalah</a>
+    <a href="https://github.com/dhantyo/sapu-berita/issues/new/choose" data-t="report">Kirim masukan</a>
     <span data-version></span>
-    <span class="ai" data-t="aiNote">Dibuat dengan AI (Claude dari Anthropic); dites dan dirilis oleh pengelolanya.</span>
   </footer>
 </div>
 
@@ -411,105 +366,131 @@ footer { padding: 32px 0 48px; border-top: 1px solid var(--rule); color: var(--m
 (function () {
   // Set once the Shortcut exists: Shortcuts app → share → Copy iCloud Link.
   var ICLOUD_SHORTCUT = '';
+  // Store pages. Leave one empty while it's still in review: its buttons and mentions stay hidden.
+  var STORE = {
+    chrome: 'https://chromewebstore.google.com/detail/cnpcdeijcckcobfngmglmdfgfcdlnglc',
+    edge: 'https://microsoftedge.microsoft.com/addons/detail/bhdciokajcobbbajokfomgjoonofcdbj',
+    firefox: '' // https://addons.mozilla.org/firefox/addon/sapu-berita/ once Mozilla approves it
+  };
 
   var EN = {
     h1: 'Read the news.<br>Sweep the rest.',
-    lead: 'Detik, Kompas, Tribun and 25 other sites as one clean page. No ads, no pop-ups, no clicking "next page".',
+    lead: 'Sapu Berita turns articles from Detik, Kompas, Tribun and 25 other news sites into one clean page: no ads, no pop-ups, and no clicking "next page".',
+    ctaAny: 'Install for free', ctaEdge: 'Add to Edge', ctaChrome: 'Add to Chrome', ctaFirefox: 'Add to Firefox',
+    ctaAndroid: 'Install on Android', ctaIphone: 'Install on iPhone', ctaSafari: 'Install in Safari',
+    heroSub: 'Free, no account needed. On another device?', heroAll: 'See every way to install it',
+    install: 'How to install Sapu Berita', computerTab: 'Computer',
+    androidTitle: 'On Android, install it through Edge or Firefox',
+    androidTitleNoFx: 'On Android, install it through Edge',
+    androidWhy: 'Chrome for Android doesn\'t let users install extensions. Edge and Firefox do, and Sapu Berita is available as an official extension in both of them.',
+    androidWhyNoFx: 'Chrome for Android doesn\'t let users install extensions. Edge does, and Sapu Berita is available there as an official extension. (The Firefox version is still being reviewed.)',
+    androidTip: '<b>So links from WhatsApp open clean too</b>, make Edge or Firefox your phone\'s default browser: open <b>Settings → Apps → Default apps → Browser app</b> and pick it. The menu names can differ a little from phone to phone.',
+    androidTipNoFx: '<b>So links from WhatsApp open clean too</b>, make Edge your phone\'s default browser: open <b>Settings → Apps → Default apps → Browser app</b> and pick Edge. The menu names can differ a little from phone to phone.',
+    android1: 'Install <b>Edge</b> or <b>Firefox</b> from the Play Store.', android1NoFx: 'Install <b>Edge</b> from the Play Store.',
+    android1Have: 'You\'re already using {b}, so go straight to the next step.',
+    playEdge: 'Edge on the Play Store', playFirefox: 'Firefox on the Play Store',
+    android2: 'Open this page in that browser, then add Sapu Berita.', android2NoFx: 'Open this page in Edge, then add Sapu Berita.',
+    addEdge: 'Add to Edge', addFirefox: 'Add to Firefox', addChrome: 'Add to Chrome',
+    android3: 'Then open news articles as usual, and Sapu Berita gets to work straight away.',
+    chromeTitle: 'If you\'d rather keep using Chrome',
+    chromeWhy: 'You can still use Sapu Berita in Chrome through a special bookmark. The difference: it doesn\'t run on its own, so you run the bookmark each time you open an article.',
+    abm1: 'Copy the special Sapu Berita link:', bm1: 'Copy the special Sapu Berita link:', copy: 'Copy the Sapu Berita link',
+    abm2: 'Save this page as a bookmark: in Chrome, tap <b>⋮</b> in the top-right corner, then tap the star <b>☆</b>.',
+    abm3: 'Change that bookmark: tap <b>⋮ → Bookmarks</b>, then tap <b>⋮</b> next to the bookmark you just saved and choose <b>Edit</b>. Rename it <b>Sapu Berita</b>, delete the address that\'s there, and paste the link you copied.',
+    abmUse: '<b>How to use it:</b> with a news article open, tap the address bar, type <b>Sapu</b>, and pick the <b>Sapu Berita</b> bookmark from the suggestions. Chrome only runs bookmarks like this from the address bar, not from the bookmarks list.',
+    kiwi: 'Using Kiwi, Lemur or another browser that can install Chrome extensions? You can add Sapu Berita straight from the Chrome Web Store.', openCws: 'Open in the Chrome Web Store',
+    iosTitle: 'On iPhone and iPad, install it as a Shortcut', iosWhy: 'Open an article in Safari, tap Share, then choose Sapu Berita. You always get the latest version, with nothing to update.',
+    iosButton: 'Add the Shortcut', ios1: 'Tap <b>Add the Shortcut</b>.',
+    ios2: 'Open <b>Settings → Apps → Shortcuts → Advanced</b> and turn on <b>Allow Running Scripts</b>.',
+    ios3: 'On a news article, tap <b>Share → Sapu Berita</b>. The first time you use it on a site, choose <b>Always Allow</b>.',
+    bmTitle: 'On iPhone and iPad, install it as a bookmark in Safari', bmTitleOr: 'Or: a bookmark in Safari',
+    bmWhy: 'Apple doesn\'t let extensions like Sapu Berita run in Safari unless they come as an App Store app, so for now Sapu Berita is installed as a bookmark. You set it up once, it takes about a minute, and you always get the latest version.',
+    bm2: 'Save this page as a bookmark: tap <b>Share</b> (the square with an arrow pointing up), then choose <b>Add Bookmark</b> and tap <b>Save</b>.',
+    bm3: 'Change that bookmark: open your bookmarks (the book icon), tap <b>Edit</b>, then tap the bookmark you just saved. Rename it <b>Sapu Berita</b>, delete the address that\'s there, and paste the link you copied. Tap <b>Done</b>.',
+    bmUse: '<b>How to use it:</b> with a news article open in Safari, open your bookmarks (the book icon) and tap <b>Sapu Berita</b>. Run it from the bookmarks list, not the address bar, because iPhone refuses it from the address bar. It also doesn\'t work in <b>Private</b> browsing.',
+    orion: '<b>Another way (experimental):</b> the <b>Orion</b> browser can install Chrome and Firefox extensions on iPhone. Its support is still in beta, and Sapu Berita hasn\'t been tested there yet.',
+    compTitle: 'On a computer, install it as an extension',
+    compWhy: 'Install it once. From then on, every article you open from a supported site appears clean straight away, without clicking anything. Updates install themselves too.',
+    chromeAlso: 'The Chrome button works for Brave, Opera and Vivaldi too.',
+    safariTitle: 'Using Safari on a Mac?',
+    safariWhy: 'Drag the button below to your Favourites bar, then click it whenever you open a news article. If the Favourites bar isn\'t showing, press <b>⇧⌘B</b>.',
+    otherTitle: 'Another way: a bookmark for other browsers',
+    otherWhy: 'Browser not listed above? Drag the <b>Sapu Berita</b> button from the Safari part to your bookmarks bar (press <b>Ctrl+Shift+B</b> if the bar isn\'t showing), then click it whenever you open a news article.',
     aboutTitle: 'What is Sapu Berita?',
-    aboutLead: 'A reading mode for Indonesian news sites. You still open articles on the original site; Sapu Berita tidies them up.',
-    aboutBody: 'News sites are full of ads, pop-ups and "Baca Juga" links that cut the story apart, and many articles are split over several pages to keep you clicking. Sapu Berita takes just the story (text, photos, captions, and the videos and posts it quotes) and shows it cleanly on top of that page.',
+    aboutLead: 'Sapu Berita is a reading mode for Indonesian news sites. You still open articles on the original site as usual, and Sapu Berita tidies them up right on your phone or computer, without going through any other server.',
     mockAd: 'Ad', mockAd2: 'Ad', mockPop: 'Ad', mockBj: 'Baca juga', mockMerged: 'p. 2', mockMerged3: 'p. 3', mockBefore: 'The original page', mockAfter: 'With Sapu Berita',
-    howTitle: 'How it works',
-    how1t: 'You open an article', how1d: 'From WhatsApp, Google, or straight from the site, as usual.',
-    how2t: 'Sapu Berita tidies it up', how2d: 'It finds the article text, drops ads and inserted links, and fetches pages 2, 3 and on from the same site.',
-    how3t: 'You read the clean version', how3d: 'Set the text size, font and dark theme the way you like. Tap a photo to zoom. The <b>Asli</b> button takes you back to the original page.',
-    howLocal: 'There\u2019s no server in between: the page still loads from the news site itself, and all the tidying happens on your phone or computer.',
-    modesTitle: 'How you open it',
-    m1t: 'Android app', m1d: 'News links from WhatsApp and other apps open clean straight away.',
-    m2t: 'Browser extension', m2d: 'Automatic in Chrome, Brave and Edge on a computer.',
-    m3t: 'Bookmark', m3d: 'For iPhone, iPad, Mac and other browsers: tap the Sapu Berita bookmark with the article open.',
-    cta: 'Install for free', install: 'Install on your device', desktopTab: 'Windows & others',
-    optA: 'Option 1', optB: 'Option 2',
-    abmTitle: 'A bookmark in Chrome (nothing to install)',
-    abmWhy: 'You copy one special link and save it as a bookmark in Chrome. The difference from the app: you tap the bookmark on each article.',
-    abm1: '<b>Copy the link:</b><br><button type="button" class="ghost" data-copy="bookmarklet">Copy the Sapu Berita link</button><span class="toast" role="status" aria-live="polite"></span>',
-    abm2: '<b>Save this page as a bookmark:</b> in Chrome, tap <b>⋮</b> in the top-right corner, then the star <b>☆</b>.',
-    abm3: '<b>Change that bookmark:</b> tap <b>⋮ → Bookmarks</b>, tap <b>⋮</b> next to the bookmark you just saved → <b>Edit</b>. Rename it <b>Sapu Berita</b>, delete the address (URL) that\'s there, and paste the link you copied. Tap the back arrow to save.',
-    useTitle: 'How to use the bookmark',
-    useWhat: 'This bookmark isn\'t a normal web address: it holds a small program that runs on the page you have open. It finds the article text, removes ads and "Baca Juga" lists, merges every page, and shows the clean version on top of that page.',
-    use1: 'Open <b>a single news article</b>, for example from a link shared on WhatsApp. It has to be the article page, not the site\'s homepage.',
-    use2ios: 'With the article open in <b>Safari</b>, open your bookmarks (the book icon) and tap <b>Sapu Berita</b>. Don’t use the address bar: iPhone refuses it there with a "Cannot Run Script" message. It doesn’t work in <b>Private</b> browsing.',
-    use2android: 'With the article open in <b>Chrome</b>, tap the address bar, type <b>Sapu</b>, and pick the <b>Sapu Berita</b> bookmark from the suggestions. (Chrome only runs it from the address bar, not from the bookmarks list.)',
-    use3: 'The article appears clean straight away. Tap <b>Asli</b> to go back to the original page.',
-    useLimit: 'It only works on articles from the 28 supported sites (Detik, Kompas, Tribun and others). On any other page nothing happens.',
-    androidTitle: 'Android app (automatic)', androidWhy: 'News links from WhatsApp, Telegram and other apps open clean. Your browser stays as it is.',
-    androidButton: 'Download the APK',
-    android1: 'Open the downloaded file. If asked, allow <b>Install unknown apps</b>.',
-    android2: 'Open <b>Sapu Berita</b> and follow its 3 steps. It shows exactly what to tap.',
-    android3: 'Done. Open news links as usual.',
-    iosTitle: 'Shortcut in Safari', iosWhy: 'Open an article in Safari, tap Share, then Sapu Berita. Always the latest version, nothing to update.',
-    iosButton: 'Add the Shortcut',
-    ios1: 'Tap <b>Add the Shortcut</b>.',
-    ios2: '<b>Settings → Apps → Shortcuts → Advanced</b> → turn on <b>Allow Running Scripts</b>.',
-    ios3: 'On an article: <b>Share → Sapu Berita</b>. The first time on each site, choose <b>Always Allow</b>.',
-    bmTitle: 'Or: a bookmark', bmTitleOnly: 'A bookmark in Safari',
-    bmWhy: 'Nothing to install: you copy one special link and save it as a bookmark in Safari. Always the latest version. (The Shortcut is coming soon.)',
-    bm1: '<b>Copy the link:</b><br><button type="button" class="ghost" data-copy="bookmarklet">Copy the Sapu Berita link</button><span class="toast" role="status" aria-live="polite"></span>',
-    bm2: '<b>Save this page as a bookmark:</b> open Safari\'s toolbar (tap <b>•••</b> at the bottom of the screen), then tap <b>Add Bookmark</b> → <b>Save</b>. If it isn\'t there, tap <b>Share</b> first (the square with an arrow).',
-    bm3: '<b>Change that bookmark:</b> open your bookmarks (the book icon) → <b>Edit</b> → tap the bookmark you just saved. Change its title to <b>Sapu Berita</b>, delete the address that\'s there, and paste the link you copied. Tap <b>Done</b>.',
-    macTitle: 'One button in Safari', macWhy: 'Drag the button below to your Favourites bar. Always the latest version, no extra settings.',
-    mac1: 'If the Favourites bar isn\'t showing: <b>View → Show Favourites Bar</b> (⇧⌘B).',
-    mac2: 'Drag the <b>Sapu Berita</b> button to the Favourites bar.',
-    mac3: 'On a news article, click <b>Sapu Berita</b> in the Favourites bar.',
-    extTab: 'Browser extension',
-    macExt: 'Using Chrome, Brave or Edge on your Mac? The extension runs automatically, no clicking.',
-    seeExt: 'See how to install the extension',
-    extTitle: 'Automatic in Chrome, Brave and Edge',
-    extWhy: 'Install it once, and every article from a supported site opens clean on its own, no clicking. Works on Windows, Mac and Linux.',
-    extButton: 'Download the extension (.zip)',
-    extWhyManual: 'During the beta it isn\'t in the Chrome Web Store yet, so it\'s installed by hand. Once, about a minute.',
-    extDevNote: 'Chrome sometimes shows a notice about developer-mode extensions when it starts. That\'s normal for extensions installed this way; just close it.',
-    ext1: 'Open the downloaded <b>.zip</b> and extract it (right-click → <b>Extract All</b> on Windows, double-click on Mac). Keep the folder somewhere you won\'t delete, like Documents.',
-    ext2: 'Type <b>chrome://extensions</b> in the address bar (Brave: <b>brave://extensions</b>, Edge: <b>edge://extensions</b>) and press Enter.',
-    ext3: 'Turn on <b>Developer mode</b> in the top-right corner.',
-    ext4: 'Click <b>Load unpacked</b> and pick the folder you extracted.',
-    ext5: 'Open an article on Detik, Kompas or another supported site. Sapu Berita runs straight away.',
-    extUpdTitle: 'When there\'s a new version',
-    extUpd1: 'A <b>"Sapu Berita … is available"</b> box appears above articles. Tap <b>Update</b> to download the new zip.',
-    extUpd2: 'Extract it over the old folder.',
-    extUpd3: 'In <b>chrome://extensions</b>, click ↻ on the Sapu Berita card. Your settings are kept.',
-    deskTitle: 'Chrome, Brave, Edge, Firefox', deskWhy: 'Easiest: drag this button to your bookmarks bar, then click it on a news article.',
-    desk1: 'If the bookmarks bar isn\'t showing: press <b>Ctrl+Shift+B</b>.',
-    desk2: 'Drag the <b>Sapu Berita</b> button to the bookmarks bar.',
-    desk3: 'On a news article, click <b>Sapu Berita</b>.',
-    extNote: 'Want it automatic, without clicking? Install the extension for Chrome, Brave and Edge.',
+    how1t: 'You open an article as usual', how1d: 'Whether from WhatsApp, Google, or straight from the news site.',
+    how2t: 'Sapu Berita takes just the story', how2d: 'The text, photos with their captions, and the videos or social posts it quotes. Ads, pop-ups and inserted links are dropped, while pages 2, 3 and on are fetched and merged into one.',
+    how3t: 'You read the clean version', how3d: 'Set the text size, font and theme the way you like, and the <b>Asli</b> button takes you back to the original page whenever you want.',
     sweptTitle: 'What gets swept, what stays',
-    s1t: 'Ads and pop-ups', s1d: 'Including full-screen ads that load later.',
-    s2t: '"Baca Juga" in the middle of the story', s2d: 'Link lists that cut paragraphs in half are gone.',
-    s3t: 'Pages 2, 3, 4…', s3d: 'Merged into one whole page.',
-    s4t: 'Share buttons and prompts', s4d: 'Google News, newsletters, apps and the like.',
-    s5t: 'Photos and captions', s5d: 'Kept, at a sensible size. Tap a photo to see it full screen and zoom in.',
-    s6t: 'Social posts the story quotes', s6d: 'Kept, and they play right in the article: YouTube, Instagram, TikTok, X and Facebook.',
+    s1t: 'Ads and pop-ups', s1d: 'Including full-screen ads that only show up after the page has loaded.',
+    s2t: '"Baca Juga" in the middle of the story', s2d: 'Link lists that cut paragraphs apart are removed, so you can read the story without interruptions.',
+    s3t: 'Pages 2, 3, 4 and on', s3d: 'Every page is fetched and merged into one whole page.',
+    s4t: 'Share buttons and prompts', s4d: 'Prompts to follow on Google News, subscribe to a newsletter or download an app are swept away too.',
+    s5t: 'Photos and captions', s5d: 'They stay, at a sensible size. Tap a photo to see it full screen and zoom in.',
+    s6t: 'Social posts the story quotes', s6d: 'They stay and play right inside the article: YouTube, Instagram, TikTok, X and Facebook.',
     sitesLabel: 'Supported sites:', privTitle: 'Privacy',
-    privText: 'Everything runs on your device. Sapu Berita has no server, no analytics, and doesn\'t know what you read. Once a day it downloads the latest version number and site rules from GitHub; nothing about you is sent.',
-    aiNote: 'Built with AI (Anthropic\'s Claude); tested and released by its maintainer.',
-    report: 'Report a problem', copied: 'Copied. Go on to step 2.', copyFail: 'Couldn\'t copy. Long-press the button below and copy the link instead.',
+    privText: 'Everything runs on your own device. Sapu Berita has no server, uses no analytics, and doesn\'t know which articles you read. Once a day it checks for a new version and fixes for news sites, without sending anything about you.',
+    privLink: 'Read the full privacy policy',
+    aiTitle: 'Made with the help of AI',
+    aiText: 'Sapu Berita was made with the help of AI. Most of its code was written together with AI, then tested and released by its maintainer. All of Sapu Berita\'s code is open on GitHub, so anyone can check how it works.',
+    aiLink: 'See the code on GitHub',
+    report: 'Send feedback', copied: 'Copied. Go on to step 2.', copyFail: 'Couldn\'t copy. Long-press the button below and copy the link instead.',
     dragHint: 'Drag this button to your bar, don\'t click it here.', version: 'Version '
   };
   var ID = {};
   document.querySelectorAll('[data-t]').forEach(function (el) { ID[el.dataset.t] = el.innerHTML; });
+  ID.ctaAny = 'Pasang gratis'; ID.ctaEdge = 'Tambahkan ke Edge'; ID.ctaChrome = 'Tambahkan ke Chrome'; ID.ctaFirefox = 'Tambahkan ke Firefox';
+  ID.ctaAndroid = 'Pasang di Android'; ID.ctaIphone = 'Pasang di iPhone'; ID.ctaSafari = 'Pasang di Safari';
+  ID.androidTitleNoFx = 'Di Android, install lewat Edge';
+  ID.androidWhyNoFx = 'Chrome versi Android tidak mengizinkan user untuk memasang extension. Edge mengizinkannya, dan Sapu Berita sudah tersedia di sana sebagai extension resmi. (Versi untuk Firefox masih ditinjau.)';
+  ID.androidTipNoFx = '<b>Supaya link dari WhatsApp juga langsung tampil bersih</b>, jadikan Edge sebagai browser utama di HP kamu. Caranya: buka <b>Setelan → Aplikasi → Aplikasi default → Aplikasi browser</b>, lalu pilih Edge. Nama menunya bisa sedikit berbeda di tiap HP.';
+  ID.android1NoFx = 'Install <b>Edge</b> dari Play Store.';
+  ID.android1Have = 'Kamu sudah memakai {b}, jadi langsung saja ke langkah berikutnya.';
+  ID.android2NoFx = 'Buka halaman ini di Edge, lalu tambahkan Sapu Berita.';
+  ID.bmTitleOr = 'Atau: bookmark di Safari';
   ID.copied = 'Tersalin. Lanjut ke langkah 2.';
   ID.copyFail = 'Gagal menyalin. Tekan lama tombol di bawah, lalu salin link-nya.';
   ID.dragHint = 'Seret tombol ini ke bar, jangan diklik di sini.';
   ID.version = 'Versi ';
-  ID.bmTitleOnly = 'Bookmark di Safari';
 
   var lang = 'id';
   try { lang = localStorage.getItem('sapu-lang') || (navigator.language || '').slice(0, 2) === 'en' && 'en' || 'id'; } catch (e) {}
-  var t = function (k) { return (lang === 'en' ? EN : ID)[k] || ID[k] || ''; };
+  var t = function (k) {
+    var d = lang === 'en' ? EN : ID;
+    if (!STORE.firefox && (d[k + 'NoFx'] || ID[k + 'NoFx'])) return d[k + 'NoFx'] || ID[k + 'NoFx'];
+    return d[k] || ID[k] || '';
+  };
+
+  // The visitor's device and browser pick the tab, the hero button and which store button leads.
+  var ua = navigator.userAgent;
+  var iPadOS = /Macintosh/.test(ua) && navigator.maxTouchPoints > 1;
+  var device = /Android/.test(ua) ? 'android' : /iPhone|iPad|iPod/.test(ua) || iPadOS ? 'iphone' : 'computer';
+  var browser = /EdgA?\/|EdgiOS/.test(ua) ? 'edge' : /Firefox\/|FxiOS/.test(ua) ? 'firefox' : /Chrome\/|CriOS/.test(ua) ? 'chrome' : /Safari\//.test(ua) ? 'safari' : 'other';
+  var names = { edge: 'Edge', firefox: 'Firefox' };
+  var hasExt = function (b) { return (b === 'edge' || b === 'firefox' || b === 'chrome') && !!STORE[b]; };
+  var heroKey = 'ctaAny', heroHref = '#pasang';
+  if (device === 'iphone') heroKey = 'ctaIphone';
+  else if (device === 'android') {
+    if ((browser === 'edge' || browser === 'firefox') && hasExt(browser)) { heroKey = browser === 'edge' ? 'ctaEdge' : 'ctaFirefox'; heroHref = STORE[browser]; }
+    else heroKey = 'ctaAndroid';
+  } else if (hasExt(browser)) { heroKey = { edge: 'ctaEdge', firefox: 'ctaFirefox', chrome: 'ctaChrome' }[browser]; heroHref = STORE[browser]; }
+  else if (browser === 'safari') heroKey = 'ctaSafari';
+  var hero = document.getElementById('hero-cta');
+  hero.dataset.t = heroKey; hero.href = heroHref;
+  // Already in Edge/Firefox on Android: step 1 (get the browser) is done.
+  var haveBrowser = device === 'android' && (browser === 'edge' || browser === 'firefox') && hasExt(browser);
+
   function applyLang() {
     document.documentElement.lang = lang;
     document.querySelectorAll('[data-t]').forEach(function (el) { el.innerHTML = t(el.dataset.t); });
+    if (haveBrowser) {
+      var s = document.querySelector('[data-have]');
+      s.textContent = t(s.dataset.have).replace('{b}', names[browser]);
+      document.querySelector('[data-hide-have]').hidden = true;
+    }
+    var bmTitle = document.querySelector('[data-t="bmTitle"]');
+    if (bmTitle && ICLOUD_SHORTCUT) bmTitle.textContent = t('bmTitleOr');
     document.querySelectorAll('.lang button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.lang === lang)); });
     wire();
     if (version) document.querySelector('[data-version]').textContent = t('version') + version;
@@ -518,25 +499,26 @@ footer { padding: 32px 0 48px; border-top: 1px solid var(--rule); color: var(--m
     b.addEventListener('click', function () { lang = b.dataset.lang; try { localStorage.setItem('sapu-lang', lang); } catch (e) {} applyLang(); });
   });
 
-  // Device tabs, preselected from the visitor's device.
-  var ua = navigator.userAgent;
-  var iPadOS = /Macintosh/.test(ua) && navigator.maxTouchPoints > 1;
-  var guess = /Android/.test(ua) ? 'android' : /iPhone|iPad|iPod/.test(ua) || iPadOS ? 'iphone' : /Macintosh/.test(ua) ? 'mac' : 'desktop';
+  // Store buttons: live ones get their link; the visitor's own browser gets the big button.
+  document.querySelectorAll('[data-store]').forEach(function (a) {
+    var s = a.dataset.store;
+    if (!STORE[s]) { a.hidden = true; return; }
+    a.href = STORE[s];
+    if (s === browser && !a.classList.contains('inline')) { a.classList.remove('ghost'); a.classList.add('cta'); }
+  });
+  document.querySelectorAll('[data-store-needs]').forEach(function (el) { if (!STORE[el.dataset.storeNeeds]) el.hidden = true; });
+  // Safari on a Mac: the drag button is their way in, so it comes first.
+  if (browser === 'safari' && device === 'computer') document.querySelector('[data-panel="computer"]').classList.add('safari-first');
+
   function pick(d) {
     document.querySelectorAll('.devices button').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.device === d)); });
     document.querySelectorAll('.panel').forEach(function (p) { p.hidden = p.dataset.panel !== d; });
   }
   document.querySelectorAll('.devices button').forEach(function (b) { b.addEventListener('click', function () { pick(b.dataset.device); }); });
-  // In-page links to another tab ("see how to install the extension"), and #ekstensi from outside.
-  document.addEventListener('click', function (e) {
-    var go = e.target.closest && e.target.closest('[data-goto]');
-    if (!go) return;
-    pick(go.dataset.goto);
-    document.getElementById('pasang').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  });
-  pick(location.hash === '#ekstensi' ? 'extension' : guess);
+  // Old links to #ekstensi land on the computer tab.
+  pick(location.hash === '#ekstensi' ? 'computer' : device);
 
-  // Live links from the release channel (same site): APK of the latest release, the bookmark code.
+  // Live bits from the release channel (same site): the bookmark code, the version, the feedback form.
   var bookmarklet = '', version = '';
   function wire() {
     document.querySelectorAll('[data-link="bookmarklet"]').forEach(function (a) {
@@ -554,21 +536,14 @@ footer { padding: 32px 0 48px; border-top: 1px solid var(--rule); color: var(--m
     var sc = document.querySelector('[data-link="shortcut"]');
     if (ICLOUD_SHORTCUT) { sc.href = ICLOUD_SHORTCUT; sc.removeAttribute('aria-disabled'); }
     else sc.onclick = function (e) { e.preventDefault(); };
-    document.querySelectorAll('[data-when]').forEach(function (el) {
-      el.hidden = (el.dataset.when === 'shortcut') !== !!ICLOUD_SHORTCUT;
-    });
-    var bmTitle = document.querySelector('[data-t="bmTitle"]');
-    if (bmTitle && !ICLOUD_SHORTCUT) bmTitle.textContent = t('bmTitleOnly');
+    document.querySelectorAll('[data-when]').forEach(function (el) { el.hidden = !ICLOUD_SHORTCUT; });
   }
   fetch('bookmarklet.txt').then(function (r) { return r.ok ? r.text() : ''; }).then(function (s) { bookmarklet = s.trim(); wire(); }, function () {});
   fetch('update.json').then(function (r) { return r.ok ? r.json() : null; }).then(function (m) {
     if (!m) return;
     version = m.version;
-    if (m.android) document.querySelector('[data-link="android"]').href = m.android;
-    var repo = (m.notes || '').split('/releases/')[0];
-    if (repo && version) document.querySelector('[data-link="extension"]').href = repo + '/releases/download/v' + version + '/sapu-berita-extension-' + version + '.zip';
     document.querySelector('[data-version]').textContent = t('version') + version;
-    // The report form, when one is set (no GitHub account needed): same template the reader fills in.
+    // The feedback form (no GitHub account needed): same template the reader fills in.
     if (m.report) {
       var fields = { url: '', title: '', site: '', version: version, platform: 'web', note: '' };
       document.querySelector('[data-t="report"]').href = m.report.replace(/\{(url|title|site|version|platform|note)\}/g, function (_, k) { return encodeURIComponent(fields[k]); });
