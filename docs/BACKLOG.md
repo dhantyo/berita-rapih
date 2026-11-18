@@ -13,6 +13,9 @@ Work queued for the weekly run ([MAINTAINING.md](MAINTAINING.md)). One line per 
 
 ### Other items
 
+- **Bug (0.7.0): the "send your edits?" question never shows after editing**, and nothing confirms a sent edit. Reproduce first: change a rule in the editor, close it, and check whether `finish()` in `src/render/editor.ts` reaches the ask (the `shape` comparison, `sendEditsAsked`). Then add a short confirmation once an edit is sent, e.g. a toast "Terima kasih, perubahan kamu sudah terkirim", also when sending is already switched on and happens silently. Platform not stated; check the extension and the Android app. Source: user, 2026-11-18.
+- **Top bar should follow the scroll, not jump.** With "hide bar" on, it now snaps hidden or shown (`barHiddenAfterScroll` in `src/render/overlay.ts`). Make it slide by the scroll distance: scrolling up by 20px reveals 20px of the bar, as Chrome's address bar on Android does. Translate the bar by a clamped offset (0 to its height) updated from each scroll delta. When scrolling stops, finish to fully shown or hidden. Always fully shown at the top of the article and while a panel is open. Source: user, 2026-11-18.
+
 - **Kompas: "Lihat Foto" left in the clean view** under photos (the caption's link to the photo gallery). Seen on https://www.kompas.com/food/read/2026/11/18/203014675/10-hidangan-sup-terbaik-di-asia-tenggara-ada-3-dari-indonesia. Source: maintainer.
 - **Detik Travel: two paragraphs run together** without a gap ("…PUBG Mobile. Bagi traveler…") on https://travel.detik.com/cerita-perjalanan/d-8758455/hidden-gem-paramotor-di-cikarang-wisatawan-serasa-main-pubg. Probably a `<br>` between them. Source: maintainer.
 - **Report button in the Android app.** The app has no way into the feedback page outside the reader. Source: maintainer.
