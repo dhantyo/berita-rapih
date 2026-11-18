@@ -4,7 +4,7 @@ Versions follow [semver](https://semver.org): MAJOR.MINOR.PATCH. While the versi
 
 The first four releases were published as 0.1.0-beta.1 to beta.4 and renamed on 2026-11-13 to the scheme below; the app files inside those releases still report their original beta names.
 
-## [Unreleased]
+## [0.7.0] - 2026-11-18
 
 - The install page is simpler: install comes first, with one recommended way per device (Android, iPhone & iPad, computer) and a button for the browser you're using. The extension is now in the Chrome Web Store and Edge Add-ons, including Edge on Android.
 - A visible note on the install page that Sapu Berita is made with the help of AI.
