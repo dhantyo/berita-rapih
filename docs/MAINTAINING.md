@@ -18,6 +18,7 @@ There are two runs:
   - [ARCHITECTURE.md](ARCHITECTURE.md): the pipeline.
   - [RULES.md](RULES.md): writing and fixing site rules.
   - [DEVELOPING.md](DEVELOPING.md): build, release, report link.
+  - [SETTINGS.md](SETTINGS.md): what the settings panel holds and which build shows what.
   - [FEEDBACK.md](FEEDBACK.md): the feedback page and the editor's internals.
   - `PRODUCT.md`, `DESIGN.md`: principles and the visual system. Read them for UI work only.
 - **Tools:**
