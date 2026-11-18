@@ -6,8 +6,8 @@ Work queued for the weekly run ([MAINTAINING.md](MAINTAINING.md)). One line per 
 
 ### First: after 0.7.0 (released 2026-11-18)
 
-1. Upload `sapu-berita-extension-0.7.0.zip` to the Chrome Web Store and Edge Add-ons, and `sapu-berita-firefox-0.7.0.zip` (with the source zip) to AMO, with the four images in `docs/store/`.
-2. Store privacy tabs: tick **Web history** and **Website content** (docs/STORES.md). The user does Chrome's; Edge's can be done through Brave.
+1. **Chrome Web Store (the user does it; extensions can't script that dashboard):** upload `sapu-berita-extension-0.7.0.zip`, replace the screenshots with the four in `docs/store/`, tick **Web history** and **Website content** in the privacy tab, and change "Aa →" in the description (new text in docs/STORES.md).
+2. Done on 2026-11-18: Firefox 0.7.0 submitted with its source zip (listing screenshots and description updated); Edge 0.7.0 submitted (in review; privacy tab, screenshots and description updated). Check both went live.
 3. Two weeks after 0.7.0 (from 2026-12-02), if the old Tally sheet is quiet, tell the user the Tally form can be deleted.
 
 ### Other items
