@@ -8,7 +8,7 @@ Work queued for the weekly run ([MAINTAINING.md](MAINTAINING.md)). One line per 
 
 1. **Chrome Web Store (the user does it; extensions can't script that dashboard):** upload `sapu-berita-extension-0.7.0.zip`, replace the screenshots with the four in `docs/store/`, tick **Web history** and **Website content** in the privacy tab, and change "Aa →" in the description (new text in docs/STORES.md).
 2. Done on 2026-11-18: Firefox 0.7.0 submitted with its source zip (listing screenshots and description updated); Edge 0.7.0 submitted (in review; privacy tab, screenshots and description updated). Check both went live.
-3. **Automatic store uploads (the user creates the keys):** the `stores` job in ci.yml is ready and skips each store until its secrets exist. Steps for each store's keys are in docs/STORES.md, "Automatic store uploads". After the first release with keys, check each store got the new version.
+3. **Automatic store uploads (the user creates the keys):** done 2026-11-19: all eight secrets are set. After the first release that uses them, check each store got the new version (the run's Stores summary, then each dashboard).
 4. Two weeks after 0.7.0 (from 2026-12-02), if the old Tally sheet is quiet, tell the user the Tally form can be deleted.
 
 ### Other items

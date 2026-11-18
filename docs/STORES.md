@@ -14,9 +14,11 @@ All three come from the GitHub release assets. Listing images live in `docs/stor
 
 ## Updating a listing after a release
 
-Once a store's keys are in the repository secrets (below), the release workflow submits the new package to it by itself: the `stores` job in `.github/workflows/ci.yml` runs after every release tag except pre-releases. Chrome and Edge review it in hours to a few days. Firefox usually signs it within minutes, and a human may review it later.
+Once a store's keys are in the repository secrets (below), the release workflow submits the new package to it by itself. `.github/workflows/stores.yml` runs after every release tag except pre-releases.
 
-The APIs only send the package. Description, screenshots and the privacy tabs are still changed by hand in each dashboard, which is only needed when those change.
+It can also be started by hand for an existing release, for example to retry one store after its review finished: **Actions → Stores → Run workflow**, or `gh workflow run stores.yml -f tag=v0.7.0 -f stores=chrome`. Chrome and Edge review it in hours to a few days. Firefox usually signs it within minutes, and a human may review it later.
+
+The APIs only send the package. Description, screenshots and the privacy tabs are still changed by hand in each dashboard, which is only needed when those change. In the Chrome dashboard, save those edits without submitting: the upload then submits them together with the package.
 
 A store without keys is skipped, and its package is uploaded by hand from the release assets as before. A store still reviewing the previous version may refuse the new one. With daily releases that is common and harmless, because the next release catches up, so it shows as a warning on the run and in its summary rather than a failed run. The daily maintenance run reads those warnings and reports the ones that aren't a pending review, such as an expired key.
 
