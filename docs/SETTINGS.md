@@ -80,6 +80,14 @@ In a store install, "Cek update" still fetches the daily site fixes (`rules.json
 - `personal`: the reader's own rules per outlet, made in the editor (`src/personal.ts`).
 - `hidden`, `added`: lists from before 0.6, read once, folded into `personal`, then never written again.
 
+## Planned (in BACKLOG.md, not built yet)
+
+- **Tawarkan Sapu Berita di situs berita lain** (Umum, extension only, off by default). When it's switched on, the extension asks for access to all sites. An article on an unsupported site then shows a small offer card by itself. Switching it off gives the access back.
+- **"Jangan tawarkan di situs ini"** on that card, a per-site list. It needs a place in the panel to undo it, for example a list of silenced sites under the switch.
+- **Toolbar popup** (extension): open the reader, open settings (the same panel, reused), a switch for the current site, and "Coba Sapu Berita di halaman ini" on article pages of unsupported sites.
+- **"Kirim perubahan"** gets a short confirmation when an edit is sent. The setting itself stays as it is.
+- **The UI sweep** may regroup or rename anything above. Update this file when it does.
+
 ## Notes for the sweep
 
 - The look controls have no group title, while the two switch groups do.
