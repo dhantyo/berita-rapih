@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildNote, createFeedbackPage } from '../src/render/feedback.ts';
 import { strings } from '../src/render/i18n.ts';
+import type { ReportInput } from '../src/render/overlay.ts';
 
 const labels = { problems: 'Masalah', story: 'Cerita', details: 'Rincian' };
 
@@ -23,19 +24,25 @@ describe('buildNote', () => {
 });
 
 describe('feedback page', () => {
-  const make = (url = 'https://r.example/new?note=') => {
+  const make = (ok = true) => {
     const calls: string[] = [];
+    const sent: ReportInput[] = [];
     const page = createFeedbackPage({
       doc: document, t: strings('id'), hostname: 'www.detik.com',
       details: () => [['Link', 'https://www.detik.com/a']],
-      reportUrl: (note) => url + encodeURIComponent(note),
+      reportLink: (input) => `https://r.example/form?note=${encodeURIComponent(input.note)}`,
+      send: async (input) => {
+        sent.push(input);
+        return ok;
+      },
       close: () => calls.push('close'),
       editArticle: () => calls.push('edit'),
     });
     document.body.replaceChildren(page.el);
-    return { page, calls };
+    return { page, calls, sent };
   };
   const click = (el: Element | null) => (el as HTMLElement).click();
+  const settle = () => new Promise((r) => setTimeout(r, 0));
 
   it('offers four choices, and back returns step by step', () => {
     const { page, calls } = make();
@@ -53,26 +60,43 @@ describe('feedback page', () => {
     click(page.el.querySelectorAll('.fb-choice')[0]!);
     expect(calls).toEqual(['edit']);
   });
-  it('builds the report link from chips, text and details; inert until something is filled in', () => {
-    const { page } = make();
+  it('sends the report from chips, text and details; disabled until something is filled in', async () => {
+    const { page, sent } = make();
     click(page.el.querySelectorAll('.fb-choice')[1]!);
-    const send = page.el.querySelector('.fb-send')!;
-    expect(send.getAttribute('aria-disabled')).toBe('true');
+    const send = page.el.querySelector<HTMLButtonElement>('.fb-send')!;
+    expect(send.disabled).toBe(true);
     click(page.el.querySelectorAll('.fb-chip')[2]!);
     const ta = page.el.querySelector('textarea')!;
     ta.value = 'Foto kosong';
     ta.dispatchEvent(new Event('input'));
-    const href = send.getAttribute('href')!;
-    const note = decodeURIComponent(href.split('note=')[1]!);
-    expect(note).toContain('Masalah: Foto/video');
-    expect(note).toContain('Cerita: Foto kosong');
-    expect(note).toContain('- Link: https://www.detik.com/a');
-    expect(page.el.querySelector('.fb-details')!.textContent).toContain('https://www.detik.com/a');
+    expect(send.disabled).toBe(false);
+    click(send);
+    await settle();
+    expect(sent).toHaveLength(1);
+    expect(sent[0]!.kind).toBe('report');
+    expect(sent[0]!.note).toContain('Masalah: Foto atau video');
+    expect(sent[0]!.note).toContain('Cerita: Foto kosong');
+    expect(sent[0]!.note).toContain('- Link: https://www.detik.com/a');
+    expect(page.el.querySelector('.fb-sent')).not.toBeNull();
   });
-  it('prefills the site suggestion with this hostname', () => {
-    const { page } = make();
+  it('offers the form in a new tab when sending from this page fails', async () => {
+    const { page } = make(false);
+    click(page.el.querySelectorAll('.fb-choice')[3]!);
+    const ta = page.el.querySelector('textarea')!;
+    ta.value = 'Mode gelap lebih gelap';
+    ta.dispatchEvent(new Event('input'));
+    click(page.el.querySelector('.fb-send'));
+    await settle();
+    const link = page.el.querySelector<HTMLAnchorElement>('.fb-fallback a')!;
+    expect(decodeURIComponent(link.href)).toContain('Mode gelap lebih gelap');
+    expect(link.target).toBe('_blank');
+  });
+  it('prefills the site suggestion with this hostname', async () => {
+    const { page, sent } = make();
     click(page.el.querySelectorAll('.fb-choice')[2]!);
     expect((page.el.querySelector('input') as HTMLInputElement).value).toBe('www.detik.com');
-    expect(decodeURIComponent(page.el.querySelector('.fb-send')!.getAttribute('href')!)).toContain('Usulan situs: www.detik.com');
+    click(page.el.querySelector('.fb-send'));
+    await settle();
+    expect(sent[0]).toMatchObject({ kind: 'site', note: 'Usulan situs: www.detik.com' });
   });
 });

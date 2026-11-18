@@ -10,14 +10,15 @@ import {
   type RunResult,
 } from '../index.ts';
 import { normalizeSettings, outletDomain, outletStore, type Settings, type SettingsStore } from '../settings.ts';
-import type { OfficialView, RuleSet } from '../types.ts';
+import type { Article, OfficialView, RuleSet } from '../types.ts';
+import type { ReportInput } from '../render/overlay.ts';
 import { adblockSelectors, findRule } from '../rules/match.ts';
 import { personalForPage } from '../personal.ts';
 import { genericRuleFor, needsNewSitePrompt } from '../newsite.ts';
 import { showNewSitePrompt } from '../render/newsiteprompt.ts';
 import { strings } from '../render/i18n.ts';
 import { ensureFonts } from '../render/fonts.ts';
-import { cachedManifest, isSnoozed, latestManifest, offerFor, reportLink, snoozeOffer, type Platform } from '../update.ts';
+import { cachedManifest, formPost, isSnoozed, latestManifest, offerFor, reportLink, sendForm, snoozeOffer, type Platform, type ReportFields } from '../update.ts';
 
 /** Release channel (update.json + rules.json), set at build time via esbuild `define`; empty = no updates. */
 declare const __CHANNEL_URL__: string;
@@ -81,6 +82,11 @@ export async function boot(options: BootOptions = {}): Promise<BootResult> {
       return r.ok ? { article: r.article, rule, removeSelectors: [...rules.common.remove, ...rule.remove, ...adblockSelectors(rules, url.hostname)] } : undefined;
     })());
   let pending: Promise<void> = Promise.resolve();
+  // Feedback goes to a form (update.json can swap it without an app update); a Google Form takes it directly.
+  const feedbackTemplate = () => cachedManifest()?.form || __REPORT_URL__;
+  const reportFields = (a: Article, r: ReportInput): ReportFields => ({
+    url: url.href, title: a.meta.title, site: url.hostname, version: VERSION, platform, ...r,
+  });
   const overlayOptions = (settings: Settings, loadingMore: boolean): OverlayOptions => ({
     settings,
     loadingMore,
@@ -93,11 +99,16 @@ export async function boot(options: BootOptions = {}): Promise<BootResult> {
     onSettingsChange: (s) => void store.save(s),
     onSnoozeUpdate: snoozeOffer,
     loadFonts: (f) => ensureFonts(document, f, __GEIST__, CHANNEL && new URL('fonts/', CHANNEL).href),
-    reportUrl: (a, note) => {
-      const template = cachedManifest()?.report || __REPORT_URL__;
-      return template ? reportLink(template, {
-        url: url.href, title: a.meta.title, site: url.hostname, version: VERSION, platform, note: note ?? '',
-      }) : undefined;
+    report: {
+      link: (a, r) => {
+        const template = feedbackTemplate();
+        return template ? reportLink(template, reportFields(a, r)) : undefined;
+      },
+      send: async (a, r) => {
+        const template = feedbackTemplate();
+        const post = template ? formPost(template, reportFields(a, r)) : undefined;
+        return post ? sendForm(post) : false;
+      },
     },
   });
 

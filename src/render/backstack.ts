@@ -1,10 +1,10 @@
 /**
  * Back (Android's back button, the browser's, an iPhone edge swipe) closes the reader's topmost layer —
- * the Aa panel, the feedback page and its sub-pages, the editor — instead of leaving the news site.
+ * the settings panel, the feedback page and its sub-pages, the editor — instead of leaving the news site.
  *
  * Each open layer owns one history entry. Back pops the top layer (its handler closes it). Closing a layer
  * any other way (✕, Selesai, tapping outside) calls `release`, which drops that entry again so history stays
- * as it was. Moving from one layer straight to the next (Aa → Beri masukan → Atur isi artikel) hands the
+ * as it was. Moving from one layer straight to the next (Pengaturan → Beri masukan → Atur isi artikel) hands the
  * same entry over (`hand`) rather than dropping one and adding another: history.back() is asynchronous and
  * would race the new entry. The photo viewer keeps its own entry (render/gallery.ts).
  */

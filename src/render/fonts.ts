@@ -2,7 +2,7 @@
  * Sapu Berita's own fonts, the same on every device:
  *   - Geist (the identity: headlines, text, labels) is built into the script, so it's there instantly,
  *     offline, and no news site's font policy can block it.
- *   - Merriweather (Aa → Serif) and Fira Sans (Aa → Jelas) download only when the reader picks them,
+ *   - Merriweather (Pengaturan → Serif) and Fira Sans (Pengaturan → Jelas) download only when the reader picks them,
  *     from the release channel, and the browser caches them.
  *
  * Fonts are registered on the page's document.fonts (Shadow DOM trees use the document's fonts) under

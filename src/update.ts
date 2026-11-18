@@ -4,7 +4,7 @@
  *
  *   { "version": "0.1.0-beta.2", "notes": "https://…/releases/tag/v0.1.0-beta.2",
  *     "android": "https://…/sapu-berita-0.1.0-beta.2.apk", "extension": "https://…/releases/tag/…",
- *     "apple": "https://…/docs/install-apple.md", "report": "https://…?url={url}&…" }
+ *     "apple": "https://…/docs/install-apple.md", "form": "https://docs.google.com/forms/…/viewform?…" }
  */
 
 export type Platform = 'android' | 'apple' | 'extension' | 'web';
@@ -15,8 +15,8 @@ export interface UpdateManifest {
   android?: string;
   extension?: string;
   apple?: string;
-  /** Overrides the built-in report link template (e.g. a form that needs no account). */
-  report?: string;
+  /** Overrides the built-in feedback link template (reportLink). Releases before 0.7 read `report` instead. */
+  form?: string;
 }
 
 export interface UpdateOffer {
@@ -99,9 +99,48 @@ function parse(v: string): { core: number[]; pre: string[] } | null {
   return m ? { core: [Number(m[1]), Number(m[2]), Number(m[3])], pre: m[4] ? m[4].split('.') : [] } : null;
 }
 
-/** Fill a report link template. Placeholders: {url} {title} {site} {version} {platform} {note}. */
-export function reportLink(template: string, fields: Record<'url' | 'title' | 'site' | 'version' | 'platform', string> & { note?: string }): string {
-  return template.replace(/\{(url|title|site|version|platform|note)\}/g, (_, k: keyof typeof fields) => encodeURIComponent(fields[k] ?? ''));
+export type ReportKind = 'report' | 'idea' | 'site' | 'edit';
+
+export type ReportFields = Record<'url' | 'title' | 'site' | 'version' | 'platform', string> & {
+  kind?: ReportKind;
+  note?: string;
+  /** Machine-readable part, e.g. an edited rule as JSON. */
+  detail?: string;
+};
+
+/** Fill a feedback link template. Placeholders: {url} {title} {site} {version} {platform} {kind} {note} {detail}. */
+export function reportLink(template: string, fields: ReportFields): string {
+  return template.replace(/\{(url|title|site|version|platform|kind|note|detail)\}/g, (_, k: keyof ReportFields) => encodeURIComponent(fields[k] ?? ''));
+}
+
+/**
+ * A Google Form template (its prefilled "viewform" link) can also take the answers directly: the same
+ * `entry.*` fields posted to its formResponse address. Undefined for any other destination.
+ */
+export function formPost(template: string, fields: ReportFields): { action: string; body: URLSearchParams } | undefined {
+  let u: URL;
+  try {
+    u = new URL(reportLink(template, fields));
+  } catch {
+    return undefined;
+  }
+  if (u.hostname !== 'docs.google.com' || !/^\/forms\/d\/e\/[\w-]+\/viewform$/.test(u.pathname)) return undefined;
+  const body = new URLSearchParams();
+  for (const [k, v] of u.searchParams) if (k.startsWith('entry.')) body.append(k, v);
+  return { action: `${u.origin}${u.pathname.replace(/viewform$/, 'formResponse')}`, body };
+}
+
+/**
+ * Post the answers. The response is opaque (no-cors), so this only knows the request went out; it fails
+ * when the network is down or the page's security policy forbids the request (the bookmark runs as the page).
+ */
+export async function sendForm(post: { action: string; body: URLSearchParams }, fetchFn: typeof fetch = fetch): Promise<boolean> {
+  try {
+    await fetchFn(post.action, { method: 'POST', mode: 'no-cors', credentials: 'omit', body: post.body });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 const SNOOZE_KEY = 'sapuberita:update-snoozed';

@@ -18,7 +18,7 @@ jobs:
       - run: npm run import:adblock
       - run: npm run typecheck
       - run: npm test
-      # Where the reader's "Laporkan" button and the install page send reports. A repository variable
+      # Where the reader's feedback goes (a Google Form's prefilled link, posted to directly). A repository variable
       # (Settings → Secrets and variables → Actions → Variables), so it can point at a form that needs no
       # GitHub account; unset = the GitHub "Broken article" form. See docs/DEVELOPING.md.
       - run: npm run build
@@ -128,9 +128,10 @@ jobs:
             "apple": "$REPO_URL/blob/master/docs/install-apple.md"
           }
           JSON
-          # Installed copies read the report link from here too, so changing the form needs no app update.
+          # Installed copies read the feedback form from here too (`form`; 0.6 and older read `report` and keep their
+          # built-in link when it's missing), so changing the form needs no app update.
           if [ -n "$SAPU_REPORT_URL" ]; then
-            node -e "const fs=require('fs'),f='channel/update.json',m=JSON.parse(fs.readFileSync(f,'utf8'));m.report=process.env.SAPU_REPORT_URL;fs.writeFileSync(f,JSON.stringify(m,null,2)+'\n')"
+            node -e "const fs=require('fs'),f='channel/update.json',m=JSON.parse(fs.readFileSync(f,'utf8'));m.form=process.env.SAPU_REPORT_URL;fs.writeFileSync(f,JSON.stringify(m,null,2)+'\n')"
           fi
           node -e "JSON.parse(require('fs').readFileSync('channel/update.json','utf8'))"
           # Release notes: this version's section of CHANGELOG.md.

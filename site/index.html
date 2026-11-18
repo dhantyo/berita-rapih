@@ -544,9 +544,10 @@ footer { padding: 32px 0 48px; border-top: 1px solid var(--rule); color: var(--m
     version = m.version;
     document.querySelector('[data-version]').textContent = t('version') + version;
     // The feedback form (no GitHub account needed): same template the reader fills in.
-    if (m.report) {
-      var fields = { url: '', title: '', site: '', version: version, platform: 'web', note: '' };
-      document.querySelector('[data-t="report"]').href = m.report.replace(/\{(url|title|site|version|platform|note)\}/g, function (_, k) { return encodeURIComponent(fields[k]); });
+    var form = m.form || m.report;
+    if (form) {
+      var fields = { url: '', title: '', site: '', version: version, platform: 'web', kind: 'idea', note: '', detail: '' };
+      document.querySelector('[data-t="report"]').href = form.replace(/\{(url|title|site|version|platform|kind|note|detail)\}/g, function (_, k) { return encodeURIComponent(fields[k]); });
     }
   }, function () {});
   applyLang();

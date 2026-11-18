@@ -45,7 +45,7 @@ export function extractMetadata(doc: Document, fields?: PersonalRule['fields']):
       // Tirto publishes no publish date at all; its "modified" time is the publish time on first release.
       str(ld?.dateModified) ??
       meta('meta[property="article:modified_time"]'),
-    image: imageUrl(ld?.image) ?? meta('meta[property="og:image"]'),
+    image: mine.image ?? imageUrl(ld?.image) ?? meta('meta[property="og:image"]'),
     // publisher.name is the outlet's real name; og:site_name is sometimes a section ("nasional" on CNN Indonesia).
     siteName: str(publisher?.name) ?? meta('meta[property="og:site_name"]'),
     // Every supported outlet ships its official logo in NewsArticle.publisher.logo (verified 2026-11-11).

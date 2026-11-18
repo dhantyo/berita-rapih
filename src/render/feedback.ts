@@ -2,6 +2,7 @@
 // guided text reports. The page is built here; overlay.ts only opens it, hosts it in the reader root and
 // hands it the few things it needs (details, the report link, the editor).
 import type { Strings } from './i18n.ts';
+import type { ReportInput } from './overlay.ts';
 
 /** One label/value pair of the automatic details shown to the reader before sending. */
 export type Detail = [label: string, value: string];
@@ -23,6 +24,7 @@ export interface NoteLabels {
 }
 
 const MAX_TEXT = 2000;
+
 const MAX_VALUE = 300;
 
 const oneLine = (s: string) => s.replace(/\s+/g, ' ').trim();
@@ -55,8 +57,10 @@ export interface FeedbackContext {
   hostname: string;
   /** The automatic details, read when the report page opens. */
   details: () => Detail[];
-  /** The report link carrying `note`; none when this build has no report destination. */
-  reportUrl: (note: string) => string | undefined;
+  /** The form's prefilled link; none when this build has no feedback destination. */
+  reportLink: (input: ReportInput) => string | undefined;
+  /** Send directly; false when it could not go out from this page (then the link is offered). */
+  send: (input: ReportInput) => Promise<boolean>;
   /** Leave the feedback page (back to the article, same scroll position). */
   close: () => void;
   /** "Atur isi artikel": leave this page and open the editor on the original page. */
@@ -72,7 +76,7 @@ export interface FeedbackPage {
   focus: () => void;
 }
 
-type View = 'choices' | 'report' | 'site' | 'idea';
+type View = 'choices' | 'report' | 'site' | 'idea' | 'sent';
 
 export function createFeedbackPage(ctx: FeedbackContext): FeedbackPage {
   const { doc, t } = ctx;
@@ -81,7 +85,7 @@ export function createFeedbackPage(ctx: FeedbackContext): FeedbackPage {
   const labels: NoteLabels = { problems: t.fbNoteProblems, story: t.fbNoteStory, details: t.fbNoteDetails };
 
   const titles: Record<View, string> = {
-    choices: t.fbTitle, report: t.fbReportTitle, site: t.fbSiteTitle, idea: t.fbIdeaTitle,
+    choices: t.fbTitle, report: t.fbReportTitle, site: t.fbSiteTitle, idea: t.fbIdeaTitle, sent: t.fbSentTitle,
   };
 
   let sub: { release(): void } | undefined;
@@ -98,14 +102,15 @@ export function createFeedbackPage(ctx: FeedbackContext): FeedbackPage {
     if (next === 'choices') body.append(choices());
     else if (next === 'report') body.append(reportPage());
     else if (next === 'site') body.append(sitePage());
-    else body.append(ideaPage());
+    else if (next === 'idea') body.append(ideaPage());
+    else body.append(sentPage());
     el.replaceChildren(bar, body);
     el.scrollTop = 0;
     focusFirst();
   };
 
   const goBack = () => {
-    if (view === 'choices') return ctx.close();
+    if (view === 'choices' || view === 'sent') return ctx.close();
     sub?.release();
     sub = undefined;
     show('choices');
@@ -128,25 +133,41 @@ export function createFeedbackPage(ctx: FeedbackContext): FeedbackPage {
     choice(t.fbSiteTitle, t.fbSiteDesc, 'site'),
     choice(t.fbIdeaTitle, t.fbIdeaDesc, 'idea')));
 
-  /** A "Kirim" link that stays inert (no href) until `ready()` and the destination exist. */
-  const sender = (ready: () => boolean, note: () => string) => {
-    const a = h(doc, 'a', { class: 'btn primary fb-send', target: '_blank', rel: 'noopener' }, t.fbSend);
+  /**
+   * "Kirim": disabled until `ready()`. It sends directly; where the page blocks that (the bookmark runs as
+   * the news site, under its security policy), it offers the form prefilled in a new tab instead.
+   */
+  const sender = (ready: () => boolean, input: () => ReportInput) => {
+    const b = h(doc, 'button', { type: 'button', class: 'btn primary fb-send' }, t.fbSend) as HTMLButtonElement;
+    const fallback = h(doc, 'p', { class: 'fb-fallback', role: 'status' });
+    let busy = false;
     const sync = () => {
-      const href = ready() ? ctx.reportUrl(note()) : undefined;
-      if (href) {
-        a.setAttribute('href', href);
-        a.removeAttribute('aria-disabled');
-      } else {
-        a.removeAttribute('href');
-        a.setAttribute('aria-disabled', 'true');
-      }
+      b.disabled = busy || !ready();
     };
-    a.addEventListener('click', (e) => {
-      sync(); // read the fields as they are right now
-      if (a.getAttribute('aria-disabled') === 'true') e.preventDefault();
+    b.addEventListener('click', async () => {
+      if (b.disabled) return;
+      const answer = input();
+      busy = true;
+      b.textContent = t.fbSending;
+      sync();
+      const ok = await ctx.send(answer);
+      busy = false;
+      b.textContent = t.fbSend;
+      sync();
+      if (ok) return show('sent');
+      const href = ctx.reportLink(answer);
+      fallback.replaceChildren(t.fbSendFail);
+      if (href) fallback.append(' ', h(doc, 'a', { href, target: '_blank', rel: 'noopener' }, t.fbOpenForm));
     });
     sync();
-    return { a, sync };
+    return { a: h(doc, 'div', { class: 'fb-send-wrap' }, b, fallback), sync };
+  };
+
+  // ── Terkirim ──
+  const sentPage = () => {
+    const back = h(doc, 'button', { type: 'button', class: 'btn' }, t.fbBackToArticle);
+    back.addEventListener('click', () => ctx.close());
+    return h(doc, 'div', { class: 'fb-sent' }, h(doc, 'p', { class: 'fb-lead' }, t.fbSentLead), back);
   };
 
   const textarea = (label: string, rows: number, onInput: () => void) => {
@@ -163,7 +184,7 @@ export function createFeedbackPage(ctx: FeedbackContext): FeedbackPage {
     const details = ctx.details();
     const note = () => buildNote({ chips: [...picked].sort((a, b) => a - b).map((i) => t.fbChips[i]!), text: ta.value, details }, labels);
     const { ta, field } = textarea(t.fbStory, 5, () => send.sync());
-    const send = sender(() => picked.size > 0 || ta.value.trim().length > 0, note);
+    const send = sender(() => picked.size > 0 || ta.value.trim().length > 0, () => ({ kind: 'report', note: note() }));
     t.fbChips.forEach((label, i) => {
       const chip = h(doc, 'button', { type: 'button', class: 'fb-chip', 'aria-pressed': 'false' }, label);
       chip.addEventListener('click', () => {
@@ -181,11 +202,11 @@ export function createFeedbackPage(ctx: FeedbackContext): FeedbackPage {
       chipRow, field,
       // Nothing hidden, but folded: the form stays the main thing on the page.
       h(doc, 'details', { class: 'fb-box' }, h(doc, 'summary', {}, t.fbSentWithCount(details.length)), list),
-      sendRow(send.a, true));
+      sendRow(send.a));
   };
 
-  const sendRow = (a: HTMLElement, withNote: boolean) =>
-    h(doc, 'div', { class: 'fb-send-row' }, a, ...(withNote ? [h(doc, 'p', { class: 'fb-note' }, t.fbSendNote)] : []));
+  const sendRow = (a: HTMLElement) =>
+    h(doc, 'div', { class: 'fb-send-row' }, a, h(doc, 'p', { class: 'fb-note' }, t.fbSendNote));
 
   // ── Usulkan situs ──
   const sitePage = () => {
@@ -193,17 +214,17 @@ export function createFeedbackPage(ctx: FeedbackContext): FeedbackPage {
     const input = h(doc, 'input', { id, class: 'fb-text', type: 'text', inputmode: 'url', autocapitalize: 'off', autocomplete: 'off', spellcheck: 'false', value: ctx.hostname }) as HTMLInputElement;
     input.addEventListener('input', () => send.sync());
     const { ta, field } = textarea(t.fbSiteExtra, 4, () => send.sync());
-    const send = sender(() => input.value.trim().length > 0, () => buildNote({ headline: t.fbNoteSite(input.value), text: ta.value }, labels));
+    const send = sender(() => input.value.trim().length > 0, () => ({ kind: 'site', note: buildNote({ headline: t.fbNoteSite(input.value), text: ta.value }, labels) }));
     return h(doc, 'div', {},
       h(doc, 'div', { class: 'fb-field' }, h(doc, 'label', { for: id }, t.fbSiteLabel), input),
-      field, sendRow(send.a, false));
+      field, sendRow(send.a));
   };
 
   // ── Ide atau saran ──
   const ideaPage = () => {
     const { ta, field } = textarea(t.fbIdeaLabel, 7, () => send.sync());
-    const send = sender(() => ta.value.trim().length > 0, () => buildNote({ headline: t.fbNoteIdea, text: ta.value }, labels));
-    return h(doc, 'div', {}, field, sendRow(send.a, false));
+    const send = sender(() => ta.value.trim().length > 0, () => ({ kind: 'idea', note: buildNote({ headline: t.fbNoteIdea, text: ta.value }, labels) }));
+    return h(doc, 'div', {}, field, sendRow(send.a));
   };
 
   show('choices');

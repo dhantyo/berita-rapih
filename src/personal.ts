@@ -16,8 +16,8 @@ import { applyHidden } from './render/picker.ts';
 import { applyAdded } from './render/pagepicker.ts';
 import { hideMatching } from './render/provenance.ts';
 
-export type PersonalField = 'title' | 'byline' | 'editor' | 'date';
-export const PERSONAL_FIELDS: readonly PersonalField[] = ['title', 'byline', 'editor', 'date'];
+export type PersonalField = 'title' | 'byline' | 'editor' | 'date' | 'image';
+export const PERSONAL_FIELDS: readonly PersonalField[] = ['title', 'byline', 'editor', 'date', 'image'];
 
 export interface PersonalRule {
   /** Rule id (or hostname for a new site). */
@@ -60,10 +60,24 @@ export function applyPersonalContent(content: HTMLElement, p: PersonalRule | und
   hideMatching(content, page, p?.remove.filter((s) => !isFingerprint(s)) ?? []);
 }
 
-/** What a field selector reads on the page: a date's machine value when it has one, else the visible text. */
+/**
+ * What a field selector reads on the page: a date's machine value when it has one, a photo's address,
+ * else the visible text.
+ */
 export function readField(doc: ParentNode, selector: string, field?: PersonalField): string | undefined {
   const el = safeQuery(doc, selector);
   if (!el) return undefined;
+  if (field === 'image') {
+    const img = el.tagName === 'IMG' ? el as HTMLImageElement : el.querySelector('img');
+    // Lazy loaders keep the real address in a data attribute until the photo scrolls into view.
+    const src = img && (img.getAttribute('data-src') ?? img.getAttribute('data-original') ?? (img.currentSrc || img.getAttribute('src')));
+    if (!src || src.startsWith('data:')) return undefined;
+    try {
+      return new URL(src, el.ownerDocument.baseURI).href;
+    } catch {
+      return undefined;
+    }
+  }
   if (field === 'date') {
     const machine = el.getAttribute('datetime') ?? el.getAttribute('content') ?? el.querySelector('time')?.getAttribute('datetime');
     if (machine) return machine.trim();
@@ -72,7 +86,7 @@ export function readField(doc: ParentNode, selector: string, field?: PersonalFie
   return text || undefined;
 }
 
-type MetaOverrides = Partial<Pick<ArticleMeta, 'title' | 'byline' | 'editor' | 'published'>>;
+type MetaOverrides = Partial<Pick<ArticleMeta, 'title' | 'byline' | 'editor' | 'published' | 'image'>>;
 
 /** Metadata overrides from the personal field selectors (what is on the page wins over page data). */
 export function personalMeta(doc: ParentNode, fields: PersonalRule['fields']): MetaOverrides {

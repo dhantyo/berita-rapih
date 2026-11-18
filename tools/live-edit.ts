@@ -1,4 +1,4 @@
-// Live check of the article editor (Atur isi artikel: green/red/blue page overlay, Masukkan/Buang, corner drag,
+// Live check of the article editor (Atur isi artikel: green/red/blue page overlay, pick first, "Bagian ini apa?", corner drag, picking in Bersih,
 // header sources, Bersih, Kembalikan), of old-format settings and of the "hide the bar while scrolling" setting,
 // on real articles in your installed Chrome. Needs `npm run build` first.
 //
@@ -86,17 +86,49 @@ const sel = (p: Page) =>
   });
 
 async function toEditor(page: Page) {
-  await page.locator('.aa').click();
+  await page.locator('.gear').click();
   await page.getByRole('button', { name: 'Beri masukan' }).click();
-  await page.getByText('Atur isi artikel').first().click();
+  await page.locator(`${SHADOW} .fb-choice`).first().click();
   await page.waitForSelector(`${SHADOW} .ed-bar`, { timeout: 5000 });
   await page.waitForTimeout(1500);
+}
+
+/** Answers posted to the feedback form, caught before they leave (build with SAPU_REPORT_URL set to a Google Form). */
+async function catchForm(page: Page) {
+  const posts: Array<Record<string, string>> = [];
+  await page.route('**/formResponse', async (route) => {
+    posts.push(Object.fromEntries(new URLSearchParams(route.request().postData() ?? '')));
+    await route.fulfill({ status: 200, body: '' });
+  });
+  return posts;
+}
+const sheetQ = (p: Page) => p.locator(`${SHADOW} .ed-q`).first().innerText().catch(() => '');
+const pressed = (p: Page, id: string) => p.locator(`${SHADOW} [data-ed="${id}"]`).getAttribute('aria-pressed');
+const edMsg = (p: Page) => p.locator(`${SHADOW} .ed-msg`).first().innerText().catch(() => '');
+/** Tap a paragraph of the clean view (in Bersih), the n-th one that sits fully between the bars. */
+async function tapClean(page: Page, n = 2) {
+  const pos = await page.evaluate((k) => {
+    const r = document.querySelector('.sapuberita-overlay')!.shadowRoot!;
+    const free = r.querySelector('.ed-bar')!.getBoundingClientRect().top;
+    const ps = [...r.querySelectorAll('.content > p')].filter((p) => {
+      const b = p.getBoundingClientRect();
+      return b.top > 70 && b.bottom < free - 4 && (p.textContent ?? '').length > 60;
+    });
+    const p = ps[k] ?? ps[0];
+    if (!p) return null;
+    const b = p.getBoundingClientRect();
+    return { x: b.x + 40, y: b.y + 10, text: (p.textContent ?? '').trim().slice(0, 60) };
+  }, n);
+  if (pos) await page.touchscreen.tap(pos.x, pos.y);
+  await page.waitForTimeout(400);
+  return pos;
 }
 
 async function editorDetik(scheme: 'light' | 'dark') {
   console.log(`\n== Detik editor (${scheme})`);
   const ctx = await newContext(scheme);
   const page = await open(ctx, DETIK);
+  const posts = await catchForm(page);
   await toEditor(page);
   await page.waitForTimeout(500);
   const green = await edBoxes(page, 'in');
@@ -106,51 +138,44 @@ async function editorDetik(scheme: 'light' | 'dark') {
   const total = await page.evaluate(() => document.querySelector('.sapuberita-overlay')!.shadowRoot!.querySelectorAll('.ed-box.in').length);
   ok(total > 5, `green boxes over the article parts (${total})`);
   ok(blue.some((b) => b.label === 'Judul'), 'blue Judul label on the page title');
+  ok(/Ketuk bagian halaman/.test(await barText(page)), 'the bar starts with "Ketuk bagian halaman…"');
   await shot(page, `editor-detik-${scheme}-top.png`);
   if (scheme === 'dark') {
-    // Dark: a selection with handles, and the clean preview.
+    // Dark: the sheet over a pick, and the same pick in the clean view.
     await tapBox(page, 'in', (x) => x.w > 150 && x.h > 50);
     await shot(page, 'editor-detik-dark-selected.png');
     await page.locator(`${SHADOW} [data-ed="view-clean"]`).click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(700);
+    ok(!(await sel(page)).hidden, 'dark: the pick is outlined in Bersih too');
     await shot(page, 'editor-detik-dark-clean.png');
     await ctx.close();
     return;
   }
 
-  // Red → Masukkan. A red box inside the article: tap, it is selected, Masukkan makes it green.
-  const reds = (await edBoxes(page, 'out')).length;
+  // Red → "Isi artikel".
   const redTotal = await page.evaluate(() => document.querySelector('.sapuberita-overlay')!.shadowRoot!.querySelectorAll('.ed-box.out').length);
-  ok(redTotal > 0, `there are red parts on the page (${redTotal}; ${reds} in view)`);
+  ok(redTotal > 0, `there are red parts on the page (${redTotal})`);
   const b = await tapBox(page, 'out', (x) => x.h < 300 && x.h > 20);
   console.log('  tapped red:', JSON.stringify(b), '|', (await barText(page)).replace(/\n/g, ' ').slice(0, 80));
-  ok(/Tidak tampil/.test(await barText(page)), 'selecting a red part says "Tidak tampil"');
+  ok((await sheetQ(page)) === 'Bagian ini apa?', 'a tap opens "Bagian ini apa?"');
+  ok(/Tidak tampil/.test(await barText(page)) && (await pressed(page, 'remove')) === 'true', 'a red part is marked "Bukan isi artikel"');
   await shot(page, 'editor-detik-light-red-selected.png');
-  const greenBefore = (await edBoxes(page, 'in')).length;
   await page.locator(`${SHADOW} [data-ed="add"]`).click();
   await page.waitForTimeout(600);
   const p1 = await edPersonal(page);
-  console.log('  personal after Masukkan:', JSON.stringify(p1));
-  ok(/Ikut tampil/.test(await barText(page)), 'after Masukkan it reads "Ikut tampil"');
+  console.log('  personal after Isi artikel:', JSON.stringify(p1), '|', await edMsg(page));
   ok(!!p1 && p1.add.length === 1, 'an add entry is saved');
-  ok((await edBoxes(page, 'in')).length >= greenBefore, 'green again');
-  await shot(page, 'editor-detik-light-after-add.png');
+  ok(/ikut tampil/.test(await edMsg(page)) && !(await sheetQ(page)), 'it says so and the sheet closes');
 
-  // Green paragraph → Buang (a paragraph further down: its selector is not unique, so a text fingerprint is saved).
+  // Green paragraph → "Bukan isi artikel".
   const g = await tapBox(page, 'in', (x) => x.w > 150 && x.h > 50);
-  ok(!!g, 'found a green paragraph');
-  console.log('  selected green:', JSON.stringify(g), '|', (await barText(page)).replace(/\s+/g, ' ').slice(0, 90));
-  ok(/Ikut tampil/.test(await barText(page)), 'selecting a green part says "Ikut tampil"');
+  ok(!!g && (await pressed(page, 'add')) === 'true', 'a green part is marked "Isi artikel"');
   await shot(page, 'editor-detik-light-green-selected.png');
-  const greensNow = (await edBoxes(page, 'in')).length;
   await page.locator(`${SHADOW} [data-ed="remove"]`).click();
   await page.waitForTimeout(600);
   const p2 = await edPersonal(page);
-  console.log('  personal after Buang:', JSON.stringify(p2));
+  console.log('  personal after Bukan isi artikel:', JSON.stringify(p2));
   ok(!!p2 && p2.remove.length >= 1, 'a remove entry is saved');
-  ok(/Tidak tampil/.test(await barText(page)), 'after Buang it reads "Tidak tampil"');
-  ok((await edBoxes(page, 'out')).length >= 1, 'the paragraph is red now');
-  console.log('  green boxes', greensNow, '->', (await edBoxes(page, 'in')).length);
 
   // Drag a corner outward → snaps to the parent.
   const g2 = await tapBox(page, 'in', (x) => x.w > 150 && x.h > 50);
@@ -158,51 +183,98 @@ async function editorDetik(scheme: 'light' | 'dark') {
   const parent = await page.evaluate(() => {
     const r = document.querySelector('.sapuberita-overlay')!.shadowRoot!;
     const s = (r.querySelector('.ed-sel') as HTMLElement).getBoundingClientRect();
-    // The page element under the selection's middle, and its parent.
     const el = document.elementFromPoint(s.x + s.width / 2, s.y + s.height / 2) as HTMLElement;
     const p = el.parentElement!.getBoundingClientRect();
-    return { tag: el.tagName, cls: el.parentElement!.className.slice(0, 40), x: p.x, y: p.y, w: p.width, h: p.height };
+    return { x: p.x, y: p.y, w: p.width, h: p.height };
   });
-  console.log('  parent of the selection:', JSON.stringify(parent));
   const s0 = await sel(page);
-  // The parent is taller than the screen: its visible part is the whole free area. Drag the top-left corner out to it.
   const handle = page.locator(`${SHADOW} .ed-h.tl`);
   const hb = (await handle.boundingBox())!;
-  const tx = Math.max(4, parent.x);
-  const ty = 62;
   await page.mouse.move(hb.x + hb.width / 2, hb.y + hb.height / 2);
   await page.mouse.down();
-  await page.mouse.move(tx, ty, { steps: 6 });
-  await shot(page, 'editor-detik-light-dragging.png');
+  await page.mouse.move(Math.max(4, parent.x), 62, { steps: 6 });
   await page.mouse.up();
   await page.waitForTimeout(400);
   const s1 = await sel(page);
   console.log('  selection', JSON.stringify(s0), '->', JSON.stringify(s1));
   ok(s1.w > s0.w + 2 || s1.h > s0.h + 10, 'dragging a corner outward makes the selection bigger (snapped to a parent)');
   await shot(page, 'editor-detik-light-snapped.png');
+  await page.locator(`${SHADOW} [data-ed="deselect"]`).click();
 
-  // Bersih: the clean view has the add and not the removed paragraph.
-  const removedText = (p2?.remove[0] ?? '').replace(/^t:/, '');
+  // The pick follows: picked on Asli, still outlined in Bersih.
+  await tapBox(page, 'in', (x) => x.w > 150 && x.h > 50);
+  const pickedText = (await barText(page)).replace(/\s+/g, ' ');
   await page.locator(`${SHADOW} [data-ed="view-clean"]`).click();
+  await page.waitForTimeout(700);
+  const inClean = await sel(page);
+  ok(!inClean.hidden && inClean.h > 10, 'a part picked on Asli is outlined in Bersih');
+  ok((await barText(page)).replace(/\s+/g, ' ') === pickedText, 'and the sheet still describes it');
+  await shot(page, 'editor-detik-light-carried.png');
+  await page.locator(`${SHADOW} [data-ed="deselect"]`).click();
+
+  // Picking in Bersih: tap a paragraph, then "Bukan isi artikel" there.
+  const removedBefore = (await edPersonal(page))?.remove.length ?? 0;
+  const tapped = await tapClean(page, 1);
+  ok(!!tapped && (await sheetQ(page)) === 'Bagian ini apa?', 'a tap in Bersih opens the sheet');
+  await shot(page, 'editor-detik-light-clean-picked.png');
+  await page.locator(`${SHADOW} [data-ed="view-original"]`).click();
+  await page.waitForTimeout(700);
+  ok(!(await sel(page)).hidden, 'a part picked in Bersih is outlined on Asli');
+  await page.locator(`${SHADOW} [data-ed="view-clean"]`).click();
+  await page.waitForTimeout(500);
+  await page.locator(`${SHADOW} [data-ed="remove"]`).click();
   await page.waitForTimeout(600);
   const texts = await cleanTexts(page);
-  ok(!texts.some((x) => removedText && x.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim().startsWith(removedText.slice(0, 40))), 'Bersih: the removed paragraph is gone');
-  await shot(page, 'editor-detik-light-clean.png');
-  await page.locator(`${SHADOW} [data-ed="view-original"]`).click();
-  await page.waitForTimeout(400);
-  ok((await edBoxes(page, 'in')).length > 0, 'back on Asli the boxes are drawn again');
+  ok(((await edPersonal(page))?.remove.length ?? 0) > removedBefore, 'Bersih: "Bukan isi artikel" saves a remove entry');
+  ok(!!tapped && !texts.some((x) => x.startsWith(tapped.text)), 'Bersih: the paragraph is gone at once');
+
+  // Selesai asks once whether to send; yes sends the edit and is remembered.
   await page.locator(`${SHADOW} [data-ed="done"]`).click();
+  await page.waitForTimeout(400);
+  ok((await sheetQ(page)) === 'Kirim perubahan ini ke pengembang?', 'the first Selesai with changes asks to send them');
+  await shot(page, 'editor-detik-light-ask.png');
+  await page.locator(`${SHADOW} [data-ed="ask-yes"]`).click();
+  await page.waitForTimeout(1500);
+  const s = await settings(page);
+  console.log('  posted:', JSON.stringify(posts).slice(0, 300));
+  ok(posts.length === 1 && Object.values(posts[0]!).includes('edit'), 'Kirim posts the edit to the form');
+  ok(s.sendEdits === true && s.sendEditsAsked === true, 'the answer is remembered');
+  ok(await page.locator(`${SHADOW} .content p`).first().isVisible(), 'and the reader shows again');
+
+  // Next time: no question, sent in the background.
+  await toEditor(page);
+  await tapBox(page, 'in', (x) => x.w > 150 && x.h > 50);
+  await page.locator(`${SHADOW} [data-ed="remove"]`).click();
   await page.waitForTimeout(500);
-  ok(await page.locator(`${SHADOW} .content p`).first().isVisible(), 'Selesai returns to the reader');
+  await page.locator(`${SHADOW} [data-ed="done"]`).click();
+  await page.waitForTimeout(1200);
+  ok(posts.length === 2 && (await page.locator(`${SHADOW} .ed-bar`).count()) === 0, 'later edits are sent without asking');
   await page.close();
 
   const again = await open(ctx, DETIK);
-  const t2 = await cleanTexts(again);
-  ok(!t2.some((x) => removedText && x.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim().startsWith(removedText.slice(0, 40))), 'edits persist after reopening the article');
-  await again.locator('.aa').click();
-  ok(/Versi pribadi aktif/.test((await again.locator('.hidden-row .text').first().textContent()) ?? ''), 'Aa says the personal version is on');
-  await shot(again, 'editor-detik-light-aa.png');
+  await again.locator('.gear').click();
+  ok(/Perubahan buatanmu/.test((await again.locator('.hidden-row .text').first().textContent()) ?? ''), 'Pengaturan says the personal version is on');
+  ok((await again.locator('[data-switch="sendEdits"]').getAttribute('aria-checked')) === 'true', 'and the send switch is on');
+  await shot(again, 'editor-detik-light-settings.png');
   await again.close();
+  await ctx.close();
+}
+
+async function feedbackFlow() {
+  console.log('\n== Feedback page sends directly');
+  const ctx = await newContext();
+  const page = await open(ctx, DETIK);
+  const posts = await catchForm(page);
+  await page.locator('.gear').click();
+  await page.getByRole('button', { name: 'Beri masukan' }).click();
+  await page.getByText('Ide atau saran').first().click();
+  await page.locator(`${SHADOW} textarea`).fill('Tolong tambahkan mode baca malam yang lebih redup.');
+  await page.locator(`${SHADOW} .fb-send`).click();
+  await page.waitForTimeout(1200);
+  console.log('  posted:', JSON.stringify(posts));
+  ok(posts.length === 1 && Object.values(posts[0]!).includes('idea'), 'Kirim posts the idea to the form');
+  ok(await page.locator(`${SHADOW} .fb-sent`).isVisible(), 'and thanks the reader');
+  await shot(page, 'feedback-sent.png');
   await ctx.close();
 }
 
@@ -214,12 +286,9 @@ async function editorTribun() {
     const a = document.querySelector('.credit a');
     return a ? { text: (a.textContent ?? '').trim(), cls: a.className } : null;
   });
-  console.log('  .credit a:', JSON.stringify(author));
   ok(!!author, '.credit has an author link');
   const bylineBefore = await page.locator(`${SHADOW} .meta .byline`).first().textContent().catch(() => null);
-  console.log('  byline in the reader before:', bylineBefore);
   await toEditor(page);
-  await shot(page, 'editor-tribun-light-top.png');
   const tapOnPage = async (css: string) => {
     await page.evaluate((c) => document.querySelector(c)!.scrollIntoView({ block: 'center' }), css);
     await page.waitForTimeout(400);
@@ -230,43 +299,44 @@ async function editorTribun() {
     await page.touchscreen.tap(pos.x, pos.y);
     await page.waitForTimeout(700);
   };
-  const edMsg = (p: Page) => p.locator(`${SHADOW} .ed-msg`).first().innerText().catch(() => '');
-  // 1. The author link: Tribun's page data already gives the same name, so the entry is retired at once.
-  await page.locator(`${SHADOW} [data-ed="field-byline"]`).click();
-  ok(/Ketuk bagian halaman/.test(await barText(page)), 'Penulis chip asks to tap the page');
-  await page.evaluate(() => document.querySelector('.credit a')!.scrollIntoView({ block: 'center' }));
-  await shot(page, 'editor-tribun-light-field.png');
+  // 1. The author link as Penulis: the page data already gives the same name, so the entry is retired at once.
   await tapOnPage('.credit a');
-  console.log('  message:', await edMsg(page), '| personal:', JSON.stringify(await edPersonal(page)));
-  ok(/sekarang dibaca/.test(await edMsg(page)), 'tapping the author link reads Penulis from it');
-  ok(!(await edPersonal(page)), 'and since the official rule already has that name, the entry is retired quietly');
-  // 2. The editor link as Penulis: a different name, so it is kept and the reader header follows.
+  ok((await sheetQ(page)) === 'Bagian ini apa?', 'tapping the author link opens the sheet');
+  await shot(page, 'editor-tribun-light-field.png');
+  ok((await pressed(page, 'field-byline')) === 'true', 'the sheet shows the author link is already the Penulis');
   await page.locator(`${SHADOW} [data-ed="field-byline"]`).click();
+  await page.waitForTimeout(700);
+  ok(!(await sheetQ(page)) && !(await edPersonal(page)), 'choosing it again changes nothing and closes the sheet');
+  // 2. The editor link as Penulis: a different name, so it is kept and the reader header follows.
   await tapOnPage('#editor a');
+  await page.locator(`${SHADOW} [data-ed="field-byline"]`).click();
+  await page.waitForTimeout(700);
   const p = await edPersonal(page);
-  console.log('  personal:', JSON.stringify(p));
   ok(!!p?.fields?.byline, 'a byline selector is saved for another element');
   const editorName = await page.evaluate(() => (document.querySelector('#editor a')!.textContent ?? '').trim());
   await page.locator(`${SHADOW} [data-ed="view-clean"]`).click();
   await page.waitForTimeout(600);
   const byline = await page.locator(`${SHADOW} .meta .byline`).first().textContent().catch(() => null);
-  console.log('  byline in the reader after:', byline);
   ok(!!byline && byline.includes(editorName), 'Bersih: the reader header shows the chosen name');
-  await shot(page, 'editor-tribun-light-clean.png');
+  // Tapping the byline in Bersih marks it as Penulis.
+  const by = (await page.locator(`${SHADOW} .meta .byline`).first().boundingBox())!;
+  await page.touchscreen.tap(by.x + 10, by.y + by.height / 2);
+  await page.waitForTimeout(400);
+  ok((await pressed(page, 'field-byline')) === 'true', 'Bersih: tapping the byline shows it is the Penulis');
+  await shot(page, 'editor-tribun-light-clean-byline.png');
+  await page.locator(`${SHADOW} [data-ed="deselect"]`).click();
   await page.locator(`${SHADOW} [data-ed="view-original"]`).click();
   await page.waitForTimeout(500);
   await page.locator(`${SHADOW} [data-ed="more"]`).click();
-  await shot(page, 'editor-tribun-light-more.png');
-  const href = await page.locator(`${SHADOW} [data-ed="send"]`).getAttribute('href');
-  ok(!!href && /byline/.test(decodeURIComponent(href)), 'Kirim usulan carries the rule as JSON');
+  ok((await page.locator(`${SHADOW} [data-ed="send"]`).count()) === 0, 'Lainnya has no "Kirim usulan" any more');
   await page.locator(`${SHADOW} [data-ed="reset"]`).click();
   ok(/Kembalikan ke aturan bawaan/.test(await page.locator(`${SHADOW} .ed-ask`).innerText()), 'Kembalikan asks first');
-  await shot(page, 'editor-tribun-light-confirm.png');
   await page.locator(`${SHADOW} [data-ed="reset-yes"]`).click();
   await page.waitForTimeout(1500);
   ok(!(await edPersonal(page)), 'Kembalikan removes the personal rule');
   await page.locator(`${SHADOW} [data-ed="done"]`).click();
   await page.waitForTimeout(500);
+  ok((await page.locator(`${SHADOW} .ed-bar`).count()) === 0, 'Selesai with nothing left to send closes without asking');
   const after = await page.locator(`${SHADOW} .meta .byline`).first().textContent().catch(() => null);
   ok(after === bylineBefore, `the header is back to the official one (${after})`);
   await toEditor(page);
@@ -279,6 +349,7 @@ async function editorTribun() {
 async function editorFlow() {
   await editorDetik('light');
   await editorDetik('dark');
+  await feedbackFlow();
   await editorTribun();
 }
 
@@ -297,8 +368,8 @@ async function migrateFlow() {
   const n = await visibleCount(p2, '.content p');
   console.log('  fingerprint:', fp.slice(0, 50), '| paragraphs', total, '->', n);
   ok(n === total - 1, 'legacy hidden entry applies');
-  await p2.locator('.aa').click();
-  ok(/Versi pribadi aktif/.test((await p2.locator('.hidden-row .text').first().textContent()) ?? ''), 'Aa shows the migrated personal version');
+  await p2.locator('.gear').click();
+  ok(/Perubahan buatanmu/.test((await p2.locator('.hidden-row .text').first().textContent()) ?? ''), 'Pengaturan shows the migrated personal version');
   await ctx2.close();
 }
 
@@ -321,11 +392,11 @@ async function barFlow() {
     await shot(page, `bar-${scheme}-visible.png`);
     await scroll(page, 1200);
     ok((await barBottom(page)) <= 0.5, `${scheme}: hidden again`);
-    await page.evaluate(() => (document.querySelector('.sapuberita-overlay')!.shadowRoot!.querySelector('.aa') as HTMLElement).click());
+    await page.evaluate(() => (document.querySelector('.sapuberita-overlay')!.shadowRoot!.querySelector('.gear') as HTMLElement).click());
     await page.waitForTimeout(500);
-    ok((await barBottom(page)) >= 55, `${scheme}: opening Aa brings it back`);
+    ok((await barBottom(page)) >= 55, `${scheme}: opening Pengaturan brings it back`);
     await shot(page, `bar-${scheme}-panel.png`);
-    await page.evaluate(() => (document.querySelector('.sapuberita-overlay')!.shadowRoot!.querySelector('.aa') as HTMLElement).click());
+    await page.evaluate(() => (document.querySelector('.sapuberita-overlay')!.shadowRoot!.querySelector('.gear') as HTMLElement).click());
     await scroll(page, 0);
     ok((await barBottom(page)) >= 55, `${scheme}: visible at the top`);
     await ctx.close();
