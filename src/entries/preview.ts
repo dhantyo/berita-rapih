@@ -53,7 +53,7 @@ async function main() {
       else overlay = renderOverlay(document, r.article, {
         settings, loadingMore, originalUrl: meta.url,
         onSettingsChange: (s) => void localStorageStore.save(s),
-        reportUrl: () => 'https://github.com/example/repo/issues/new',
+        report: { link: () => 'https://github.com/example/repo/issues/new', send: async () => true },
         loadFonts: (f) => ensureFonts(document, f, __GEIST__, new URL('/fonts/', location.href).href),
       });
       // ?update=0.2.0 shows the "new version" bar.

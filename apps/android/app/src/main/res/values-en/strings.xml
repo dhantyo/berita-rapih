@@ -48,7 +48,7 @@
     <string name="old_clear">Open %1$s settings</string>
 
     <string name="try_title">Try it</string>
-    <string name="try_lead">Open a sample Kompas article. Aa sets text size and theme; Asli shows the original page.</string>
+    <string name="try_lead">Open a sample Kompas article. The gear button sets text size and theme; Asli shows the original page.</string>
     <string name="try_open">Open a sample article</string>
     <string name="try_tip">Instagram, Facebook and TikTok open links in their own browser. Choose \"Open in browser\" from the ⋮ menu.</string>
     <string name="done">Done</string>
@@ -57,5 +57,5 @@
     <string name="home_try">Open a sample article</string>
     <string name="home_guide">Show the guide again</string>
     <string name="version">Version %1$s</string>
-    <string name="privacy">Everything runs on your phone. Sapu Berita has no server and doesn\'t know what you read. Once a day it checks GitHub for a new version and site fixes (turn off under Aa → Cek update).</string>
+    <string name="privacy">Everything runs on your phone. Sapu Berita has no server and doesn\'t know what you read. Once a day it checks GitHub for a new version and site fixes (turn off under Settings → Cek update).</string>
 </resources>

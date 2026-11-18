@@ -5,7 +5,7 @@ import { analyzeLoadedLogo, corsLogoUrl, opticalHeight, plateNeeds, recolourNeed
 import { PLATFORM_NAMES, type Platform } from '../clean/embeds.ts';
 import { OVERLAY_CSS } from './styles.ts';
 import { attachGallery, GALLERY_CSS } from './gallery.ts';
-import type { UpdateOffer } from '../update.ts';
+import type { ReportKind, UpdateOffer } from '../update.ts';
 import { heightFromMessage, playerFor } from './players.ts';
 import { quietPage } from './quiet.ts';
 import { parseNewsDate } from './dates.ts';
@@ -54,9 +54,12 @@ export interface OverlayOptions {
   updatesSetting?: boolean;
   /** Link target for "read on the original site". */
   originalUrl?: string;
-  /** Builds the "report a problem" link for the current article (no link when unset); `note` carries
-   *  the reader's report or the personal rule from the editor. */
-  reportUrl?: (article: Article, note?: string) => string | undefined;
+  /** Where feedback goes: the form's prefilled link (opened when sending directly fails), and direct sending. */
+  report?: {
+    link: (article: Article, input: ReportInput) => string | undefined;
+    /** Resolves true once the answers went out. */
+    send?: (article: Article, input: ReportInput) => Promise<boolean>;
+  };
   /** The article as the official rule alone makes it (made on demand): the editor retires entries it covers and resets to it. */
   official?: () => Promise<OfficialView | undefined>;
   /** Open the editor in "new site" mode right away (the bookmark on a site without a rule, docs/FEEDBACK.md §5). */
@@ -67,6 +70,13 @@ export interface OverlayOptions {
   onSnoozeUpdate?: (version: string) => void;
   /** Load the faces this font setting needs (see render/fonts.ts). Called on every render; must be cheap. */
   loadFonts?: (font: Font) => void;
+}
+
+/** One piece of feedback: what kind, the readable note, and a machine-readable detail (an edited rule as JSON). */
+export interface ReportInput {
+  kind: ReportKind;
+  note: string;
+  detail?: string;
 }
 
 /** Draw the article over the page inside a Shadow DOM. The original page stays underneath, untouched. */
@@ -147,9 +157,9 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
     }
 
     const aa = h(doc, 'button', {
-      type: 'button', class: 'btn aa', 'aria-label': t.settings, 'aria-haspopup': 'dialog',
+      type: 'button', class: 'btn gear', 'aria-label': t.settings, 'aria-haspopup': 'dialog',
       'aria-expanded': String(panelOpen), 'aria-controls': 'sb-panel',
-    }, h(doc, 'span', { class: 'big' }, 'A'), h(doc, 'span', { class: 'small' }, 'a'));
+    }, gear());
     aa.addEventListener('click', (e) => {
       e.stopPropagation();
       setPanel(!panelOpen);
@@ -388,7 +398,7 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
       const keys: Switch[] = [];
       if (opts.autoOpenSetting !== false) keys.push('autoOpen');
       if (opts.updatesSetting !== false) keys.push('updates');
-      keys.push('hideBar');
+      keys.push('hideBar', 'sendEdits');
       return [group(t.general, rows(...keys))];
     };
     panel.append(
@@ -444,7 +454,8 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
     const text = h(doc, 'span', { class: 'text' }, label, h(doc, 'span', { class: 'hint' }, t[`${key}Hint`]));
     const on = settings[key];
     const sw = h(doc, 'button', { type: 'button', class: 'switch', role: 'switch', 'aria-checked': String(on), 'aria-label': label, 'data-switch': key });
-    sw.addEventListener('click', () => change({ [key]: !on }, `[data-switch="${key}"]`));
+    // Answering here also answers the editor's one-time question (sendEdits).
+    sw.addEventListener('click', () => change({ [key]: !on, ...(key === 'sendEdits' ? { sendEditsAsked: true } : {}) }, `[data-switch="${key}"]`));
     return h(doc, 'div', { class: 'switch-row' }, text, sw);
   }
 
@@ -490,7 +501,9 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
       reset: resetRule,
       newSite: opts.newSite && !personalFor(settings.personal, siteKey())?.newSite,
       official: async () => opts.official?.(),
-      reportUrl: (note) => opts.reportUrl?.(article, note),
+      send: async (input) => (opts.report?.send ? opts.report.send(article, input) : false),
+      consent: () => (settings.sendEditsAsked ? (settings.sendEdits ? 'yes' : 'no') : 'ask'),
+      setConsent: (yes) => change({ sendEdits: yes, sendEditsAsked: true }),
       showClean: () => show(),
       showOriginal: () => {
         hide();
@@ -502,7 +515,7 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
         editorClosingFromBack = false;
         editor = null;
         show();
-        (root.querySelector('.aa') as HTMLElement | null)?.focus({ preventScroll: true });
+        (root.querySelector('.gear') as HTMLElement | null)?.focus({ preventScroll: true });
       },
     });
   };
@@ -521,7 +534,7 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
   // ── Beri masukan: the feedback page (render/feedback.ts), a full view over the article ──
   let feedback: FeedbackPage | null = null;
   const openFeedback = () => {
-    // Opened from the Aa panel: take over its history entry, so Back closes the feedback page.
+    // Opened from the settings panel: take over its history entry, so Back closes the feedback page.
     const fromPanel = panelLayer;
     panelLayer = undefined;
     feedbackLayer = fromPanel ? fromPanel.hand(() => closeFeedback(true, true)) : backStack.push(() => closeFeedback(true, true));
@@ -543,7 +556,8 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
         [t.fbDRule, article.ruleId ?? ''],
         [t.fbDPages, String(article.pages)],
       ],
-      reportUrl: (note) => opts.reportUrl?.(article, note),
+      reportLink: (input) => opts.report?.link(article, input),
+      send: async (input) => (opts.report?.send ? opts.report.send(article, input) : false),
       close: () => closeFeedback(),
       editArticle: () => openEditor(),
       pushBack: (onBack) => backStack.push(onBack),
@@ -556,7 +570,7 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
     feedbackLayer = undefined;
     feedback?.el.remove();
     feedback = null;
-    if (refocus) (root.querySelector('.aa') as HTMLElement | null)?.focus({ preventScroll: true });
+    if (refocus) (root.querySelector('.gear') as HTMLElement | null)?.focus({ preventScroll: true });
   };
 
   /**
@@ -608,7 +622,7 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
     panelOpen = open;
     const panel = root.querySelector('.panel') as HTMLElement | null;
     panel?.setAttribute('data-open', String(open));
-    const aa = root.querySelector('.aa');
+    const aa = root.querySelector('.gear');
     aa?.setAttribute('aria-expanded', String(open));
     if (open) setBarHidden(false);
     if (open) (panel?.querySelector('button[aria-checked="true"], .icon-btn') as HTMLElement | null)?.focus();
@@ -850,4 +864,9 @@ function icon(size: number, paths: string[]): SVGSVGElement {
 const broom = (size: number) =>
   icon(size, ['M20 4 13 11', 'M11.2 9.2l3.6 3.6', 'M11.2 9.2C8 10 5.4 12.6 4 19c6.4-1.4 9-4 9.8-7.2', 'M6.8 16.4 9.6 13.6', 'M9 17.6l2.2-2.2']);
 const cross = () => icon(18, ['M6 6l12 12', 'M18 6 6 18']);
+/** Settings: a gear (Lucide "settings", ISC licence). */
+const gear = () => icon(19, [
+  'M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z',
+  'M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z',
+]);
 const arrow = () => icon(14, ['M8 16 16 8', 'M9 8h7v7']);

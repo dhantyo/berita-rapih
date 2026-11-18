@@ -31,7 +31,7 @@ export const OVERLAY_CSS = `
 .root {
   ${LIGHT}
   /* One modernist voice: Geist sets the journalism and every label (bundled, see render/fonts.ts).
-     Aa → Serif swaps the journalism to Merriweather, Aa → Jelas to Fira Sans; labels stay Geist. */
+     Pengaturan → Serif swaps the journalism to Merriweather, Pengaturan → Jelas to Fira Sans; labels stay Geist. */
   --sans: "Sapu Geist", -apple-system, BlinkMacSystemFont, "Segoe UI Variable Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --serif: "Sapu Merriweather", Charter, "Iowan Old Style", Georgia, "Noto Serif", serif;
   --legible: "Sapu Fira Sans", Verdana, "Segoe UI", Tahoma, "DejaVu Sans", sans-serif;
@@ -118,8 +118,7 @@ button { font: inherit; color: inherit; }
 .btn:hover { background: var(--chip); }
 a.btn { color: inherit; text-decoration: none; flex: none; }
 .btn[aria-expanded="true"] { border-color: var(--accent); background: var(--chip); }
-.aa { font-weight: 650; letter-spacing: -0.03em; padding: 0 12px; gap: 1px; }
-.aa .big { font-size: 18px; } .aa .small { font-size: 13px; }
+.gear { width: 34px; padding: 0; justify-content: center; }
 .bar { transition: transform 180ms var(--ease); }
 .bar[data-hidden] { transform: translateY(-100%); }
 .bar[data-hidden] .outlet, .bar[data-hidden] .tools { visibility: hidden; transition: visibility 0s 180ms; }
@@ -241,7 +240,7 @@ h1 {
 .end { height: 3.5em; }
 svg { flex: none; }
 
-/* ── Aa panel: popover on wide screens, bottom sheet on phones ── */
+/* ── Settings panel: popover on wide screens, bottom sheet on phones ── */
 .panel {
   position: fixed; z-index: 3; top: 64px; right: 12px; width: 320px; max-height: calc(100vh - 72px); overflow-y: auto;
   padding: 14px 16px 18px; background: var(--panel); color: var(--ink); border: 1px solid var(--rule);
@@ -276,20 +275,16 @@ svg { flex: none; }
 /* A big empty red area (an ad slot) shrinks to a band at its top edge instead of covering the page. */
 .ed-box.out.slim { border-style: dashed; background: color-mix(in srgb, var(--c) 10%, transparent); }
 .ed-box.out.slim::after { display: none; }
-.ed-key { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 4px; font: 500 12px/1.3 var(--sans); color: var(--muted); }
-.ed-key-item { display: inline-flex; align-items: center; gap: 5px; }
-.ed-key-item::before { content: ""; width: 10px; height: 10px; border-radius: 3px; border: 2px solid var(--c); background: color-mix(in srgb, var(--c) 18%, transparent); }
-.ed-key-item.in { --c: var(--ed-green); } .ed-key-item.out { --c: var(--ed-red); } .ed-key-item.src { --c: var(--ed-blue); }
 .ed-box.src { --c: var(--ed-blue); background: color-mix(in srgb, var(--c) 10%, transparent); }
 .ed-label { position: absolute; left: -2px; top: -2px; transform: translateY(-100%); padding: 2px 7px; border-radius: 6px 6px 6px 0; background: var(--ed-blue); color: var(--ed-on); font: 600 12px/1.35 var(--sans); white-space: nowrap; }
 .ed-box.low .ed-label { transform: none; border-radius: 4px 0 6px 0; }
-.ed-sel { position: fixed; z-index: 2147483643; box-sizing: border-box; pointer-events: none; border: 2px solid var(--accent); border-radius: 6px; background: color-mix(in srgb, var(--accent) 9%, transparent); box-shadow: 0 0 0 9999px rgb(0 0 0 / 0.12); }
+.ed-sel { position: fixed; z-index: 2147483647; /* the reader's own layer: later in the DOM, so it draws over the clean view */ box-sizing: border-box; pointer-events: none; border: 2px solid var(--accent); border-radius: 6px; background: color-mix(in srgb, var(--accent) 9%, transparent); box-shadow: 0 0 0 9999px rgb(0 0 0 / 0.12); }
 .ed-h { position: absolute; width: 44px; height: 44px; margin: 0; padding: 0; border: 0; background: transparent; pointer-events: auto; touch-action: none; cursor: nwse-resize; }
 .ed-h::before { content: ""; position: absolute; left: 50%; top: 50%; width: 16px; height: 16px; margin: -8px 0 0 -8px; box-sizing: border-box; border: 2px solid var(--accent); border-radius: 50%; background: var(--bg); }
 .ed-h.tl { left: -22px; top: -22px; } .ed-h.tr { right: -22px; top: -22px; cursor: nesw-resize; }
 .ed-h.bl { left: -22px; bottom: -22px; cursor: nesw-resize; } .ed-h.br { right: -22px; bottom: -22px; }
 .ed-h:focus-visible::before { outline: 2px solid var(--ink); outline-offset: 2px; }
-.ed-drag { position: fixed; z-index: 2147483644; box-sizing: border-box; pointer-events: none; border: 2px dashed var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.ed-drag { position: fixed; z-index: 2147483647; box-sizing: border-box; pointer-events: none; border: 2px dashed var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
 .ed-top { position: fixed; z-index: 2147483647; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 52px;
   padding: 0 max(14px, env(safe-area-inset-right)) 0 max(14px, env(safe-area-inset-left)); background: var(--panel); border-bottom: 1px solid var(--rule); box-shadow: 0 8px 22px -14px var(--shadow); }
 .ed-title { font: 600 15px/1.3 var(--sans); letter-spacing: -0.01em; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -304,7 +299,22 @@ svg { flex: none; }
 .ed-text { margin: 0; padding-top: 4px; min-width: 0; font: 14px/1.4 var(--sans); color: var(--muted); display: flex; flex-direction: column; gap: 2px; }
 .ed-what { color: var(--ink); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
 .ed-state { font: 650 12px/1.3 var(--sans); }
-.ed-state.in { color: var(--ed-green); } .ed-state.out { color: var(--ed-red); } .ed-state.mix { color: var(--muted); }
+.ed-state.in { color: var(--ed-green); } .ed-state.out { color: var(--ed-red); } .ed-state.mix { color: var(--muted); } .ed-state.src { color: var(--ed-blue); }
+/* "Bagian ini apa?": two answers side by side, then the header fields as chips. */
+.ed-q { margin: 2px 0 0; font: 650 15px/1.3 var(--sans); color: var(--ink); }
+.ed-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.ed-choice { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-height: 52px; padding: 8px 12px; border: 1.5px solid var(--c); border-radius: 12px;
+  background: transparent; color: var(--ink); cursor: pointer; text-align: left; font: 600 14px/1.25 var(--sans); }
+.ed-choice.add { --c: var(--ed-green); } .ed-choice.remove { --c: var(--ed-red); }
+.ed-choice:hover { background: color-mix(in srgb, var(--c) 10%, transparent); }
+.ed-choice[aria-pressed="true"] { background: color-mix(in srgb, var(--c) 16%, transparent); }
+.ed-choice[aria-pressed="true"] .ed-choice-title::after { content: " \\2713"; color: var(--c); }
+.ed-choice:disabled { opacity: 0.4; cursor: default; }
+.ed-choice-desc { font: 400 12.5px/1.3 var(--sans); color: var(--muted); }
+.ed-chip:disabled { opacity: 0.4; cursor: default; }
+.pagepick[data-mode="clean"] .ed-h { display: none; }
+/* The field chips wrap instead of scrolling: four short choices must all be seen. */
+.ed-chips.ed-fields { flex-wrap: wrap; overflow: visible; padding-right: 0; -webkit-mask-image: none; mask-image: none; }
 .ed-msg { margin: 0; font: 600 13px/1.4 var(--sans); color: var(--ink); }
 .ed-live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); margin: 0; }
 .ed-ask { margin: 0; font: 14px/1.4 var(--sans); color: var(--ink); }
@@ -314,8 +324,6 @@ svg { flex: none; }
 .ed-bar .btn:disabled, .ed-bar .btn[aria-disabled="true"] { opacity: 0.4; cursor: default; pointer-events: none; }
 .ed-bar .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--bg); }
 .ed-bar .btn.quiet { border-color: transparent; color: var(--muted); }
-.ed-bar .btn.ed-add { border-color: var(--ed-green); }
-.ed-bar .btn.ed-remove { border-color: var(--ed-red); }
 .ed-sources { display: flex; flex-direction: column; gap: 6px; }
 .ed-label-row { display: flex; align-items: center; justify-content: space-between; font: 600 12px/1.3 var(--sans); color: var(--muted); }
 .ed-label-row .btn { min-height: 28px; padding: 2px 8px; font-size: 13px; }
@@ -385,7 +393,7 @@ a.btn.primary { text-decoration: none; }
 .fb-bar .icon-btn { color: var(--ink); }
 .fb-body { width: min(100% - 32px, 34em); margin: 0 auto; padding: 18px 0 max(40px, env(safe-area-inset-bottom)); font: 15px/1.5 var(--sans); }
 .fb-lead { margin: 0 0 14px; font: 14px/1.45 var(--sans); color: var(--muted); }
-/* The choices read like the Aa panel: rows on hairlines, not boxed cards. */
+/* The choices read like the settings panel: rows on hairlines, not boxed cards. */
 .fb-choices { display: flex; flex-direction: column; border-top: 1px solid var(--rule); }
 .fb-choice {
   display: flex; align-items: center; justify-content: space-between; gap: 14px; width: 100%; min-height: 64px; padding: 14px 4px; text-align: left; cursor: pointer;
@@ -422,9 +430,15 @@ a.btn.primary { text-decoration: none; }
 /* Kirim stays in reach at the bottom while the reader types. */
 .fb-send-row { position: sticky; bottom: 0; display: flex; flex-direction: column; align-items: stretch; gap: 8px; margin-top: 12px;
   padding: 14px 0 max(14px, env(safe-area-inset-bottom)); background: linear-gradient(transparent, var(--bg) 22%); }
-a.btn.fb-send { justify-content: center; height: 44px; border-radius: 22px; font-size: 15px; background: var(--accent); border-color: var(--accent); color: rgb(18 18 18); text-decoration: none; }
+.btn.fb-send { width: 100%; justify-content: center; height: 44px; border-radius: 22px; font-size: 15px; background: var(--accent); border-color: var(--accent); color: rgb(18 18 18); text-decoration: none; }
 .fb-send:hover { background: var(--accent); filter: brightness(1.06); }
-.fb-send[aria-disabled="true"] { opacity: 0.4; cursor: default; pointer-events: none; }
+.fb-send:disabled { opacity: 0.4; cursor: default; pointer-events: none; }
+.fb-send-wrap { display: flex; flex-direction: column; gap: 8px; }
+.fb-fallback { margin: 0; font: 14px/1.45 var(--sans); color: var(--ink); text-align: center; }
+.fb-fallback:empty { display: none; }
+.fb-fallback a { color: inherit; font-weight: 600; text-underline-offset: 0.2em; }
+.fb-sent { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
+.fb-sent .fb-lead { color: var(--ink); font-size: 16px; }
 .fb-note { margin: 0; font: 13px/1.45 var(--sans); color: var(--muted); text-align: center; }
 
 /* ── Floating button while the original page is showing ── */

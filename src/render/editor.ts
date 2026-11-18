@@ -1,9 +1,12 @@
 /**
  * "Atur isi artikel" (docs/FEEDBACK.md §3): the editor. It opens on the original page and paints what the
  * reader takes (green), what it leaves out (red) and where the header comes from (blue labels) in a layer
- * in the reader's shadow root; the page itself is never touched. Tap a part to select it, drag a corner to
- * make the selection bigger or smaller (it snaps to the page element that fits), then Masukkan / Buang.
+ * in the reader's shadow root; the page itself is never touched. The reader picks first: tap a part (on the
+ * original page, or in the clean view), drag a corner to make it bigger or smaller (it snaps to the page
+ * element that fits), then say what it is: article text, not article text, or the title, author, date or
+ * main photo. The pick follows when switching between the two views.
  * Edits are saved as the outlet's personal rule (src/personal.ts) and show at once, here and in "Bersih".
+ * The first Selesai with changes asks once whether edits may be sent to the maintainers.
  *
  * The logic that needs no screen (provenance, snapping, note) lives in editmodel.ts / provenance.ts.
  */
@@ -11,7 +14,8 @@ import { collapse } from '../dom.ts';
 import { readField, retireRedundant, withEntry, type PersonalField, type PersonalRule } from '../personal.ts';
 import type { OfficialView } from '../types.ts';
 import type { Strings } from './i18n.ts';
-import { buildEditNote, computeMarks, entryCovers, findHeaderSources, markAt, removalFor, shareOf, snapBest, spanned, statusOf, type HeaderMeta, type HeaderSource, type Marks, type Rect } from './editmodel.ts';
+import { compactRule, computeMarks, entryCovers, findHeaderSources, markAt, removalFor, shareOf, snapBest, spanned, statusOf, type HeaderKey, type HeaderMeta, type HeaderSource, type Marks, type Rect } from './editmodel.ts';
+import type { ReportInput } from './overlay.ts';
 import { describe, fingerprint } from './picker.ts';
 import { insertFromPage, selectorPart, stableSelector } from './pagepicker.ts';
 import { leavesOf } from './provenance.ts';
@@ -60,7 +64,11 @@ export interface EditorContext {
   /** Kembalikan: drop the personal rule and show the article as the official rule makes it. */
   reset: () => Promise<void>;
   official: () => Promise<OfficialView | undefined>;
-  reportUrl: (note: string) => string | undefined;
+  /** Send an edit to the maintainers; false when it could not go out. */
+  send: (input: ReportInput) => Promise<boolean>;
+  /** Whether the reader lets edits be sent: asked once, then remembered (Settings.sendEdits). */
+  consent: () => 'ask' | 'yes' | 'no';
+  setConsent: (yes: boolean) => void;
   showClean: () => void;
   showOriginal: () => void;
   /** "New site" mode (docs/FEEDBACK.md §5): the kept parts define the body of a site without a rule; Selesai saves it. */
@@ -77,7 +85,12 @@ export interface Editor {
 
 type Mode = 'original' | 'clean';
 const CORNERS = ['tl', 'tr', 'bl', 'br'] as const;
-const HEADER_CHIPS: readonly PersonalField[] = ['title', 'byline', 'editor', 'date'];
+/** What a picked part can be besides article text, in the order the sheet offers them. */
+const FIELD_CHOICES: readonly PersonalField[] = ['title', 'byline', 'date', 'image'];
+/** Where each header item is drawn in the clean view (overlay.ts articleView). */
+const CLEAN_HEADER: Partial<Record<HeaderKey, string>> = {
+  title: '.column > header h1', byline: '.column > header .byline', date: '.column > header .date', image: '.column > header .hero',
+};
 
 function h(doc: Document, tag: string, attrs: Record<string, string> = {}, ...children: Array<Node | string>): HTMLElement {
   const node = doc.createElement(tag);
@@ -145,16 +158,26 @@ export function startEditor(ctx: EditorContext): Editor {
   const win = doc.defaultView!;
   let mode: Mode = 'original';
   let marks: Marks = { green: [], red: [], region: null, cleanOf: new Map() };
+  /** clean-view element → the page leaf it came from (the reverse of marks.cleanOf) */
+  const pageOf = new Map<Element, Element>();
   let sources: HeaderSource[] = [];
+  // ── The pick: a page element, and/or what was tapped in the clean view ──
+  /** The picked part of the original page (none when a clean-view part has no source there). */
   let selected: Element | null = null;
+  /** The clean-view block tapped in Bersih. */
+  let cleanEl: Element | null = null;
+  /** A header item (title, author, date, main photo) when that is what was picked. */
+  let headerKey: HeaderKey | null = null;
   const narrower: Element[] = [];
-  let fieldMode: PersonalField | null = null;
   let confirming = false;
+  let asking = false;
   let moreOpen = false;
   let message = '';
   let official: OfficialView | undefined;
   let closed = false;
   let frame = 0;
+  const shape = (r?: PersonalRule) => JSON.stringify([r?.add, r?.remove, r?.fields, r?.newSite]);
+  const startShape = shape(ctx.personal());
 
   // ── Layout helpers ──
   const ours = (el: Element) => el === host || host.contains(el) || el.closest?.('.sapuberita-overlay') != null;
@@ -223,7 +246,10 @@ export function startEditor(ctx: EditorContext): Editor {
       visible,
       skipLive: ours,
     });
+    pageOf.clear();
+    for (const [page, clean] of marks.cleanOf) pageOf.set(clean, page);
     if (selected && !selected.isConnected) selected = null;
+    if (cleanEl && !cleanEl.isConnected) cleanEl = null;
   };
 
   const redraw = () => {
@@ -241,65 +267,125 @@ export function startEditor(ctx: EditorContext): Editor {
     place();
   };
 
+  // ── Where the pick is in each view ──
+  const sourceOf = (key: HeaderKey) => sources.find((s) => s.key === key);
+  const headerEl = (key: HeaderKey) => (CLEAN_HEADER[key] ? root.querySelector(CLEAN_HEADER[key]!) : null);
+  /** The clean-view elements that show a page part: its leaves' blocks, or the header item it is the source of. */
+  const cleanFor = (page: Element): Element[] => {
+    const out = leavesOf(page).flatMap((l) => {
+      const c = marks.cleanOf.get(l.el);
+      return c && !c.closest('[data-user-hidden], [hidden]') ? [c] : [];
+    });
+    if (out.length) return out;
+    const key = sources.find((s) => s.el && (s.el === page || page.contains(s.el)))?.key;
+    const head = key ? headerEl(key) : null;
+    return head ? [head] : [];
+  };
+  const cleanTargets = (): Element[] => {
+    if (headerKey) {
+      const head = headerEl(headerKey);
+      return head ? [head] : [];
+    }
+    if (cleanEl?.isConnected) return [cleanEl];
+    return selected ? cleanFor(selected) : [];
+  };
+  const hasPick = () => !!(selected || cleanEl || headerKey);
+
+  /** The pick's box in the view that shows now, clipped to what can be seen; null when it isn't on screen. */
+  const pickRect = (): Rect | null => {
+    const els = mode === 'original' ? (selected?.isConnected ? [selected] : []) : cleanTargets();
+    const rs = els.map((e) => e.getBoundingClientRect()).filter((r) => r.width > 0 || r.height > 0);
+    if (!rs.length) return null;
+    const r: Rect = {
+      left: Math.max(0, Math.min(...rs.map((x) => x.left))),
+      top: Math.max(top.getBoundingClientRect().bottom, Math.min(...rs.map((x) => x.top))),
+      right: Math.min(win.innerWidth, Math.max(...rs.map((x) => x.right))),
+      bottom: Math.min(viewBottom(), Math.max(...rs.map((x) => x.bottom))),
+    };
+    return r.right - r.left < 2 || r.bottom - r.top < 2 ? null : r;
+  };
+  /** The pick's full box (unclipped), for scrolling it into view. */
+  const pickBox = (): Rect | null => {
+    const els = mode === 'original' ? (selected?.isConnected ? [selected] : []) : cleanTargets();
+    const rs = els.map((e) => e.getBoundingClientRect()).filter((r) => r.width > 0 || r.height > 0);
+    if (!rs.length) return null;
+    return { left: Math.min(...rs.map((x) => x.left)), top: Math.min(...rs.map((x) => x.top)), right: Math.max(...rs.map((x) => x.right)), bottom: Math.max(...rs.map((x) => x.bottom)) };
+  };
+
   const place = () => {
     frame = 0;
-    if (mode !== 'original' || closed) return;
-    const vw = win.innerWidth;
-    const vh = viewBottom();
-    for (const b of boxes) {
-      const r = b.el.getBoundingClientRect();
-      const small = b.kind === 'in' ? 4 : 14;
-      const on = r.width >= small && r.height >= small && r.bottom > 0 && r.top < vh + 40 && r.right > 0 && r.left < vw;
-      if (!on) {
-        if (b.shown) b.node.style.display = 'none';
-        b.shown = false;
-        continue;
+    if (closed) return;
+    if (mode === 'original') {
+      const vw = win.innerWidth;
+      const vh = viewBottom();
+      for (const b of boxes) {
+        const r = b.el.getBoundingClientRect();
+        const small = b.kind === 'in' ? 4 : 14;
+        const on = r.width >= small && r.height >= small && r.bottom > 0 && r.top < vh + 40 && r.right > 0 && r.left < vw;
+        if (!on) {
+          if (b.shown) b.node.style.display = 'none';
+          b.shown = false;
+          continue;
+        }
+        b.shown = true;
+        const slim = b.kind === 'out' && r.height > 160 && !readable(b.el);
+        b.node.classList.toggle('slim', slim);
+        Object.assign(b.node.style, { display: '', left: `${r.left - 2}px`, top: `${r.top - 2}px`, width: `${r.width + 4}px`, height: `${slim ? 30 : r.height + 4}px` });
+        if (b.kind === 'src') b.node.classList.toggle('low', r.top < 26);
       }
-      b.shown = true;
-      const slim = b.kind === 'out' && r.height > 160 && !readable(b.el);
-      b.node.classList.toggle('slim', slim);
-      Object.assign(b.node.style, { display: '', left: `${r.left - 2}px`, top: `${r.top - 2}px`, width: `${r.width + 4}px`, height: `${slim ? 30 : r.height + 4}px` });
-      if (b.kind === 'src') b.node.classList.toggle('low', r.top < 26);
     }
-    if (selected?.isConnected) {
-      const r = clipped(selected);
-      selNode.hidden = r.right - r.left < 2 || r.bottom - r.top < 2;
-      Object.assign(selNode.style, { left: `${r.left - 3}px`, top: `${r.top - 3}px`, width: `${r.right - r.left + 6}px`, height: `${r.bottom - r.top + 6}px` });
-    } else selNode.hidden = true;
+    const r = pickRect();
+    selNode.hidden = !r;
+    if (r) Object.assign(selNode.style, { left: `${r.left - 3}px`, top: `${r.top - 3}px`, width: `${r.right - r.left + 6}px`, height: `${r.bottom - r.top + 6}px` });
   };
   const follow = () => {
     if (!frame && !closed) frame = win.requestAnimationFrame(place);
   };
 
-  // ── Selection ──
+  /** Scroll the view that shows now so the pick sits between the top bar and the sheet. */
+  const reveal = () => {
+    const r = pickBox();
+    if (!r) return;
+    const scroller = mode === 'clean' ? root : (doc.scrollingElement ?? doc.documentElement);
+    const topLimit = (mode === 'clean' ? top.getBoundingClientRect().bottom : coveredTop()) + 12;
+    const free = viewBottom() - 12;
+    if (r.top < topLimit) scroller.scrollTop -= topLimit - r.top;
+    else if (r.bottom > free) scroller.scrollTop += Math.min(r.bottom - free, r.top - topLimit);
+  };
+
+  // ── Picking ──
   const usable = (el: Element | null): el is Element =>
     !!el && el !== doc.body && el !== doc.documentElement && !ours(el) && !/^(script|style|html|head)$/i.test(el.tagName);
 
+  const pickDone = () => {
+    message = '';
+    moreOpen = false;
+    renderBar();
+    // The sheet (taller now) must not cover what was picked.
+    reveal();
+    place();
+  };
+  /** Pick a part of the original page. */
   const select = (el: Element | null) => {
     selected = el;
-    message = '';
-    renderBar();
-    // The bar (now possibly taller, with actions) must not cover what was picked: scroll it up into view,
-    // without pushing its top under the editor's top bar.
-    if (el) {
-      const r = el.getBoundingClientRect();
-      const free = viewBottom() - 12;
-      const topLimit = top.getBoundingClientRect().bottom + 12;
-      if (r.bottom > free && r.top > topLimit) {
-        const scroller = doc.scrollingElement ?? doc.documentElement;
-        scroller.scrollTop += Math.min(r.bottom - free, r.top - topLimit);
-      }
-    }
-    place();
+    cleanEl = null;
+    headerKey = el ? (sources.find((s) => s.el === el)?.key ?? null) : null;
+    if (!el) narrower.length = 0;
+    pickDone();
+  };
+  const clearPick = () => {
+    selected = cleanEl = null;
+    headerKey = null;
+    narrower.length = 0;
   };
 
   const onTap = (e: MouseEvent) => {
     if (e.composedPath().includes(host) || mode !== 'original') return;
     e.preventDefault();
     e.stopImmediatePropagation();
+    if (confirming || asking) return;
     const target = e.target as Element | null;
     if (!usable(target)) return;
-    if (fieldMode) return assignField(target);
     // Pages often lay invisible wrappers over their text, so the tapped element can be the whole article body.
     // What the reader means is the coloured part under their finger: the smallest one wins.
     const under = boxes
@@ -317,6 +403,44 @@ export function startEditor(ctx: EditorContext): Editor {
     if (!e.composedPath().includes(host) && mode === 'original') e.stopImmediatePropagation();
   };
 
+  /** A tap in the clean view: a header item, or an article block traced back to the page part it came from. */
+  const onCleanTap = (e: Event) => {
+    if (mode !== 'clean' || closed) return;
+    const target = e.composedPath()[0] as Element | undefined;
+    if (!target || !(target instanceof win.Element) || layer.contains(target) || !root.contains(target)) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    if (e.type !== 'click' || confirming || asking) return;
+    const head = target.closest('.column > header');
+    if (head) {
+      const key: HeaderKey | null = target.closest('h1') ? 'title' : target.closest('.byline') ? 'byline' : target.closest('.date') ? 'date'
+        : target.closest('.hero') ? 'image' : target.closest('.meta > .name') ? 'editor' : null;
+      if (!key) return;
+      headerKey = key;
+      cleanEl = null;
+      selected = sourceOf(key)?.el ?? null;
+      return pickDone();
+    }
+    const content = ctx.content();
+    if (!content.contains(target)) return;
+    for (let n: Element | null = target; n && n !== content; n = n.parentElement) {
+      const page = pageOf.get(n);
+      if (page) {
+        selected = page;
+        cleanEl = n;
+        headerKey = null;
+        return pickDone();
+      }
+    }
+    // Nothing on the page matches it (a part added from the page for this article only).
+    const blockEl = target.closest('p, li, figure, blockquote, h2, h3, h4, h5, h6, table, pre');
+    if (!blockEl || !content.contains(blockEl)) return;
+    selected = null;
+    cleanEl = blockEl;
+    headerKey = null;
+    pickDone();
+  };
+
   // Dragging a corner: the opposite corner stays, the dragged one follows the finger; on release the selection
   // becomes the element whose box fits the rectangle best.
   let anchor: { x: number; y: number } | null = null;
@@ -328,7 +452,7 @@ export function startEditor(ctx: EditorContext): Editor {
   draw(null);
   handles.forEach((hd, i) => {
     hd.addEventListener('pointerdown', (e) => {
-      if (!selected) return;
+      if (!selected || mode !== 'original') return;
       e.preventDefault();
       e.stopPropagation();
       hd.setPointerCapture?.(e.pointerId);
@@ -380,22 +504,9 @@ export function startEditor(ctx: EditorContext): Editor {
     } else place();
   };
 
-  // ── Header fields ──
-  const assignField = (target: Element) => {
-    const field = fieldMode!;
-    const name = t.edFieldNames[field];
-    const sel = fieldSelector(target);
-    if (!sel || !readField(doc, sel, field)) {
-      message = t.edFieldFail;
-      return renderBar();
-    }
-    fieldMode = null;
-    ctx.edit((p) => ({ ...p, fields: { ...p.fields, [field]: sel } }));
-    afterEdit(t.edFieldSaved(name));
-  };
-
-  // ── Masukkan / Buang ──
+  // ── What the pick is ──
   const afterEdit = (msg: string) => {
+    clearPick();
     message = msg;
     compute();
     redraw();
@@ -405,10 +516,34 @@ export function startEditor(ctx: EditorContext): Editor {
 
   const canRemove = (s: { inside: number }) => !!selected && s.inside > 0 && shareOf(selected, ctx.content()) <= MAX_SHARE;
   const canAdd = (s: { outside: number }) => !!selected && s.outside > 0 && collapse(selected.textContent).length <= MAX_CHARS;
+  /** A field can be read from the pick: a photo for Foto utama, a stable way to find it again for any. */
+  const fieldOk = (f: PersonalField) => {
+    if (!selected) return false;
+    if (f === 'image' && selected.tagName !== 'IMG' && !selected.querySelector('img')) return false;
+    if (f !== 'image' && !readable(selected)) return false;
+    return true;
+  };
+
+  const assignField = (field: PersonalField) => {
+    const part = selected;
+    if (!part) return;
+    const name = t.edFieldNames[field];
+    const sel = fieldSelector(part);
+    if (!sel || !readField(doc, sel, field)) {
+      message = t.edFieldFail;
+      return renderBar();
+    }
+    ctx.edit((p) => ({ ...p, fields: { ...p.fields, [field]: sel } }));
+    afterEdit(t.edFieldSaved(name));
+  };
 
   const removePart = () => {
     const part = selected;
-    if (!part) return;
+    if (!part) {
+      // A clean-view part with no source on the page: out of this article only.
+      cleanEl?.setAttribute('data-user-hidden', '');
+      return afterEdit(t.edRemovedOnce);
+    }
     const p0 = ctx.personal();
     // A part the reader once added comes back out by dropping that entry first.
     const added = p0?.add.filter((e) => entryCovers(e, part, doc)) ?? [];
@@ -458,7 +593,6 @@ export function startEditor(ctx: EditorContext): Editor {
     const p = ctx.personal();
     if (!p || !official) return;
     const next = retireRedundant(p, official.rule, official.article.content, doc, official.article.meta);
-    const shape = (r?: PersonalRule) => JSON.stringify([r?.add, r?.remove, r?.fields]);
     if (shape(next) === shape(p)) return;
     ctx.replace(next);
     if (!closed) {
@@ -486,115 +620,105 @@ export function startEditor(ctx: EditorContext): Editor {
     top.replaceChildren(h(doc, 'span', { class: 'ed-title' }, ctx.newSite ? t.nsTitle : t.edTitle), seg, done);
   };
 
-  const fieldChips = () => {
-    const wrap = h(doc, 'div', { class: 'ed-chips' }, h(doc, 'span', { class: 'ed-chips-label' }, t.edSources));
-    const lone = (key: string) => sources.find((s) => s.key === key);
-    for (const f of HEADER_CHIPS) {
-      const src = lone(f === 'date' ? 'date' : f);
-      const name = t.edFieldNames[f];
-      const hidden = src && !src.el;
-      const chip = h(doc, 'button', { type: 'button', class: 'ed-chip', 'aria-pressed': String(fieldMode === f), 'data-ed': `field-${f}`, title: src?.value ?? '' }, name);
-      if (hidden) chip.append(h(doc, 'span', { class: 'ed-chip-value' }, `${collapse(src.value).slice(0, 28)} · ${t.edFromData}`));
-      chip.addEventListener('click', () => {
-        fieldMode = fieldMode === f ? null : f;
-        selected = fieldMode ? null : selected;
-        message = '';
-        renderBar();
-        place();
-      });
-      wrap.append(chip);
+  /** What the pick is now, in a few words: its state, and its text (or "photo"). */
+  const pickSummary = (): HTMLElement => {
+    const text = h(doc, 'p', { class: 'ed-text' });
+    let state: [string, string] | undefined;
+    let what = '';
+    if (headerKey) {
+      state = ['src', t.edFieldNames[headerKey]];
+      what = selected ? describeEl(selected) : collapse(sourceOf(headerKey)?.value ?? '');
+    } else if (selected) {
+      const s = statusOf(selected, marks);
+      const kind = s.inside && s.outside ? 'mix' : s.inside ? 'in' : 'out';
+      state = [kind, kind === 'in' ? t.edIn : kind === 'out' ? t.edOut : t.edMixed];
+      what = describeEl(selected);
+    } else if (cleanEl) {
+      state = ['in', t.edIn];
+      what = describeEl(cleanEl);
     }
-    for (const key of ['image', 'logo'] as const) {
-      const src = lone(key);
-      if (src && !src.el) wrap.append(h(doc, 'span', { class: 'ed-chip static' }, `${t.edFieldNames[key]} · ${t.edFromData}`));
+    if (state) text.append(h(doc, 'span', { class: `ed-state ${state[0]}` }, state[1]));
+    text.append(h(doc, 'span', { class: 'ed-what' }, what));
+    return text;
+  };
+  const describeEl = (el: Element) => (readable(el) ? describe(cleanCopy(el)) : el.querySelector('img') || el.tagName === 'IMG' ? t.edPhoto : t.edNoText);
+
+  /** "Bagian ini apa?": the choices for the pick, the current one marked. */
+  const sheet = (): HTMLElement[] => {
+    const out: HTMLElement[] = [];
+    const cancel = button(t.edDeselect, 'quiet', 'deselect', () => select(null));
+    out.push(h(doc, 'div', { class: 'ed-line' }, pickSummary(), cancel));
+    // Not on this view: say so instead of offering choices that would act on something unseen.
+    const shown = mode === 'original' ? !!selected : cleanTargets().length > 0;
+    if (!shown) {
+      out.push(h(doc, 'p', { class: 'ed-note' }, mode === 'original' ? t.edNotInOriginal : t.edNotInClean));
+      return out;
     }
-    return wrap;
+    out.push(h(doc, 'p', { class: 'ed-q' }, t.edWhat));
+    const s = selected ? statusOf(selected, marks) : { inside: 1, outside: 0 };
+    const choice = (id: string, title: string, desc: string, pressed: boolean, enabled: boolean, run: () => void) => {
+      const b = h(doc, 'button', { type: 'button', class: `ed-choice ${id}`, 'data-ed': id, 'aria-pressed': String(pressed) },
+        h(doc, 'span', { class: 'ed-choice-title' }, title), h(doc, 'span', { class: 'ed-choice-desc' }, desc));
+      b.toggleAttribute('disabled', !enabled && !pressed);
+      // The current answer again: nothing to change, the sheet just closes.
+      b.addEventListener('click', () => (pressed ? select(null) : run()));
+      return b;
+    };
+    if (!headerKey) {
+      const isIn = s.inside > 0 && s.outside === 0;
+      const isOut = s.inside === 0;
+      const choices = h(doc, 'div', { class: 'ed-choices' },
+        choice('add', t.edChooseIn, t.edChooseInDesc, isIn, canAdd(s), addPart),
+        choice('remove', t.edChooseOut, t.edChooseOutDesc, isOut, selected ? canRemove(s) : !!cleanEl, removePart));
+      out.push(choices);
+      if (selected && s.inside && !canRemove(s) && !isOut) out.push(h(doc, 'p', { class: 'ed-note' }, t.edTooBig));
+      else if (selected && s.outside && !canAdd(s) && !isIn) out.push(h(doc, 'p', { class: 'ed-note' }, t.edTooBig));
+    }
+    const fields = h(doc, 'div', { class: 'ed-chips ed-fields', role: 'group', 'aria-label': t.edOrField }, h(doc, 'span', { class: 'ed-chips-label' }, t.edOrField));
+    for (const f of FIELD_CHOICES) {
+      const current = headerKey === f || (!!selected && sourceOf(f)?.el === selected);
+      const chip = h(doc, 'button', { type: 'button', class: 'ed-chip', 'aria-pressed': String(current), 'data-ed': `field-${f}` }, t.edFieldNames[f]);
+      chip.toggleAttribute('disabled', !current && !fieldOk(f));
+      chip.addEventListener('click', () => (current ? select(null) : assignField(f)));
+      fields.append(chip);
+    }
+    if (selected || headerKey) out.push(fields);
+    if (headerKey && mode === 'clean') out.push(h(doc, 'p', { class: 'ed-note' }, t.edHeaderElsewhere(t.edFieldNames[headerKey])));
+    else if (headerKey && !selected) out.push(h(doc, 'p', { class: 'ed-note' }, t.edFromData));
+    return out;
   };
 
   const renderBar = () => {
     renderTop();
     const active = (layer.getRootNode() as ShadowRoot | Document).activeElement?.getAttribute?.('data-ed');
     const lines: HTMLElement[] = [];
-    if (mode === 'clean') {
-      bar.dataset.mode = 'clean';
-      bar.replaceChildren(h(doc, 'div', { class: 'ed-line' }, h(doc, 'p', { class: 'ed-text' }, t.edCleanHint)));
+    bar.dataset.mode = mode;
+    if (asking) {
+      lines.push(h(doc, 'p', { class: 'ed-q' }, t.edAskTitle), h(doc, 'p', { class: 'ed-ask' }, t.edAskBody),
+        h(doc, 'div', { class: 'ed-actions' },
+          button(t.edAskYes, 'primary', 'ask-yes', () => answer(true)),
+          button(t.edAskNo, '', 'ask-no', () => answer(false))),
+        h(doc, 'p', { class: 'ed-note' }, t.edAskLater));
+    } else if (confirming) {
+      lines.push(h(doc, 'p', { class: 'ed-ask' }, t.edResetAsk),
+        h(doc, 'div', { class: 'ed-actions' },
+          button(t.edResetYes, 'primary', 'reset-yes', () => void doReset()),
+          button(t.edResetNo, '', 'reset-no', () => { confirming = false; renderBar(); })));
+    } else if (hasPick()) {
+      lines.push(...sheet());
     } else {
-      bar.dataset.mode = 'original';
-      const line = h(doc, 'div', { class: 'ed-line' });
-      const text = h(doc, 'p', { class: 'ed-text' });
-      if (fieldMode) {
-        text.textContent = t.edPickField(t.edFieldNames[fieldMode]);
-      } else if (selected) {
-        const s = statusOf(selected, marks);
-        const kind = s.inside && s.outside ? 'mix' : s.inside ? 'in' : 'out';
-        const what = readable(selected) ? describe(cleanCopy(selected)) : selected.querySelector('img') || selected.tagName === 'IMG' ? t.edPhoto : t.edNoText;
-        text.append(
-          h(doc, 'span', { class: `ed-state ${kind}` }, kind === 'in' ? t.edIn : kind === 'out' ? t.edOut : t.edMixed),
-          h(doc, 'span', { class: 'ed-what' }, what),
-        );
-      } else {
-        text.textContent = ctx.newSite ? t.nsHint(doc.location?.hostname ?? '') : t.edHint;
-        // The colour key, so green, red and blue never need guessing.
-        text.append(h(doc, 'span', { class: 'ed-key' }, ...t.edKey.map(([k, label]) => h(doc, 'span', { class: `ed-key-item ${k}` }, label))));
-      }
-      // The corner of the first line: Lainnya when nothing is picked, a way to let go of a pick otherwise.
-      const corner = selected || fieldMode || confirming
-        ? undefined
-        : button(t.edMore, 'quiet ed-more', 'more', () => { moreOpen = !moreOpen; renderBar(); }, { 'aria-expanded': String(moreOpen) });
-      line.append(text, ...(corner ? [corner] : []));
-      lines.push(line);
-
-      if (confirming) {
-        lines.push(h(doc, 'p', { class: 'ed-ask' }, t.edResetAsk),
-          h(doc, 'div', { class: 'ed-actions' },
-            button(t.edResetYes, 'primary', 'reset-yes', () => void doReset()),
-            button(t.edResetNo, '', 'reset-no', () => { confirming = false; renderBar(); })));
-      } else {
-        if (fieldMode) {
-          lines.push(h(doc, 'div', { class: 'ed-actions' }, button(t.edFieldCancel, '', 'field-cancel', () => { fieldMode = null; renderBar(); })));
-        } else if (selected) {
-          const s = statusOf(selected, marks);
-          const actions = h(doc, 'div', { class: 'ed-actions' });
-          if (canAdd(s)) actions.append(button(t.edAdd, 'ed-add', 'add', addPart));
-          if (canRemove(s)) actions.append(button(t.edRemove, 'ed-remove', 'remove', removePart));
-          if (!actions.childElementCount && s.inside && !canRemove(s)) actions.append(h(doc, 'span', { class: 'ed-note' }, t.edTooBig));
-          actions.append(button(t.edDeselect, 'quiet', 'deselect', () => select(null)));
-          lines.push(actions);
-        }
+      const hint = ctx.newSite ? t.nsHint(doc.location?.hostname ?? '') : mode === 'clean' ? t.edHintClean : t.edHint;
+      const more = button(t.edMore, 'quiet ed-more', 'more', () => { moreOpen = !moreOpen; renderBar(); }, { 'aria-expanded': String(moreOpen) });
+      lines.push(h(doc, 'div', { class: 'ed-line' }, h(doc, 'p', { class: 'ed-text' }, hint), more));
+      if (moreOpen) {
         const p = ctx.personal();
-        if (!selected && !fieldMode && !moreOpen) lines.push(fieldChips());
-        if (moreOpen && !selected && !fieldMode) {
-          const send = h(doc, 'a', { class: 'btn', target: '_blank', rel: 'noopener', 'data-ed': 'send' }, t.edSend);
-          const note = () => {
-            if (!p) return '';
-            const names = Object.keys(p.fields ?? {}).map((f) => t.edFieldNames[f as PersonalField]);
-            const site = p.newSite ? p : newSiteRule(p);
-            if (site?.newSite) return buildNewSiteNote(site, new URL(doc.location.href), t.nsSummary(ctx.site, site.remove.length, names), siteName());
-            return buildEditNote(p, t.edSummary(ctx.site, p.add.length, p.remove.length, names));
-          };
-          const sync = () => {
-            const href = p ? ctx.reportUrl(note()) : undefined;
-            if (href) {
-              send.setAttribute('href', href);
-              send.removeAttribute('aria-disabled');
-            } else {
-              send.removeAttribute('href');
-              send.setAttribute('aria-disabled', 'true');
-            }
-          };
-          sync();
-          send.addEventListener('click', (e) => {
-            sync();
-            if (send.getAttribute('aria-disabled') === 'true') e.preventDefault();
-          });
-          const reset = button(t.edReset, '', 'reset', () => { confirming = true; renderBar(); });
-          reset.toggleAttribute('disabled', !p);
-          lines.push(h(doc, 'div', { class: 'ed-actions' }, reset, send),
-            ...(p ? [h(doc, 'p', { class: 'ed-note' }, t.edCount(p.add.length, p.remove.length, Object.keys(p.fields ?? {}).length))] : []));
-        }
+        const reset = button(t.edReset, '', 'reset', () => { confirming = true; renderBar(); });
+        reset.toggleAttribute('disabled', !p);
+        lines.push(h(doc, 'div', { class: 'ed-actions' }, reset),
+          h(doc, 'p', { class: 'ed-note' }, p ? t.edCount(p.add.length, p.remove.length, Object.keys(p.fields ?? {}).length) : t.edNoChanges));
       }
-      bar.replaceChildren(...lines);
     }
+    bar.replaceChildren(...lines);
     status.textContent = message;
     if (message) bar.prepend(h(doc, 'p', { class: 'ed-msg', 'aria-hidden': 'true' }, message));
     if (active) layer.querySelector<HTMLElement>(`[data-ed="${active}"]`)?.focus({ preventScroll: true });
@@ -603,7 +727,6 @@ export function startEditor(ctx: EditorContext): Editor {
   const doReset = async () => {
     confirming = false;
     await ctx.reset();
-    selected = null;
     afterEdit(t.edResetDone);
   };
 
@@ -612,7 +735,6 @@ export function startEditor(ctx: EditorContext): Editor {
     if (next === mode) return;
     mode = next;
     boxLayer.hidden = next === 'clean';
-    selNode.hidden = true;
     layer.dataset.mode = next;
     if (next === 'clean') ctx.showClean();
     else {
@@ -620,8 +742,14 @@ export function startEditor(ctx: EditorContext): Editor {
       compute();
       redraw();
     }
+    message = '';
     renderBar();
     layer.querySelector<HTMLElement>(`[data-ed="view-${next}"]`)?.focus({ preventScroll: true });
+    // The pick stays picked: show it in this view (once the view has laid out).
+    win.requestAnimationFrame(() => {
+      reveal();
+      place();
+    });
   };
 
   /** The site this page defines, from what is green and red now (new-site mode); undefined when it cannot be named. */
@@ -633,7 +761,33 @@ export function startEditor(ctx: EditorContext): Editor {
   const siteName = () => doc.querySelector<HTMLMetaElement>('meta[property="og:site_name"]')?.content;
   const hadSite = !!ctx.personal()?.newSite;
 
-  /** Selesai. In new-site mode it first saves the site; with nothing to save it stays open and says why. */
+  /** What is sent for this outlet's edits: a readable line, and the rule itself as JSON. */
+  const editReport = (p: PersonalRule): ReportInput | undefined => {
+    const names = Object.keys(p.fields ?? {}).map((f) => t.edFieldNames[f as PersonalField]);
+    if (p.newSite) {
+      const full = buildNewSiteNote(p, new URL(doc.location.href), t.nsSummary(ctx.site, p.remove.length, names), siteName());
+      const [note = '', ...rest] = full.split('\n');
+      return full ? { kind: 'edit', note, detail: rest.join('\n') } : undefined;
+    }
+    return { kind: 'edit', note: t.edSummary(ctx.site, p.add.length, p.remove.length, names), detail: compactRule(p) };
+  };
+  const sendEdits = () => {
+    const p = ctx.personal();
+    const report = p && editReport(p);
+    if (report) void ctx.send(report);
+  };
+  /** The one-time question, answered: remember it, send if yes, and leave. */
+  const answer = (yes: boolean) => {
+    asking = false;
+    ctx.setConsent(yes);
+    if (yes) sendEdits();
+    close();
+  };
+
+  /**
+   * Selesai. In new-site mode it first saves the site; with nothing to save it stays open and says why.
+   * With changes, edits go to the maintainers if the reader agreed; the first time, it asks.
+   */
   function finish() {
     if (ctx.newSite) {
       const p = ctx.personal() ?? { site: ctx.site, add: [], remove: [], updated: '' };
@@ -644,6 +798,21 @@ export function startEditor(ctx: EditorContext): Editor {
       }
       ctx.edit(() => site);
     }
+    const p = ctx.personal();
+    if (p && shape(p) !== startShape) {
+      const consent = ctx.consent();
+      if (consent === 'ask') {
+        clearPick();
+        confirming = false;
+        asking = true;
+        message = '';
+        renderBar();
+        place();
+        layer.querySelector<HTMLElement>('[data-ed="ask-yes"]')?.focus({ preventScroll: true });
+        return;
+      }
+      if (consent === 'yes') sendEdits();
+    }
     close();
   }
 
@@ -652,8 +821,10 @@ export function startEditor(ctx: EditorContext): Editor {
     closed = true;
     doc.removeEventListener('click', onTap, true);
     for (const type of ['mousedown', 'pointerdown', 'touchstart', 'auxclick']) doc.removeEventListener(type, block, true);
+    for (const type of ['click', 'auxclick']) shadowRoot.removeEventListener(type, onCleanTap, true);
     doc.removeEventListener('keydown', onKey, true);
     win.removeEventListener('scroll', follow, { capture: true });
+    root.removeEventListener('scroll', follow);
     win.removeEventListener('resize', follow);
     win.clearInterval(timer);
     if (frame) win.cancelAnimationFrame(frame);
@@ -674,9 +845,12 @@ export function startEditor(ctx: EditorContext): Editor {
     if (confirming) {
       confirming = false;
       renderBar();
-    } else if (fieldMode) {
-      fieldMode = null;
-      renderBar();
+    } else if (asking) {
+      // Not answered: the question comes again next time.
+      asking = false;
+      close();
+    } else if (hasPick()) {
+      select(null);
     } else {
       // Leaving a new site half set up drops what was saved on the way (it would show as a personal version that does nothing).
       if (ctx.newSite && !hadSite) ctx.replace(undefined);
@@ -684,13 +858,17 @@ export function startEditor(ctx: EditorContext): Editor {
     }
   };
 
+  const shadowRoot = root.getRootNode() as ShadowRoot | Document;
   doc.addEventListener('click', onTap, true);
   for (const type of ['mousedown', 'pointerdown', 'touchstart', 'auxclick']) doc.addEventListener(type, block, true);
+  // Above the reader's own handlers (links, the photo viewer): in Bersih a tap picks.
+  for (const type of ['click', 'auxclick']) shadowRoot.addEventListener(type, onCleanTap, true);
   doc.addEventListener('keydown', onKey, true);
   win.addEventListener('scroll', follow, { capture: true, passive: true });
+  root.addEventListener('scroll', follow, { passive: true });
   win.addEventListener('resize', follow);
   // Late layout (images loading, ads moving things) shifts boxes without a scroll.
-  const timer = win.setInterval(() => (mode === 'original' ? place() : undefined), 700);
+  const timer = win.setInterval(place, 700);
 
   ctx.showOriginal();
   layer.dataset.mode = 'original';
@@ -699,16 +877,13 @@ export function startEditor(ctx: EditorContext): Editor {
   renderBar();
   layer.querySelector<HTMLElement>('[data-ed="view-clean"]')?.focus({ preventScroll: true });
   // Start at the article: scroll so its title (or first green part) sits just under the top bar.
-  const anchorEl = sources.find((s) => s.key === 'title')?.el ?? marks.green[0];
-  // After the page is back from behind the reader (its scrolling is restored a frame later), and again once
-  // late ads above the article have pushed it down.
   // The anchor must be in the page's flow (see floating): the sticky copy of a headline always looks "on screen".
   const inFlow = [sources.find((s) => s.key === 'title')?.el, ...marks.green].find(
     (el): el is Element => !!el && el.getBoundingClientRect().height > 0 && !floating(el),
   );
   const toArticle = () => {
     const anchorEl = inFlow;
-    if (closed || !anchorEl?.isConnected) return;
+    if (closed || mode !== 'original' || !anchorEl?.isConnected) return;
     // Set the position directly: some pages replace window.scrollTo (Kompas), which then does nothing.
     const scroller = doc.scrollingElement ?? doc.documentElement;
     const r = anchorEl.getBoundingClientRect();
@@ -723,7 +898,7 @@ export function startEditor(ctx: EditorContext): Editor {
   const touch = () => { touched = true; };
   for (const type of ['wheel', 'touchstart', 'keydown']) win.addEventListener(type, touch, { once: true, passive: true });
   win.requestAnimationFrame(() => win.requestAnimationFrame(toArticle));
-  for (const ms of [900, 1700]) win.setTimeout(() => !selected && !touched && toArticle(), ms);
+  for (const ms of [900, 1700]) win.setTimeout(() => !hasPick() && !touched && toArticle(), ms);
   void ctx.official().then((view) => {
     if (closed || !view) return;
     official = view;

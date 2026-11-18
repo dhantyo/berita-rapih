@@ -66,15 +66,15 @@ Android APK: `cd apps/android && ./gradlew assembleDebug`.
 
 One-time setup: Settings → Pages → Source: **GitHub Actions** (needs a public repository on the free plan). Pages URLs don't follow repository renames, so rename before the first release.
 
-### Reports without a GitHub account
+### Where feedback goes
 
-By default **Laporkan** (in the reader) and **Laporkan masalah** (install page footer) open the GitHub "Broken article" form, which needs a GitHub account. To let anyone report, point them at a free form instead (Tally works well: no sign-in for the reporter, screenshot uploads included):
+Feedback from the reader (the feedback page, and edits from **Atur isi artikel** when the reader agreed) and the install page's **Kirim masukan** go to a Google Form that needs no account. Unset, everything falls back to the GitHub "Broken article" form.
 
-1. Create the form with these questions: *Apa yang salah?* (checkboxes: Sapu Berita tidak muncul · Teks artikel terpotong · Masih ada iklan / "Baca Juga" · Halaman 2, 3 tidak digabung · Foto atau video hilang · Tampilannya rusak), *Ceritakan sedikit* (long text, optional), *Screenshot* (file upload, optional). Add **hidden fields** named `url`, `site`, `version`, `platform` and `note` (`note` carries the text of the personal rule or the part the reader sent from the editor, **Atur isi artikel**).
-2. Take the form's share link and add the placeholders, e.g. `https://tally.so/r/AbC123?url={url}&site={site}&version={version}&platform={platform}&note={note}`. Placeholders available: `{url} {title} {site} {version} {platform} {note}`.
-3. Save it as the repository variable `SAPU_REPORT_URL` (Settings → Secrets and variables → Actions → Variables, or `gh variable set SAPU_REPORT_URL --body '<link>'`).
+1. The form has seven short-answer or paragraph questions, named exactly: `kind`, `url`, `site`, `version`, `platform`, `note` (paragraph), `detail` (paragraph). No sign-in, no email collection. Responses go to a linked Google Sheet.
+2. Its link template is the prefilled `viewform` link with a placeholder per field: `https://docs.google.com/forms/d/e/<id>/viewform?usp=pp_url&entry.<n>={kind}&entry.<n>={url}&…&entry.<n>={detail}`. The `entry.<n>` numbers are in the public form's `FB_PUBLIC_LOAD_DATA_`. Placeholders available: `{url} {title} {site} {version} {platform} {kind} {note} {detail}`.
+3. Save it as the repository variable `SAPU_REPORT_URL` (`gh variable set SAPU_REPORT_URL --body '<link>'`).
 
-The next release builds it in and writes it into `update.json` as `"report"`, so installed copies switch to the form within a day and the bookmark on its next run. Changing the form later is the same: update the variable, release. Unset, everything falls back to GitHub. The GitHub forms stay for people who have an account (CONTRIBUTING.md).
+The reader posts the same fields to the form's `formResponse` address directly (src/update.ts `formPost`); where a news site's security policy blocks that, it offers the prefilled link in a new tab. The next release builds the template in and writes it into `update.json` as `"form"`, so installed copies switch within a day and the bookmark on its next run. Releases before 0.7 read `"report"` instead and, finding none, keep the link built into them.
 
 The APK signing key is only in the repository's Actions secrets (`SAPU_KEYSTORE_B64`, `SAPU_KEYSTORE_PASSWORD`, `SAPU_KEY_ALIAS`, `SAPU_KEY_PASSWORD`). Keep a backup of the keystore: if it is lost, existing users cannot update and must reinstall.
 

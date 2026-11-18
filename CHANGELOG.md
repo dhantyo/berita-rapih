@@ -8,6 +8,13 @@ The first four releases were published as 0.1.0-beta.1 to beta.4 and renamed on 
 
 - The install page is simpler: install comes first, with one recommended way per device (Android, iPhone & iPad, computer) and a button for the browser you're using. The extension is now in the Chrome Web Store and Edge Add-ons, including Edge on Android.
 - A visible note on the install page that Sapu Berita is made with the help of AI.
+- **Atur isi artikel** works the other way round now: tap a part first, then say what it is (article text, not article text, or the title, author, date or main photo). The main photo can now be chosen too.
+- You can tap parts in the clean view (Bersih) as well, and what you picked stays picked when you switch between Asli and Bersih.
+- The first time you finish with changes, Sapu Berita asks once whether to send them to the developer. A switch in the settings changes the answer later.
+- Feedback is sent straight from the article, without opening a form in a new tab. Screenshots are no longer attached.
+- The settings button is a gear instead of "Aa".
+- Clearer, more natural Indonesian text throughout the app.
+- Firefox now lists at install what feedback can carry (the article link and the edited parts); nothing is sent unless you send it.
 
 ## [0.6.3] - 2026-11-17
 

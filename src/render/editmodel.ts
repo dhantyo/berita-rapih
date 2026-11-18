@@ -253,6 +253,8 @@ export function findHeaderSources(
   }
   const pics = (value: string | undefined, key: HeaderKey) => {
     if (!value) return;
+    const chosen = key === 'image' && fields?.image ? safeQueryAll(page, fields.image)[0] : undefined;
+    if (chosen && visible(chosen)) return void out.push({ key, value, el: chosen });
     const want = imageKey(value, page.baseURI);
     const imgs = want ? [...page.querySelectorAll('img')].filter((i) => !skip(i) && imageKeys(i, page.baseURI).includes(want)) : [];
     out.push({ key, value, el: firstVisible(imgs, visible) });

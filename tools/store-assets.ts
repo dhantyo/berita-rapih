@@ -68,8 +68,10 @@ const phones = (title: string, sub: string, shots: string[]) => page(1280, 800, 
   ${shots.map((s) => `<img src="${img(s)}" style="height:680px;border-radius:28px;box-shadow:0 18px 50px rgb(60 40 10 / 0.25)">`).join('')}
 </div>`, CREAM);
 await shoot(join(store, 'screenshot-2-phone.png'), 1280, 800,
-  phones('Satu artikel, satu halaman.', 'Halaman 2, 3 dan seterusnya digabung otomatis. Iklan dan pop-up disapu.', ['phone-light.png', 'phone-dark.png']));
+  phones('Satu artikel, satu halaman.', 'Halaman 2, 3, dan seterusnya langsung digabung jadi satu. Iklan dan pop-up ikut disapu.', ['phone-light.png', 'phone-dark.png']));
 await shoot(join(store, 'screenshot-3-settings.png'), 1280, 800,
-  phones('Atur sesukamu.', 'Ukuran huruf, jenis huruf, terang atau gelap. Bagian yang salah bisa kamu perbaiki sendiri.', ['phone-settings.png']));
+  phones('Atur sesukamu.', 'Ukuran dan jenis huruf, lalu tema terang, sepia, atau gelap. Semuanya ada di tombol roda gigi.', ['phone-settings.png']));
+await shoot(join(store, 'screenshot-4-editor.png'), 1280, 800,
+  phones('Ada yang salah? Perbaiki sendiri.', 'Ketuk bagian artikel, lalu pilih apakah bagian tersebut termasuk isi artikel atau bukan. Hasilnya langsung terlihat.', ['phone-editor.png']));
 
 await browser.close();

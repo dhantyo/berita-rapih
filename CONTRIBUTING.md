@@ -4,7 +4,7 @@ Thanks for helping! Three ways, easiest first.
 
 ## 1. Report an article that looks wrong
 
-The quickest way: on that article, open **Aa → Report it**. The article link and your Sapu Berita version are filled in for you.
+The quickest way: on that article, open **the gear button → Beri masukan → Laporkan masalah** (report a problem). The article link and your Sapu Berita version are sent with it.
 
 Or [open a report](../../issues/new/choose) → **Broken article**, with:
 - **the article link** (most important),

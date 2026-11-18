@@ -33,9 +33,12 @@ There are two runs:
 
 ## Inputs
 
-1. **Reader feedback sheet.** The Tally form's answers land in a Google Sheet; the run prompt gives its file ID. Read it with the Google Drive connector's `read_file_content` (the Sheets connector has no access to it). Columns: Submission ID, Respondent ID, Submitted at, url, site, version, platform, note, screenshot link, extra comment.
+1. **Reader feedback sheets.** Read them with the Google Drive connector's `read_file_content` (the Sheets connector has no access to them); the run prompt gives their file IDs.
+   - **The Google Form's sheet** (0.7 and later): columns Timestamp, kind, url, site, version, platform, note, detail. `kind` is `report`, `site`, `idea` or `edit`. An `edit` row is a reader's change from Atur isi artikel: `detail` holds their personal rule as JSON (`add`/`remove` selectors or `t:`/`i:` fingerprints, `fields`), or a draft site rule for a new site. Several readers sending the same change for one outlet is a strong sign the official rule should change. Its ID in `triage.tsv` is `g:` plus the Timestamp.
+   - **The old Tally sheet** (0.6.3 and older still send there until they update): columns Submission ID, Respondent ID, Submitted at, url, site, version, platform, note, screenshot link, extra comment. Retire it once it has been quiet for two weeks after the 0.7 release: say so in the report; the user deletes the form.
    - Our triage log is `triage.tsv` in the private repo, checked out at `.saved-pages/` (`npm run fixtures:pull` clones it). Columns: submission ID, date, status (`fixed`, `weekly`, `duplicate`, `cannot-reproduce`, `wontfix`), a one-line summary, and a link to the commit or backlog entry. Commit and push it there with `git -c safe.directory=<that folder> …` (exFAT).
    - A submission is new if its ID is not in `triage.tsv` yet.
+   - Test rows (note says test or setup) are not feedback: record them as `wontfix`.
    - The `note` field is the text the app built from what the reader picked and typed on the feedback page; the kind of feedback is in it.
 2. **GitHub issues:** `gh issue list --state open`. Labels: `broken article`, `site request`, `enhancement`, `bug`.
 3. **Canary:** `gh run list --workflow canary.yml --limit 3`. For a failed run, `gh run view <id> --log-failed` names the sites.

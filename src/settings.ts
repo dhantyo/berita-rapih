@@ -28,6 +28,10 @@ export interface Settings {
   embeds: boolean;
   /** Slide the top bar away while scrolling down; it returns on any upward scroll. */
   hideBar: boolean;
+  /** Send what the reader changes in "Atur isi artikel" (the article link and the edited rule) to the maintainers. */
+  sendEdits: boolean;
+  /** The reader has answered the one-time question about sendEdits (in the editor or with the switch). */
+  sendEditsAsked: boolean;
   /** The reader's own edits per outlet (src/personal.ts). Kept out of the shared cookie like the lists below. */
   personal: PersonalRule[];
   /** Legacy (before personal rules): read once and folded into `personal` on load, never written any more. Blocks the reader hid with the old "Tandai" tool, as "<site rule>:<fingerprint>" (render/picker.ts). */
@@ -51,6 +55,8 @@ export const DEFAULT_SETTINGS: Settings = {
   summaries: true,
   embeds: true,
   hideBar: false,
+  sendEdits: false,
+  sendEditsAsked: false,
   personal: [],
   hidden: [],
   added: [],
@@ -138,7 +144,7 @@ export function outletDomain(host: string, siteDomains: string[]): string | unde
 }
 
 /** The reader's on/off switches. Each one's label and hint live in i18n under the same name and "<name>Hint". */
-export const SWITCHES = ['hero', 'autoOpen', 'sweepLine', 'updates', 'links', 'summaries', 'embeds', 'hideBar'] as const;
+export const SWITCHES = ['hero', 'autoOpen', 'sweepLine', 'updates', 'links', 'summaries', 'embeds', 'hideBar', 'sendEdits'] as const;
 export type Switch = (typeof SWITCHES)[number];
 
 const MAX_HIDDEN = 100;
@@ -159,6 +165,7 @@ export function normalizeSettings(raw: Partial<Settings> | undefined): Settings 
     lang: pick(r.lang, ['id', 'en'] as const, d.lang),
   };
   for (const k of SWITCHES) if (typeof r[k] === 'boolean') out[k] = r[k] as boolean;
+  if (typeof r.sendEditsAsked === 'boolean') out.sendEditsAsked = r.sendEditsAsked;
   // Newest last; a bounded list of short keys.
   const keys = (v: unknown) => (Array.isArray(v) ? v.filter((k): k is string => typeof k === 'string' && k.length <= 200).slice(-MAX_HIDDEN) : []);
   // Old lists fold into personal rules and are no longer written (Settings.hidden/added stay empty).

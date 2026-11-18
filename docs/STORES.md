@@ -61,12 +61,12 @@ Each account is the owner's to create. Then:
 > • Artikel yang dipecah jadi beberapa halaman langsung digabung jadi satu
 > • Iklan, pop-up dan video yang menyela hilang, begitu juga daftar link "Baca Juga" di tengah cerita
 > • Atur ukuran dan jenis huruf, tema terang, sepia atau gelap
-> • Ada bagian yang salah? Atur sendiri lewat Aa → Atur isi artikel, atau kirim masukan
+> • Ada bagian yang salah? Atur sendiri lewat Pengaturan → Beri masukan → Atur isi artikel, atau kirim masukan langsung dari artikel tersebut
 > • Satu tombol untuk kembali ke tampilan asli situs
 >
 > Bekerja di hampir 30 situs berita besar Indonesia (daftar lengkapnya: https://github.com/dhantyo/sapu-berita#supported-sites). Perbaikan untuk tiap situs datang sendiri setiap hari.
 >
-> Tanpa akun, tanpa pelacak, tanpa server. Semua terjadi di perangkatmu. Sapu Berita tidak melewati paywall: yang dirapikan hanya yang memang sudah ditampilkan situsnya.
+> Tanpa akun, tanpa pelacak, dan tanpa server. Semuanya terjadi di perangkatmu. Masukan hanya terkirim kalau kamu sendiri yang mengirimnya. Sapu Berita tidak melewati paywall: yang dirapikan hanya yang memang sudah ditampilkan oleh situsnya.
 >
 > Kode terbuka (GPL-3.0): https://github.com/dhantyo/sapu-berita
 >
@@ -84,6 +84,6 @@ Don't list outlet names in a store description: the Chrome Web Store rejected 0.
 - **Host permissions** (content script on the listed news domains): the reader view runs only on these news sites, to read the article on the page and show it cleaned up. No other site is touched.
 - **Remote code:** no. The daily `rules.json` is data (CSS selectors per site), not code.
 
-**Data usage** (Chrome and Edge): collects no user data in any category. Tick all three certifications: no selling, no use beyond the single purpose, no creditworthiness use.
+**Data usage** (Chrome and Edge), since 0.7: tick **Web history** (the article link sent with feedback and with edits) and **Website content** (the parts of the article an edit changes, and what the reader writes on the feedback page). Nothing else. Both are sent only when the reader presses Kirim on the feedback page, or after they agreed once to send edits from Atur isi artikel; they go to the developer's Google Form. Tick all three certifications: no selling, no use beyond the single purpose, no creditworthiness use. The Chrome dashboard is filled in by hand (extensions can't script it); Edge can be done through Brave.
 
-**Firefox data collection:** none. The manifest declares `data_collection_permissions: { required: ["none"] }`.
+**Firefox data collection:** the manifest declares `data_collection_permissions: { required: ["browsingActivity", "websiteContent"] }` (tools/build.ts), so Firefox lists both at install. The in-app question still decides whether anything is sent. 0.6 declared `["none"]`.

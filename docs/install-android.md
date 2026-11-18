@@ -42,7 +42,7 @@ Nothing else to do. Open news links as usual:
 - **Articles** from Detik, Kompas, Tribunnews (including its regional sites), CNN Indonesia, CNBC Indonesia, Liputan6, Merdeka, Suara, Okezone, Viva, iNews, JPNN, ANTARA, Republika, Bisnis.com and Tirto open clean in Sapu Berita.
 - **Homepages and section pages** of those sites, and **every other link**, open in your usual browser.
 
-In an article, **Aa** sets text size, font, light, sepia or dark theme, and language (for every site at once). **Asli** shows the original page.
+In an article, the **gear** button sets text size, font, light, sepia or dark theme, and language (for every site at once). **Asli** shows the original page.
 
 ### Updates
 
@@ -56,9 +56,9 @@ Fixes for news sites arrive on their own, without updating the app.
 
 - If a site's official app is installed (the Detik app, for example), that app keeps opening that site's links; Android doesn't let another app take over. Other sites still go through Sapu Berita.
 - Instagram, Facebook and TikTok open links in their own built-in browser, so those don't go through Sapu Berita. Use **⋮ → Open in browser**.
-- Something wrong with an article? **Aa → Laporkan** (report it) sends us the link.
+- Something wrong with an article? **Gear button → Beri masukan** (give feedback) sends it to us, with the link filled in.
 - To stop: **Settings → Apps → Sapu Berita → Open by default** → turn it off, or uninstall the app.
 
 ## Privacy
 
-Everything runs on your phone. Sapu Berita has no server, no analytics, and doesn't know what you read. Once a day it downloads the latest version number and site rules from GitHub; nothing about you is sent. Turn it off under **Aa → Cek update**.
+Everything runs on your phone. Sapu Berita has no server, no analytics, and doesn't know what you read. Once a day it downloads the latest version number and site rules from GitHub; nothing about you is sent. Turn it off under **Gear button → Cek update**.

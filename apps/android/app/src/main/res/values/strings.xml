@@ -18,17 +18,17 @@
     <string name="welcome_title">Baca berita tanpa gangguan</string>
     <string name="welcome_lead">Sapu Berita membuka link berita dalam versi bersih: tanpa iklan dan pop-up, dan artikel yang dipecah jadi beberapa halaman langsung digabung.</string>
     <string name="welcome_point_1">Link berita dari WhatsApp, Telegram, dan lainnya langsung terbuka bersih.</string>
-    <string name="welcome_point_2">Browser kamu tetap seperti biasa. Link lain tidak berubah.</string>
-    <string name="welcome_point_3">Tanpa akun, tanpa server. Semua jalan di ponselmu.</string>
+    <string name="welcome_point_2">Browser kamu tetap seperti biasa, dan link lain tetap terbuka seperti sebelumnya.</string>
+    <string name="welcome_point_3">Tanpa akun dan tanpa server. Semuanya berjalan di ponselmu.</string>
     <string name="welcome_start">Mulai</string>
 
     <string name="links_title">Izinkan Sapu Berita membuka link berita</string>
-    <string name="links_lead">Android butuh izinmu sekali saja. Tombol di bawah membuka halaman pengaturan seperti ini:</string>
-    <string name="links_mock_note">Tampilannya bisa sedikit beda di tiap ponsel.</string>
-    <string name="links_do_1">Pastikan \"%1$s\" nyala.</string>
+    <string name="links_lead">Android perlu izin darimu, cukup sekali saja. Tombol di bawah akan membuka halaman pengaturan seperti ini:</string>
+    <string name="links_mock_note">Tampilannya bisa sedikit berbeda di setiap ponsel.</string>
+    <string name="links_do_1">Pastikan \"%1$s\" sudah menyala.</string>
     <string name="links_do_2">Ketuk \"%1$s\".</string>
     <string name="links_do_3">Centang semua %2$d kotak (geser ke bawah untuk melihat semuanya), lalu ketuk \"%1$s\".</string>
-    <string name="links_do_4">Tekan tombol kembali untuk balik ke sini.</string>
+    <string name="links_do_4">Setelah itu, tekan tombol kembali untuk balik ke sini.</string>
     <string name="links_open">Buka pengaturan</string>
     <string name="links_toast">Ketuk \"%1$s\" → centang semua → \"%2$s\"</string>
     <string name="links_fallback">Kalau tombol \"%1$s\" tidak ada, cari \"%2$s\" di halaman yang terbuka.</string>
@@ -37,28 +37,28 @@
     <string name="status_active">Aktif untuk semua %1$d situs berita.</string>
     <string name="status_some">Aktif untuk %1$d dari %2$d situs. Belum dicentang: %3$s</string>
     <string name="sites_count">%1$d situs lagi</string>
-    <string name="status_none">Belum aktif. Ketuk \"Buka pengaturan\" lalu ikuti langkah di atas.</string>
-    <string name="status_off">\"%1$s\" masih mati. Nyalakan dulu, lalu tambahkan link.</string>
-    <string name="status_taken">%1$s dibuka oleh aplikasi %2$s, jadi tidak bisa dipilih di sini. Tidak apa-apa, situs lain tetap jalan.</string>
+    <string name="status_none">Belum aktif. Ketuk \"Buka pengaturan\", lalu ikuti langkah di atas.</string>
+    <string name="status_off">\"%1$s\" masih mati. Nyalakan dulu, lalu tambahkan link-nya.</string>
+    <string name="status_taken">%1$s dibuka oleh aplikasi %2$s, jadi situs tersebut tidak bisa dipilih di sini. Tidak apa-apa, situs lain tetap dibuka lewat Sapu Berita.</string>
 
     <string name="old_title">Pilih Sapu Berita untuk link berita</string>
-    <string name="old_lead">Ketuk tombol di bawah. Ponsel akan bertanya aplikasi mana yang dipakai:</string>
+    <string name="old_lead">Ketuk tombol di bawah. Ponselmu akan bertanya aplikasi mana yang ingin dipakai:</string>
     <string name="old_do_1">Pilih Sapu Berita.</string>
     <string name="old_do_2">Ketuk \"%1$s\".</string>
     <string name="old_try">Buka link berita</string>
-    <string name="old_status_ok">Beres! Link berita sekarang dibuka Sapu Berita.</string>
-    <string name="old_status_browser">Link berita masih selalu dibuka %1$s. Hapus dulu pilihan itu: di halaman yang terbuka, cari \"%2$s\" lalu \"%3$s\".</string>
+    <string name="old_status_ok">Beres! Sekarang link berita dibuka oleh Sapu Berita.</string>
+    <string name="old_status_browser">Link berita masih selalu dibuka oleh %1$s. Hapus dulu pilihan tersebut: di halaman yang terbuka, cari \"%2$s\" lalu \"%3$s\".</string>
     <string name="old_clear">Buka pengaturan %1$s</string>
 
     <string name="try_title">Coba sekarang</string>
-    <string name="try_lead">Buka contoh artikel dari Kompas. Tombol Aa untuk ukuran huruf dan tema, Asli untuk melihat halaman aslinya.</string>
+    <string name="try_lead">Buka contoh artikel dari Kompas. Tombol roda gigi untuk mengatur ukuran huruf dan tema, dan tombol Asli untuk melihat halaman aslinya.</string>
     <string name="try_open">Buka contoh artikel</string>
-    <string name="try_tip">Link dari Instagram, Facebook, atau TikTok dibuka di browser mereka sendiri. Pilih \"Buka di browser\" dari menu ⋮.</string>
+    <string name="try_tip">Link dari Instagram, Facebook, atau TikTok dibuka di browser bawaan aplikasi tersebut. Pilih \"Buka di browser\" dari menu ⋮.</string>
     <string name="done">Selesai</string>
 
     <string name="home_fix">Atur link berita</string>
     <string name="home_try">Buka contoh artikel</string>
     <string name="home_guide">Ulangi panduan</string>
     <string name="version">Versi %1$s</string>
-    <string name="privacy">Semua jalan di ponselmu. Sapu Berita tidak punya server dan tidak tahu apa yang kamu baca. Sekali sehari mengecek versi baru dan perbaikan situs dari GitHub (bisa dimatikan di Aa → Cek update).</string>
+    <string name="privacy">Semuanya berjalan di ponselmu. Sapu Berita tidak punya server dan tidak tahu apa yang kamu baca. Sekali sehari, Sapu Berita mengecek versi baru dan perbaikan situs dari GitHub (bisa dimatikan di Pengaturan → Cek update).</string>
 </resources>
