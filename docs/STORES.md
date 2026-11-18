@@ -80,7 +80,7 @@ Don't list outlet names in a store description: the Chrome Web Store rejected 0.
 > Shows articles on Indonesian news sites in a clean reading view, without ads and with all pages merged.
 
 **Permission justifications** (Chrome):
-- `storage`: saves the reader's own settings (text size, font, theme, and their own corrections to an article's content) on their device.
+- `storage`: saves the reader's own settings on their device: text size, font, theme, their own corrections to which parts of an article are shown, and whether they agreed to send those corrections to the developer. Settings themselves are never sent. (Edge has this text since 0.7.0; use it for Chrome too.)
 - **Host permissions** (content script on the listed news domains): the reader view runs only on these news sites, to read the article on the page and show it cleaned up. No other site is touched.
 - **Remote code:** no. The daily `rules.json` is data (CSS selectors per site), not code.
 
