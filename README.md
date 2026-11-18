@@ -6,7 +6,7 @@
 
 [Install page](https://dhantyo.github.io/sapu-berita/) · [Chrome](https://chromewebstore.google.com/detail/cnpcdeijcckcobfngmglmdfgfcdlnglc) · [Edge](https://microsoftedge.microsoft.com/addons/detail/bhdciokajcobbbajokfomgjoonofcdbj) · [Android](docs/install-android.md) · [iPhone, iPad, Mac](docs/install-apple.md) · [Supported sites](#supported-sites)
 
-<img src="docs/img/phone-light.png" width="250" alt="A cleaned-up Kompas article, light theme"> <img src="docs/img/phone-dark.png" width="250" alt="The same article, dark theme"> <img src="docs/img/phone-settings.png" width="250" alt="Settings panel: text size, font, theme, language">
+<img src="docs/img/phone-light.png" width="200" alt="A cleaned-up Kompas article, light theme"> <img src="docs/img/phone-dark.png" width="200" alt="A Detik Travel article, dark theme"> <img src="docs/img/phone-settings.png" width="200" alt="Settings panel: text size, font, theme, language"> <img src="docs/img/phone-editor.png" width="200" alt="Adjusting the article: a paragraph picked, asking what it is">
 
 </div>
 

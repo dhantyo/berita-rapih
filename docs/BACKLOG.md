@@ -4,50 +4,21 @@ Work queued for the weekly run ([MAINTAINING.md](MAINTAINING.md)). One line per 
 
 ## Weekly queue
 
-### First: the contributions batch (approved by the user on 2026-11-18 for Friday 2026-11-20)
+### First: finish the contributions batch (built 2026-11-18, PR weekly/2026-11-18)
 
-The user has already agreed to this design. Build all of it in this run, on one branch with one PR, and show screenshots. It's bigger than the usual 1 to 3 items, so it's the only item for this Friday. `[Unreleased]` already holds the install-page redesign (commit cfc6cae, not released yet); it ships with this batch.
+Built early, on the user's word, in the session that planned it: the Google Form and its sheet, the pick-first editor, picking in Bersih, the one-time send question with its setting, the gear icon, the Indonesian text pass, the privacy page, the Firefox manifest, the store texts and new screenshots (`node tools/screenshots.ts`, then `node tools/store-assets.ts`). What is left, in order, once the user approves the PR:
 
-1. **One Google Form for all feedback, replacing Tally.**
-   - Create it in the user's Google account, using Claude in Chrome (the user's Brave).
-   - Fields: kind (report / idea / site request / editor change), url, site, version, platform, note (paragraph), detail (paragraph: the edit as JSON).
-   - Link it to a new Google Sheet. Read the `entry.<id>` names from a prefilled link.
-   - The app sends with `fetch(…/formResponse, { method: 'POST', mode: 'no-cors', body: FormData })`. If that throws (a page's CSP can block it for the bookmark or the Shortcut), fall back to opening the prefilled `viewform` link in a new tab.
-   - The feedback page's Kirim sends directly: no new tab, no screenshots. The user dropped screenshot uploads.
-   - Point `SAPU_REPORT_URL` and the daily and weekly task prompts at the new sheet, which you read with the Drive connector. Keep `triage.tsv`. Retire the Tally form only after the first release that uses the new one.
-2. **Editor: pick first, then say what it is.**
-   - The bar starts with only "Ketuk bagian halaman yang ingin kamu ubah." A tap selects the part, and a sheet asks "Bagian ini apa?":
-     - Isi artikel (show it);
-     - Bukan isi artikel (remove it);
-     - Judul · Penulis · Tanggal · Foto utama.
-   - The sheet marks the part's current state. The corner handles for resizing and Batal stay. The "Sumber:" chip row goes.
-3. **Editor: picking works in Bersih too, and the selection carries across views.**
-   - Tap a block in the clean view to select it. Map it to its source with the existing provenance (`marks.cleanOf` and related).
-   - Switching Asli/Bersih keeps the same part highlighted. If it has no counterpart in the other view, the bar says "Bagian ini tidak tampil di versi bersih" (or the reverse).
-4. **Asking once whether to send edits.**
-   - The first Selesai that has changes asks: "Kirim perubahan ini ke pengembang?" with an explanation, [Kirim] [Tidak usah], and "Pilihan ini bisa kamu ubah kapan saja di Pengaturan."
-   - Remember the answer and never ask again. With yes, every later Selesai sends in the background.
-   - Add a switch in the settings panel: "Kirim perubahan dari Atur isi artikel".
-   - Remove "Kirim usulan" from Lainnya.
-5. **A gear icon instead of "Aa"** on the reader's settings button. Update every text that says "Aa → …": the app, the install page, the docs and the store texts.
-6. **Indonesian text pass over everything users read in Indonesian:** reader, settings panel, feedback page, editor, update bar, Android app strings, install page, privacy page, store descriptions. Follow the copy rule in MAINTAINING.md ("How we work").
-7. **Privacy and stores.**
-   - Privacy page (both languages): with the reader's consent, edits send the article link and the edited parts; pressing Kirim on the feedback page sends the reader's note. Nothing else is sent.
-   - Chrome Web Store and Edge privacy tabs: tick "Web history" and "Website content". The user does the Chrome dashboard (extensions can't script it). Edge can be done through Brave.
-   - Firefox: change the manifest's `data_collection_permissions` to declare `browsingActivity` and `websiteContent` as required, so they appear in Firefox's install prompt. The in-app question still decides whether anything is sent.
-8. **New screenshots** showing the gear and the new editor:
-   - `docs/img/*` (README and install page);
-   - `docs/store/*` (redraw with `node tools/store-assets.ts`);
-   - then upload them to the three listings.
-   - Use these articles (picked with the user: light topics, calm photos, no politics, several outlets):
-     - light phone: Kompas, https://www.kompas.com/food/read/2026/11/18/203014675/10-hidangan-sup-terbaik-di-asia-tenggara-ada-3-dari-indonesia
-     - dark phone: Detik Travel, https://travel.detik.com/cerita-perjalanan/d-8758455/hidden-gem-paramotor-di-cikarang-wisatawan-serasa-main-pubg
-     - desktop: Tribun, https://m.tribunnews.com/travel/7905546/batagor-indonesia-masuk-10-besar-hidangan-seafood-terbaik-dunia-versi-tasteatlas (2 pages, so the shot can show pages merged)
-     - Fallback if one is gone: same rules (food, travel or tips; no politics, crime, disasters, religion or people in controversy). `npm run inspect -- <url> --shot <dir>` shows the reader.
-9. **Release (MINOR), after the user approves the PR.** Then upload the new package to all three stores.
+1. Merge. Point the repository variable at the new form (not before the merge: master's CI would hand the new template to 0.6 copies, which don't fill `{kind}` and `{detail}`):
+   `gh variable set SAPU_REPORT_URL --body 'https://docs.google.com/forms/d/e/1FAIpQLSc9RX8WT8IDwv8vESjdiQTT3RetOp6L2hGphXQMpY-zMLEuDA/viewform?usp=pp_url&entry.1679581615={kind}&entry.1868248012={url}&entry.300525631={site}&entry.368900275={version}&entry.1562198632={platform}&entry.1402800012={note}&entry.909966618={detail}'`
+   Then `npm run release -- 0.7.0` (MINOR): the release builds it in and writes it into update.json as `form`.
+2. Upload `sapu-berita-extension-0.7.0.zip` to the Chrome Web Store and Edge Add-ons, and `sapu-berita-firefox-0.7.0.zip` (with the source zip) to AMO, with the four new images in `docs/store/`.
+3. Store privacy tabs: tick **Web history** and **Website content** (docs/STORES.md). The user does Chrome's; Edge's can be done through Brave.
+4. Two weeks after 0.7.0, if the old Tally sheet is quiet, tell the user it can be deleted.
 
 ### Other items
 
+- **Kompas: "Lihat Foto" left in the clean view** under photos (the caption's link to the photo gallery). Seen on https://www.kompas.com/food/read/2026/11/18/203014675/10-hidangan-sup-terbaik-di-asia-tenggara-ada-3-dari-indonesia. Source: maintainer.
+- **Detik Travel: two paragraphs run together** without a gap ("…PUBG Mobile. Bagi traveler…") on https://travel.detik.com/cerita-perjalanan/d-8758455/hidden-gem-paramotor-di-cikarang-wisatawan-serasa-main-pubg. Probably a `<br>` between them. Source: maintainer.
 - **Report button in the Android app.** The app has no way into the feedback page outside the reader. Source: maintainer.
 - **Say why extraction failed, in reports.** When the reader can't open an article, the report should carry the reason (`not-article`, `no-body`, blocked…). Source: maintainer.
 - **Kontan: wrong or missing logo.** Source: maintainer.
