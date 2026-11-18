@@ -23,6 +23,10 @@ Work queued for the weekly run ([MAINTAINING.md](MAINTAINING.md)). One line per 
     - Not an article: the popup shows only settings. The user's example is DW Indonesia (dw.com/id), an article from an unsupported site.
     - The button runs the reader on that page through `scripting`, then lets the user fix it with the editor and keep it as a personal preset for that domain (`src/personal.ts`).
     - Also offer "Sarankan situs ini" through the feedback form, so popular sites can become built-in.
+    - Optional on-page offer, a setting (user, 2026-11-19): "Tawarkan Sapu Berita di situs berita lain", off by default. When on, an article on an unsupported site shows the small offer card by itself, reusing the bookmark's `showNewSitePrompt` (`src/render/newsiteprompt.ts`). When off, the offer is only in the icon's popup.
+      - Checking every page needs access to all sites. Put `<all_urls>` in `optional_host_permissions` and request it with `permissions.request` only when the switch is turned on. Then only those users see the browser's "read and change all your data" prompt, and installs stay warning-free.
+      - Once granted, `scripting.registerContentScripts` adds a tiny script on all sites that runs the article check and loads nothing else on other pages. Turning the switch off unregisters it and removes the permission.
+      - The card needs its own "don't offer on this site" and a link to the switch, so it's easy to silence.
   - Settings can live in the popup too, reusing the overlay's settings panel.
   - Adding `action` and `scripting` changes the manifest, so the stores review it again and Firefox may ask users to accept the new permission. Check what each browser shows.
   - Source: user, 2026-11-18.
