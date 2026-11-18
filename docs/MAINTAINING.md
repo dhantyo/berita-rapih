@@ -105,6 +105,8 @@ These are the user's standing preferences; they apply to every run.
 - **Language:**
   - Commits, PRs, issues, docs and the changelog are in English.
   - The app's own text is in everyday Indonesian: "link" and "update", not "tautan" and "pembaruan".
+  - Write Indonesian in full, descriptive sentences, the way a native speaker would explain it to a friend. Don't compress it to mirror short English. Use the English word where that's what people actually say (extension, install, store, user). Prefer "tersebut" when pointing back to something just named. The user says forced or shortened Indonesian "feels like AI".
+  - Keep a visible note on public pages that Sapu Berita is made with the help of AI, without naming the model.
 - **Versions:** plain semver. PATCH for fixes, site rules and docs; MINOR for features a reader sees. 0.x means beta.
 - **No `#` in the overlay's CSS:** iOS Shortcuts breaks on it, so use `rgb()` or named colours. `npm run build` prints how many `#` are in `shortcut.js`; that number must not grow.
 - **Commit trailer:** every commit ends with `Co-Authored-By:` naming the model that wrote it, e.g. `Claude Opus 5.5 <noreply@anthropic.com>`.
