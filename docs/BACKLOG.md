@@ -14,6 +14,7 @@ Work queued for the weekly run ([MAINTAINING.md](MAINTAINING.md)). One line per 
 ### Other items
 
 - **Full UI/UX sweep and design tokens (its own weekly PR; large).** The user wants every surface audited again: the reader, top bar, settings, editor and its sheet, feedback page, new-site card, install page. Parts were built quickly and feel uneven. Source: user, 2026-11-19.
+  - A full redesign is allowed (user, 2026-11-19: "fine with revamping the whole thing if it turns out aesthetic and minimalist"). Present the direction (mock or screenshots of one surface) before rebuilding everything. Keep what works: reading comfort, phone-first layout, the provider logo, the settings that exist.
   - Use the impeccable skill: `audit` and `critique` per surface first, written up as a findings list, then `extract` to tokenize, then fix. Update DESIGN.md (and PRODUCT.md if needed) to match.
   - Tokens: `src/render/styles.ts` has 33 custom properties (colours mostly) but about 420 raw `px` values. Move spacing, type sizes and weights, radii, z-index layers and motion durations into tokens, and use them everywhere. The Android app's strings and the install page should follow the same scale.
   - Known findings to include: on desktop, the feedback page replaces the whole reader instead of opening in the same floating panel as settings (bottom sheet on phones, panel on wide screens). Also the editor sheet's misalignment and the scroll-following top bar below. Bundle those small items into this PR if it lands first.
