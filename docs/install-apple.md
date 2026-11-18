@@ -33,7 +33,7 @@ Tip: in the Share sheet, scroll to the bottom → **Edit Actions** (*Edit Tindak
 
 ## Use
 
-The clean article appears over the page. **Aa** sets text size, font, light, sepia or dark theme, and language. **Asli** takes you back to the original page. Supported: Detik, Kompas, Tribunnews (including its regional sites), CNN Indonesia, CNBC Indonesia, Liputan6, Merdeka, Suara, Okezone, Viva, iNews, JPNN, ANTARA, Republika, Bisnis.com, Tirto.
+The clean article appears over the page. The **gear** button sets text size, font, light, sepia or dark theme, and language. **Asli** takes you back to the original page. Supported: Detik, Kompas, Tribunnews (including its regional sites), CNN Indonesia, CNBC Indonesia, Liputan6, Merdeka, Suara, Okezone, Viva, iNews, JPNN, ANTARA, Republika, Bisnis.com, Tirto.
 
 ## If nothing happens
 
@@ -41,7 +41,7 @@ The clean article appears over the page. **Aa** sets text size, font, light, sep
 - You need an internet connection: each run downloads the latest Sapu Berita (about 130 KB, cached by Safari).
 - Homepages and section pages (not articles) aren't cleaned, on purpose.
 - Settings (text size, theme) are saved per site, so set them once on each news site.
-- Something wrong with an article? **Aa → Laporkan** (report it) sends us the link.
+- Something wrong with an article? **Gear button → Beri masukan** (give feedback) sends it to us, with the link filled in.
 
 ## Privacy
 

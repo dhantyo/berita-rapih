@@ -103,12 +103,14 @@ writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
 
 // Firefox (desktop and Android, via addons.mozilla.org): the same extension plus Gecko's own keys.
 // Firefox has no version_name; data_collection_permissions (required for new add-ons) needs 140+ / Android 142+.
+// Declared: an edit sent from "Atur isi artikel" carries the article link (browsing activity) and the edited
+// parts (website content). Firefox lists both at install; the in-app question still decides whether anything is sent.
 const firefox = join(ROOT, 'dist/extension-firefox');
 rmSync(firefox, { recursive: true, force: true });
 mkdirSync(join(firefox, 'icons'), { recursive: true });
 const { version_name: _label, ...firefoxManifest } = manifest;
 firefoxManifest.browser_specific_settings = {
-  gecko: { id: 'sapu-berita@dhantyo.github.io', strict_min_version: '140.0', data_collection_permissions: { required: ['none'] } },
+  gecko: { id: 'sapu-berita@dhantyo.github.io', strict_min_version: '140.0', data_collection_permissions: { required: ['browsingActivity', 'websiteContent'] } },
   gecko_android: { strict_min_version: '142.0' },
 };
 writeFileSync(join(firefox, 'manifest.json'), JSON.stringify(firefoxManifest, null, 2) + '\n');

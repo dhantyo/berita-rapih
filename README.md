@@ -50,7 +50,7 @@ Detik · Kompas · Tribunnews (including regional sites) · CNN Indonesia · CNB
 
 Everything runs on your device. Sapu Berita has no server, no analytics, and doesn't know what you read. Articles still load from the publisher's own site, so your visit counts for them as usual.
 
-Once a day it downloads two small files from GitHub: the latest version number and the latest site rules. Nothing about you or your reading is sent. You can turn it off under **Aa → Check for updates**.
+Once a day it downloads two small files from GitHub: the latest version number and the latest site rules. Nothing about you or your reading is sent. You can turn it off under **the gear button → Cek update** (check for updates). Feedback is only sent when you send it yourself, and changes from **Atur isi artikel** (adjust the article) only if you agree the first time it asks; both go to a Google Form. Details: [privacy page](https://dhantyo.github.io/sapu-berita/privacy.html).
 
 ## Made with AI
 
@@ -58,7 +58,7 @@ Sapu Berita is built with AI. Nearly all of its code, documentation and design w
 
 ## Contributing
 
-News sites change their layouts often, so the per-site rules need care. Reporting a broken article already helps a lot: open **Aa → Report it** on that article. To work on code or rules, see [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/DEVELOPING.md](docs/DEVELOPING.md).
+News sites change their layouts often, so the per-site rules need care. Reporting a broken article already helps a lot: open **the gear button → Beri masukan** (give feedback) on that article. To work on code or rules, see [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/DEVELOPING.md](docs/DEVELOPING.md).
 
 ## License
 

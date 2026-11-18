@@ -106,10 +106,10 @@ const read = await p2.evaluate(() => {
 ok(read.paras > 5, 'the reader opens with the personal rule', read);
 await shot(p2, 'newsite-reader.png');
 
-// ── 5. Aa: Versi pribadi aktif, Kembalikan removes the new site ──
+// ── 5. Pengaturan: Perubahan buatanmu, Kembalikan removes the new site ──
 await p2.evaluate(() => (document.querySelector('.sapuberita-overlay')!.shadowRoot!.querySelector('.aa') as HTMLElement).click());
 await p2.waitForTimeout(500);
-ok(/Versi pribadi aktif/.test((await shadow(p2, '.hidden-row')) ?? ''), 'Aa says "Versi pribadi aktif"');
+ok(/Perubahan buatanmu/.test((await shadow(p2, '.hidden-row')) ?? ''), 'Pengaturan says "Perubahan buatanmu"');
 await shot(p2, 'newsite-aa.png');
 await p2.evaluate(() => {
   const btn = document.querySelector('.sapuberita-overlay')!.shadowRoot!.querySelector('.hidden-row .btn') as HTMLElement;
