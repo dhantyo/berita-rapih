@@ -6,7 +6,7 @@ Work queued for the weekly run ([MAINTAINING.md](MAINTAINING.md)). One line per 
 
 ### First: after 0.8.0 (released 2026-11-19)
 
-1. **Chrome Web Store: send 0.8.0 again.** The automatic upload was refused because 0.7.0 was still in review there ("You may not edit or publish an item that is in review"). Once the dashboard shows 0.7.0 published, run `gh workflow run stores.yml -f tag=v0.8.0 -f stores=chrome` and read its summary. Then tell the user to fill in the permission justifications for `activeTab`, `scripting` and optional `<all_urls>` from [STORES.md](STORES.md) on the dashboard. Source: maintainer, 2026-11-19.
+1. Done on 2026-11-19: Chrome 0.8.0 resent (the release run's upload was refused while 0.7.0 was in review); the API could upload but not publish it until the new permissions were justified, so the user filled in the justifications and submitted it from the dashboard. Check it went live (the store page's "Version" line). Next time a release adds a permission, the user fills in its justification before the release, or the upload stays a draft.
 2. Firefox 0.8.0 and Edge 0.8.0 were uploaded automatically on 2026-11-19 and are in review. Check both went live (and that Firefox approved its listing: then switch on `STORE.firefox`, see below).
 3. Two weeks after 0.7.0 (from 2026-12-02), if the old Tally sheet is quiet, tell the user the Tally form can be deleted.
 
