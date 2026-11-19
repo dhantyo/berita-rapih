@@ -13,7 +13,8 @@
     ".video-box-thumb",
     ".aTerkait",
     ".kompasidRec",
-    ".kgmModal-block"
+    ".kgmModal-block",
+    ".photo__icon"
   ],
   "dropParagraphs": [
     "^gabung membership kompas\\.com\\+",
