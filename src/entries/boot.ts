@@ -15,7 +15,7 @@ import type { ReportInput } from '../render/overlay.ts';
 import { adblockSelectors, findRule } from '../rules/match.ts';
 import { personalForPage } from '../personal.ts';
 import { genericRuleFor, needsNewSitePrompt } from '../newsite.ts';
-import { showNewSitePrompt } from '../render/newsiteprompt.ts';
+import { showFailCard, showNewSitePrompt } from '../render/newsiteprompt.ts';
 import { strings } from '../render/i18n.ts';
 import { ensureFonts } from '../render/fonts.ts';
 import { cachedManifest, formPost, isSnoozed, latestManifest, offerFor, reportLink, sendForm, snoozeOffer, type Platform, type ReportFields } from '../update.ts';
@@ -175,6 +175,19 @@ export async function boot(options: BootOptions = {}): Promise<BootResult> {
         overlay = renderOverlay(document, r.article, { ...overlayOptions(await settingsReady, false), startHidden: false, newSite: true });
       })();
     });
+  } else if (!overlay && !result.ok && (options.forceOpen || (platform === 'android' && result.reason !== 'not-article'))) {
+    // Asked to open this page (bookmark, Shortcut, or an article link opened in the Android app) and couldn't: say so,
+    // and let the report carry why. The extension runs on every page by itself, so it stays quiet; so does the app on
+    // an outlet's other pages (its home page, a section), which it also opens.
+    const template = feedbackTemplate();
+    const fail = result;
+    showFailCard(document, strings(settings0.lang), settings0.theme, fail.reason === 'not-article', template ? () => {
+      const link = reportLink(template, {
+        url: url.href, title: document.title, site: url.hostname, version: VERSION, platform, kind: 'report',
+        note: '', detail: `reason: ${fail.reason}${fail.detail ? ` (${fail.detail.slice(0, 300)})` : ''}`,
+      });
+      window.open(link, '_blank', 'noopener');
+    } : undefined);
   }
   return { result, rendered: overlay !== null };
 }

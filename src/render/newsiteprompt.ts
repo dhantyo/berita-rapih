@@ -1,6 +1,7 @@
 /**
- * The bookmark's offer on a site without a rule (docs/FEEDBACK.md §5): a small card, top right where the Sapu
- * button sits, in its own shadow host. "Coba atur sendiri" starts the new-site flow (entries/boot.ts).
+ * Small cards at the bottom of the page, outside the reader: the bookmark's offer on a site without a rule
+ * (docs/FEEDBACK.md §5; "Coba atur sendiri" starts the new-site flow, entries/boot.ts), and the note that a page
+ * the reader was asked to open couldn't be read.
  */
 import { OVERLAY_CSS } from './styles.ts';
 import type { Settings } from '../settings.ts';
@@ -16,7 +17,8 @@ export interface NewSitePrompt {
   close(): void;
 }
 
-export function showNewSitePrompt(doc: Document, t: Strings, theme: Settings['theme'], onTry: () => void): NewSitePrompt {
+/** A small card at the bottom of the page, in its own shadow host and the top layer: text and up to two buttons. */
+function mountCard(doc: Document, theme: Settings['theme'], label: string) {
   doc.querySelector(`.${PROMPT_CLASS}`)?.remove();
   const host = doc.createElement('div');
   host.className = PROMPT_CLASS;
@@ -27,27 +29,25 @@ export function showNewSitePrompt(doc: Document, t: Strings, theme: Settings['th
   card.className = 'nsprompt tokens';
   card.dataset.theme = theme;
   card.setAttribute('role', 'dialog');
-  card.setAttribute('aria-label', t.nsPrompt);
+  card.setAttribute('aria-label', label);
   const text = doc.createElement('p');
   text.className = 'ns-text';
   text.setAttribute('role', 'status');
-  text.textContent = t.nsPrompt;
+  text.textContent = label;
   const actions = doc.createElement('div');
   actions.className = 'ns-actions';
-  const make = (label: string, cls: string, id: string, click: () => void) => {
+  card.append(text, actions);
+  shadow.append(style, card);
+  const make = (title: string, cls: string, id: string, click: () => void) => {
     const b = doc.createElement('button');
     b.type = 'button';
     b.className = `btn ${cls}`.trim();
     b.dataset.ns = id;
-    b.textContent = label;
+    b.textContent = title;
     b.addEventListener('click', click);
+    actions.append(b);
     return b;
   };
-  const tryBtn = make(t.nsTry, 'primary', 'try', onTry);
-  const closeBtn = make(t.nsClose, '', 'close', () => close());
-  actions.append(tryBtn, closeBtn);
-  card.append(text, actions);
-  shadow.append(style, card);
 
   // Top layer, like the reader: above whatever the page puts on top.
   const popover = host as HTMLElement & { showPopover?: () => void };
@@ -57,8 +57,6 @@ export function showNewSitePrompt(doc: Document, t: Strings, theme: Settings['th
     host.setAttribute('popover', 'manual');
     popover.showPopover();
   }
-  tryBtn.focus({ preventScroll: true });
-
   const onKey = (e: KeyboardEvent) => {
     if (e.key === 'Escape') close();
   };
@@ -67,6 +65,14 @@ export function showNewSitePrompt(doc: Document, t: Strings, theme: Settings['th
     doc.removeEventListener('keydown', onKey, true);
     host.remove();
   }
+  return { text, make, close };
+}
+
+export function showNewSitePrompt(doc: Document, t: Strings, theme: Settings['theme'], onTry: () => void): NewSitePrompt {
+  const { text, make, close } = mountCard(doc, theme, t.nsPrompt);
+  const tryBtn = make(t.nsTry, 'primary', 'try', onTry);
+  const closeBtn = make(t.nsClose, '', 'close', () => close());
+  tryBtn.focus({ preventScroll: true });
   return {
     close,
     working: () => {
@@ -79,4 +85,16 @@ export function showNewSitePrompt(doc: Document, t: Strings, theme: Settings['th
       closeBtn.focus({ preventScroll: true });
     },
   };
+}
+
+/**
+ * The reader was asked to open this page (the bookmark, the Shortcut, the Android app) and couldn't. Say so instead
+ * of silently showing the original, and offer a report that carries why (FailReason) when it's worth one.
+ */
+export function showFailCard(doc: Document, t: Strings, theme: Settings['theme'], notArticle: boolean, onReport?: () => void): { close(): void } {
+  const { make, close } = mountCard(doc, theme, notArticle ? t.failNotArticle : t.failText);
+  const report = onReport && !notArticle ? make(t.failReport, 'primary', 'report', () => { onReport(); close(); }) : undefined;
+  const closeBtn = make(t.nsClose, '', 'close', () => close());
+  (report ?? closeBtn).focus({ preventScroll: true });
+  return { close };
 }
