@@ -4,7 +4,7 @@ Versions follow [semver](https://semver.org): MAJOR.MINOR.PATCH. While the versi
 
 The first four releases were published as 0.1.0-beta.1 to beta.4 and renamed on 2026-11-13 to the scheme below; the app files inside those releases still report their original beta names.
 
-## [Unreleased]
+## [0.8.0] - 2026-11-19
 
 - Install page: the Android steps point Chrome users straight to the bookmark way, and the computer steps mention the new toolbar button for news sites that aren't supported yet.
 - A calmer settings panel: titled sections, text size on a slider, quieter pickers and switches, short hints, and the title stays at the top while you scroll. Feedback has one button, at the top.
