@@ -16,3 +16,6 @@ apps/android/local.properties
 # Saved news pages: copyrighted, kept in a private repo (npm run fixtures:pull / fixtures:push)
 test/fixtures/**/*.html
 .saved-pages/
+
+# UI review screenshots (tools/ui-shots.ts): live news pages, not committed
+.impeccable/shots/
