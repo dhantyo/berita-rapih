@@ -347,6 +347,21 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
   const settingsPanel = (t: Strings) => {
     const panel = h(doc, 'section', { class: 'panel', id: 'sb-panel', role: 'dialog', 'aria-label': t.settings, 'data-open': String(panelOpen) });
     panel.addEventListener('click', (e) => e.stopPropagation());
+    panel.addEventListener('keydown', (e) => {
+      if (e.key !== 'Tab') return;
+      const stops = [...panel.querySelectorAll<HTMLElement>('button, input, a[href]')]
+        .filter((el) => !(el as HTMLButtonElement).disabled && el.tabIndex >= 0 && el.offsetParent !== null);
+      const active = (panel.getRootNode() as ShadowRoot | Document).activeElement;
+      const first = stops[0];
+      const last = stops[stops.length - 1];
+      if (e.shiftKey && active === first) {
+        e.preventDefault();
+        last?.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first?.focus();
+      }
+    });
     swipeToClose(panel);
     const close = h(doc, 'button', { type: 'button', class: 'icon-btn', 'aria-label': t.close }, cross());
     close.addEventListener('click', () => setPanel(false));
@@ -474,12 +489,22 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
     decorate?: (btn: HTMLElement, v: V) => void,
   ) {
     const seg = h(doc, 'div', { class: 'seg', role: 'radiogroup', 'aria-label': label });
+    const values = options.map(([v]) => v);
     for (const [value, text] of options) {
-      const btn = h(doc, 'button', { type: 'button', role: 'radio', 'aria-checked': String(value === current), 'data-value': value }, text);
+      const btn = h(doc, 'button', {
+        type: 'button', role: 'radio', 'aria-checked': String(value === current), 'data-value': value, tabindex: value === current ? '0' : '-1',
+      }, text);
       decorate?.(btn, value);
       btn.addEventListener('click', () => onPick(value));
       seg.append(btn);
     }
+    seg.addEventListener('keydown', (e) => {
+      const by = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+      if (!by) return;
+      e.preventDefault();
+      const at = values.indexOf(current);
+      onPick(values[(at + by + values.length) % values.length]!);
+    });
     return seg;
   }
 
@@ -492,7 +517,11 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
     const sw = h(doc, 'button', { type: 'button', class: 'switch', role: 'switch', 'aria-checked': String(on), 'aria-label': label, 'data-switch': key });
     // Answering here also answers the editor's one-time question (sendEdits).
     sw.addEventListener('click', () => change({ [key]: !on, ...(key === 'sendEdits' ? { sendEditsAsked: true } : {}) }, `[data-switch="${key}"]`));
-    return h(doc, 'div', { class: 'switch-row' }, text, sw);
+    const row = h(doc, 'div', { class: 'switch-row' }, text, sw);
+    row.addEventListener('click', (e) => {
+      if (e.target !== sw) sw.click();
+    });
+    return row;
   }
 
   // ── State changes ───────────────────────────────────────────────────────
