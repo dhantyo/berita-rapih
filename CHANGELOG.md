@@ -4,6 +4,18 @@ Versions follow [semver](https://semver.org): MAJOR.MINOR.PATCH. While the versi
 
 The first four releases were published as 0.1.0-beta.1 to beta.4 and renamed on 2026-11-13 to the scheme below; the app files inside those releases still report their original beta names.
 
+## [Unreleased]
+
+- A calmer settings panel: titled sections, text size on a slider, quieter pickers and switches, short hints, and the title stays at the top while you scroll. Feedback has one button, at the top.
+- New **Situs ini** section in the settings: **Atur isi artikel** opens from there directly, and Kembalikan sits next to it.
+- Language and **Update otomatis** (was "Cek update") moved to a **Lainnya** section at the bottom, with links to the Sapu Berita page, the privacy page and what's new.
+- Controls move smoothly: pickers slide to your choice, switches slide, the text-size slider glides to its notches, and changing the theme fades (in browsers that support it).
+- With **Sembunyikan bar saat menggulir** on, the top bar now follows your scroll like a phone browser's address bar instead of jumping.
+- **Atur isi artikel** opens on the clean view, and its bottom sheet is simpler and lined up with the article. On a computer it says "Klik" instead of "Ketuk". A short note confirms when your changes were sent.
+- **Masukan** opens in the same place as the settings, and its back arrow returns there.
+- The **Sapu** button over the original page and the offer on unsupported sites moved to the bottom of the screen, clear of the site's own buttons.
+- Fixed: toggling a setting near the bottom of the settings no longer scrolls the panel back to the top.
+
 ## [0.7.0] - 2026-11-18
 
 - The install page is simpler: install comes first, with one recommended way per device (Android, iPhone & iPad, computer) and a button for the browser you're using. The extension is now in the Chrome Web Store and Edge Add-ons, including Edge on Android.
