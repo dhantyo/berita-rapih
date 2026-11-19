@@ -203,7 +203,10 @@ h1 {
 .content > :first-child { margin-top: 0; }
 .content p, .content div { margin: 0 0 1.05em; }
 .content h2, .content h3, .content h4 { font-family: var(--head); line-height: 1.25; letter-spacing: var(--sub-track); margin: 1.7em 0 0.5em; text-wrap: balance; }
-.content h2 { font-size: 1.28em; } .content h3 { font-size: 1.12em; } .content h4 { font-size: 1em; }
+.content h2 { font-size: 1.28em; } .content h3 { font-size: 1.12em; }
+/* An h4 is text-sized: on a tight heading leading its wrapped lines look cramped next to the paragraphs (Tribun's
+   "Berikut rangkuman…" lead-ins), so it takes the text's own leading. */
+.content h4 { font-size: 1em; line-height: var(--lead); }
 .content a { color: inherit; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; text-decoration-color: var(--rule-strong); }
 @media (hover: hover) and (pointer: fine) { .content a:hover { text-decoration-color: var(--accent); } }
 .content img, .content picture, .content video { display: block; max-width: 100%; height: auto; margin: 1.6em 0 0.5em; }
