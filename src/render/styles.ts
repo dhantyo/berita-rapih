@@ -534,31 +534,32 @@ svg { flex: none; }
 @keyframes toast-in { from { opacity: 0; transform: translate(-50%, 10px); } }
 
 /* ── Floating button while the original page is showing ── */
-/* Same spot as "Asli" in the reader's bar, so the two read as one toggle. Ochre border plus a white ring:
-   it stands out on light and dark news sites alike. */
+/* Bottom right, in the thumb's reach and clear of the site's own header controls. Ink with an ochre broom and a white
+   ring, so it stands out on light and dark news sites alike. It sits outside the themed root: literal colours. */
 .reopen {
-  position: fixed; z-index: 2147483647; top: calc(11px + env(safe-area-inset-top)); right: max(16px, env(safe-area-inset-right));
-  display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 14px 0 11px; cursor: pointer;
-  border: 1.5px solid rgb(222 172 70); border-radius: 17px;
-  font: 650 14px/1 "Sapu Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; letter-spacing: -0.01em;
-  color: rgb(255 255 255); background: rgb(18 18 18);
-  box-shadow: 0 0 0 2px rgb(255 255 255 / 0.9), 0 8px 22px -6px rgb(0 0 0 / 0.5);
+  position: fixed; z-index: 2147483647; bottom: max(16px, calc(env(safe-area-inset-bottom) + 12px)); right: max(16px, env(safe-area-inset-right));
+  display: inline-flex; align-items: center; gap: 7px; height: 44px; padding: 0 18px 0 14px; cursor: pointer;
+  border: 0; border-radius: 22px;
+  font: 650 15px/1 "Sapu Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; letter-spacing: -0.01em;
+  color: rgb(255 255 255); background: rgb(18 18 18); -webkit-tap-highlight-color: transparent; touch-action: manipulation; -webkit-user-select: none; user-select: none;
+  box-shadow: 0 0 0 2px rgb(255 255 255 / 0.9), 0 10px 26px -6px rgb(0 0 0 / 0.5);
   animation: reopen-in 320ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 .reopen svg { color: rgb(222 172 70); }
-@media (hover: hover) and (pointer: fine) { .reopen:hover { background: rgb(36 36 36); } }
+@media (hover: hover) and (pointer: fine) { .reopen:hover { background: rgb(40 40 40); } }
 .reopen:focus-visible { outline: 2px solid rgb(222 172 70); outline-offset: 4px; }
-@keyframes reopen-in { from { opacity: 0; transform: translateY(-6px) scale(0.96); } }
+@keyframes reopen-in { from { opacity: 0; transform: translateY(8px); } }
 
-/* ── "Situs ini belum didukung": the bookmark's offer on a site without a rule ── */
+/* ── The bookmark's offer on a site without a rule: a card at the bottom, led by what it can do ── */
 .nsprompt {
-  position: fixed; z-index: 2147483647; top: calc(11px + env(safe-area-inset-top)); right: max(16px, env(safe-area-inset-right));
-  width: min(320px, calc(100vw - 32px)); box-sizing: border-box; padding: 14px 14px 12px; border: 1.5px solid var(--accent); border-radius: 14px;
-  background: var(--panel); color: var(--ink); box-shadow: 0 0 0 2px rgb(255 255 255 / 0.9), 0 8px 22px -6px rgb(0 0 0 / 0.5);
-  animation: reopen-in 320ms cubic-bezier(0.16, 1, 0.3, 1);
+  position: fixed; z-index: 2147483647; left: 50%; bottom: max(16px, calc(env(safe-area-inset-bottom) + 12px)); transform: translateX(-50%);
+  width: min(420px, calc(100vw - 24px)); box-sizing: border-box; padding: var(--sp-4); border: 1px solid var(--rule); border-radius: var(--r-lg);
+  background: var(--panel); color: var(--ink); box-shadow: 0 0 0 1px rgb(255 255 255 / 0.6), 0 16px 40px -8px rgb(0 0 0 / 0.45);
+  animation: ns-in 320ms var(--ease-out);
 }
-.ns-text { margin: 0 0 10px; font: 600 14px/1.4 var(--sans); letter-spacing: -0.01em; }
-.ns-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+@keyframes ns-in { from { opacity: 0; transform: translate(-50%, 12px); } }
+.ns-text { margin: 0 0 var(--sp-3); font: 500 var(--fs-ui)/1.45 var(--sans); }
+.ns-actions { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
 .nsprompt .btn { color: var(--ink); }
 .nsprompt .btn.primary { color: var(--panel); }
 

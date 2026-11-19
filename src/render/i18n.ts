@@ -120,7 +120,7 @@ const STRINGS = {
     edSummary: (site: string, added: number, removed: number, fields: string[]) =>
       `Usulan aturan untuk ${site}: ${removed} dibuang, ${added} dimasukkan${fields.length ? `, sumber: ${fields.join(', ')}` : ''}`,
     edCount: (added: number, removed: number, fields: number) => `${removed} dibuang, ${added} dimasukkan${fields ? `, ${fields} sumber` : ''}`,
-    nsPrompt: 'Situs ini belum didukung oleh Sapu Berita.',
+    nsPrompt: 'Sapu Berita belum mengenal situs ini. Kamu bisa mencoba merapikan halaman ini sendiri.',
     nsTry: 'Coba atur sendiri',
     nsClose: 'Tutup',
     nsWorking: 'Sedang membaca halaman…',
@@ -295,7 +295,7 @@ const STRINGS = {
     edSummary: (site: string, added: number, removed: number, fields: string[]) =>
       `Rule suggestion for ${site}: ${removed} removed, ${added} included${fields.length ? `, sources: ${fields.join(', ')}` : ''}`,
     edCount: (added: number, removed: number, fields: number) => `${removed} removed, ${added} included${fields ? `, ${fields} source${fields === 1 ? '' : 's'}` : ''}`,
-    nsPrompt: 'Sapu Berita does not support this site yet.',
+    nsPrompt: "Sapu Berita doesn't know this site yet. You can try tidying up this page yourself.",
     nsTry: 'Set it up yourself',
     nsClose: 'Close',
     nsWorking: 'Reading the page…',
