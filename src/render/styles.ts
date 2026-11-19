@@ -11,14 +11,14 @@ const LIGHT = `
   --rule: rgb(0 0 0 / 0.1); --rule-strong: rgb(0 0 0 / 0.26); --chip: rgb(0 0 0 / 0.045);
   --panel: rgb(255 255 255); --accent: rgb(176 122 18); --plate: transparent; --shadow: rgb(0 0 0 / 0.16);
   --text-weight: 400; --text-track: 0em;
-  --seg-on: rgb(255 255 255); --control: var(--accent); --control-on: rgb(255 255 255);
+  --seg-on: rgb(255 255 255); --control: var(--accent); --control-on: rgb(255 255 255); --thumb: rgb(255 255 255);
   --ed-green: rgb(22 140 76); --ed-red: rgb(204 42 42); --ed-blue: rgb(28 98 214); --ed-on: rgb(255 255 255);`;
 const SEPIA = `
   --bg: rgb(247 241 228); --ink: rgb(44 34 22); --muted: rgb(104 88 68);
   --rule: rgb(60 40 10 / 0.12); --rule-strong: rgb(60 40 10 / 0.3); --chip: rgb(60 40 10 / 0.06);
   --panel: rgb(251 247 238); --accent: rgb(160 106 10); --plate: rgb(255 255 255); --shadow: rgb(60 40 10 / 0.2);
   --text-weight: 400; --text-track: 0em;
-  --seg-on: rgb(255 253 248); --control: var(--accent); --control-on: rgb(255 255 255);
+  --seg-on: rgb(255 253 248); --control: var(--accent); --control-on: rgb(255 255 255); --thumb: rgb(255 255 255);
   --ed-green: rgb(26 128 70); --ed-red: rgb(190 44 36); --ed-blue: rgb(36 94 200); --ed-on: rgb(255 255 255);`;
 const DARK = `
   --bg: rgb(18 18 18); --ink: rgb(232 232 230); --muted: rgb(168 168 165);
@@ -26,7 +26,7 @@ const DARK = `
   --panel: rgb(30 30 30); --accent: rgb(222 172 70); --plate: rgb(255 255 255); --shadow: rgb(0 0 0 / 0.5);
   /* Light text on black looks heavier: a touch lighter and looser (Geist is variable; others snap to 400). */
   --text-weight: 370; --text-track: 0.006em;
-  --seg-on: rgb(64 64 62); --control: var(--accent); --control-on: rgb(18 18 18);
+  --seg-on: rgb(64 64 62); --control: var(--accent); --control-on: rgb(246 246 244); --thumb: rgb(246 246 244);
   --ed-green: rgb(58 196 116); --ed-red: rgb(255 104 92); --ed-blue: rgb(104 164 255); --ed-on: rgb(10 14 24);`;
 
 /* One scale for all of Sapu's chrome (not the article, which is sized in em against the reader's text size).
@@ -321,8 +321,8 @@ svg { flex: none; }
 .slider input::-moz-range-track { height: 4px; border-radius: 2px; background: var(--rule-strong); }
 .slider input::-moz-range-progress { height: 4px; border-radius: 2px; background: var(--control); }
 .slider input::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; margin-top: -9px; border: 0; border-radius: 50%;
-  background: var(--seg-on); box-shadow: 0 1px 3px var(--shadow), 0 0 0 1px var(--rule-strong); transition: transform var(--dur-1) var(--ease); }
-.slider input::-moz-range-thumb { width: 22px; height: 22px; border: 0; border-radius: 50%; background: var(--seg-on); box-shadow: 0 1px 3px var(--shadow), 0 0 0 1px var(--rule-strong); }
+  background: var(--thumb); box-shadow: 0 1px 3px rgb(0 0 0 / 0.3), 0 0 0 1px var(--rule-strong); transition: transform var(--dur-1) var(--ease); }
+.slider input::-moz-range-thumb { width: 22px; height: 22px; border: 0; border-radius: 50%; background: var(--thumb); box-shadow: 0 1px 3px rgb(0 0 0 / 0.3), 0 0 0 1px var(--rule-strong); }
 .slider input:active::-webkit-slider-thumb { transform: scale(1.12); }
 .slider input:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 2px var(--panel), 0 0 0 4px var(--accent); }
 .slider input:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 2px var(--panel), 0 0 0 4px var(--accent); }
@@ -353,7 +353,7 @@ svg { flex: none; }
 .switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 13px; height: 13px; border-radius: 50%; background: var(--muted);
   transition: transform var(--dur-2) var(--ease-out), background-color var(--dur-2) var(--ease); }
 .switch[aria-checked="true"] { background: var(--control); border-color: var(--control); }
-.switch[aria-checked="true"]::after { transform: translateX(14px); background: var(--control-on); }
+.switch[aria-checked="true"]::after { transform: translateX(14px); background: var(--control-on); box-shadow: 0 1px 2px rgb(0 0 0 / 0.28); }
 
 /* A row that opens something (Atur isi artikel). */
 .nav-row { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); width: 100%; min-height: 52px; padding: var(--sp-2) 0; border: 0; background: transparent;
