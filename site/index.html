@@ -79,7 +79,7 @@ ol.steps b { font-weight: 650; }
 .tip { margin: 0; padding: 16px 18px; border-radius: 14px; background: var(--chip); font-size: 15px; text-wrap: pretty; }
 .use { margin: 0; color: var(--muted); font-size: 15px; text-wrap: pretty; }
 .use b { color: var(--ink); }
-.alt { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; margin-top: 20px; padding-top: 32px; border-top: 1px solid var(--rule); }
+.alt { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; margin-top: 20px; padding-top: 32px; border-top: 1px solid var(--rule); scroll-margin-top: 16px; }
 .inline { color: var(--ink); font-weight: 600; text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 0.2em; }
 .safari-first .safari-block { order: -1; }
 details.more { border-top: 1px solid var(--rule); padding-top: 18px; }
@@ -203,6 +203,7 @@ footer { padding: 32px 0 48px; border-top: 1px solid var(--rule); color: var(--m
       <div>
         <h3 data-t="androidTitle">Di Android, install lewat Edge atau Firefox</h3>
         <p class="why" data-t="androidWhy">Chrome versi Android tidak mengizinkan user untuk memasang extension. Edge dan Firefox mengizinkannya, dan Sapu Berita sudah tersedia sebagai extension resmi di kedua browser tersebut.</p>
+        <p class="why" data-t="androidChrome">Ingin tetap memakai Chrome? Sapu Berita juga bisa dipasang di Chrome sebagai bookmark khusus. <a class="inline" href="#pakai-chrome">Lihat caranya di bawah</a>.</p>
         <p class="tip" data-t="androidTip"><b>Supaya link dari WhatsApp juga langsung tampil bersih</b>, jadikan Edge atau Firefox sebagai browser utama di HP kamu. Caranya: buka <b>Setelan → Aplikasi → Aplikasi default → Aplikasi browser</b>, lalu pilih browser tersebut. Nama menunya bisa sedikit berbeda di tiap HP.</p>
       </div>
       <ol class="steps">
@@ -213,7 +214,7 @@ footer { padding: 32px 0 48px; border-top: 1px solid var(--rule); color: var(--m
         <li data-t="android3">Setelah itu, buka artikel berita seperti biasa dan Sapu Berita akan langsung bekerja.</li>
       </ol>
 
-      <div class="span alt">
+      <div class="span alt" id="pakai-chrome">
         <div>
           <h3 data-t="chromeTitle">Kalau kamu tetap ingin memakai Chrome</h3>
           <p class="why" data-t="chromeWhy">Sapu Berita tetap bisa dipakai di Chrome lewat sebuah bookmark khusus. Bedanya, Sapu Berita tidak berjalan otomatis: kamu perlu menjalankan bookmark tersebut setiap kali membuka artikel.</p>
@@ -262,6 +263,7 @@ footer { padding: 32px 0 48px; border-top: 1px solid var(--rule); color: var(--m
         <p class="why" data-t="compWhy">Cukup pasang sekali. Setelah itu, setiap kali kamu membuka artikel dari situs yang didukung, artikelnya langsung tampil bersih tanpa perlu klik apa pun. Update-nya juga terpasang secara otomatis.</p>
         <p class="btns big"><a class="ghost" data-store="chrome" data-t="addChrome">Tambahkan ke Chrome</a> <a class="ghost" data-store="edge" data-t="addEdge">Tambahkan ke Edge</a> <a class="ghost" data-store="firefox" data-t="addFirefox">Tambahkan ke Firefox</a></p>
         <p class="note" data-store-needs="chrome" data-t="chromeAlso">Tombol Chrome juga bisa dipakai untuk Brave, Opera, dan Vivaldi.</p>
+        <p class="note" data-t="popupNote">Setelah dipasang, tombol Sapu Berita di toolbar browser juga bisa merapikan artikel dari situs berita yang belum didukung, lalu mengusulkan situs tersebut.</p>
       </div>
       <div class="safari-block">
         <h3 data-t="safariTitle">Memakai Safari di Mac?</h3>
@@ -392,6 +394,7 @@ footer { padding: 32px 0 48px; border-top: 1px solid var(--rule); color: var(--m
     android2: 'Open this page in that browser, then add Sapu Berita.', android2NoFx: 'Open this page in Edge, then add Sapu Berita.',
     addEdge: 'Add to Edge', addFirefox: 'Add to Firefox', addChrome: 'Add to Chrome',
     android3: 'Then open news articles as usual, and Sapu Berita gets to work straight away.',
+    androidChrome: 'Want to keep using Chrome? Sapu Berita also works in Chrome as a special bookmark. <a class="inline" href="#pakai-chrome">See how below</a>.',
     chromeTitle: 'If you\'d rather keep using Chrome',
     chromeWhy: 'You can still use Sapu Berita in Chrome through a special bookmark. The difference: it doesn\'t run on its own, so you run the bookmark each time you open an article.',
     abm1: 'Copy the special Sapu Berita link:', bm1: 'Copy the special Sapu Berita link:', copy: 'Copy the Sapu Berita link',
@@ -412,6 +415,7 @@ footer { padding: 32px 0 48px; border-top: 1px solid var(--rule); color: var(--m
     compTitle: 'On a computer, install it as an extension',
     compWhy: 'Install it once. From then on, every article you open from a supported site appears clean straight away, without clicking anything. Updates install themselves too.',
     chromeAlso: 'The Chrome button works for Brave, Opera and Vivaldi too.',
+    popupNote: 'Once it\'s installed, the Sapu Berita button in your browser\'s toolbar can also tidy up articles from news sites that aren\'t supported yet, then suggest that site.',
     safariTitle: 'Using Safari on a Mac?',
     safariWhy: 'Drag the button below to your Favourites bar, then click it whenever you open a news article. If the Favourites bar isn\'t showing, press <b>⇧⌘B</b>.',
     otherTitle: 'Another way: a bookmark for other browsers',

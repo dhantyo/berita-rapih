@@ -6,6 +6,7 @@ The first four releases were published as 0.1.0-beta.1 to beta.4 and renamed on 
 
 ## [Unreleased]
 
+- Install page: the Android steps point Chrome users straight to the bookmark way, and the computer steps mention the new toolbar button for news sites that aren't supported yet.
 - A calmer settings panel: titled sections, text size on a slider, quieter pickers and switches, short hints, and the title stays at the top while you scroll. Feedback has one button, at the top.
 - New **Situs ini** section in the settings: **Atur isi artikel** opens from there directly, and Kembalikan sits next to it.
 - Language and **Update otomatis** (was "Cek update") moved to a **Lainnya** section at the bottom, with links to the Sapu Berita page, the privacy page and what's new.
