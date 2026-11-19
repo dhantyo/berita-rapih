@@ -89,6 +89,10 @@ async function toEditor(page: Page) {
   await page.locator('.gear').click();
   await page.locator(`${SHADOW} .nav-row`).click(); // Pengaturan → Situs ini → Atur isi artikel
   await page.waitForSelector(`${SHADOW} .ed-bar`, { timeout: 5000 });
+  await page.waitForTimeout(800);
+  // It opens on Bersih (what the reader was reading); the flows below start on the page itself.
+  ok((await page.locator(`${SHADOW} [data-ed="view-clean"]`).getAttribute('aria-checked')) === 'true', 'the editor opens on Bersih');
+  await page.locator(`${SHADOW} [data-ed="view-original"]`).click();
   await page.waitForTimeout(1500);
 }
 
@@ -237,6 +241,7 @@ async function editorDetik(scheme: 'light' | 'dark') {
   const s = await settings(page);
   console.log('  posted:', JSON.stringify(posts).slice(0, 300));
   ok(posts.length === 1 && Object.values(posts[0]!).includes('edit'), 'Kirim posts the edit to the form');
+  ok(/terkirim/.test((await page.locator(`${SHADOW} .toast`).textContent()) ?? ''), 'and a note says it was sent');
   ok(s.sendEdits === true && s.sendEditsAsked === true, 'the answer is remembered');
   ok(await page.locator(`${SHADOW} .content p`).first().isVisible(), 'and the reader shows again');
 

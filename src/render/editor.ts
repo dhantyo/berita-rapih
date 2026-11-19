@@ -75,6 +75,8 @@ export interface EditorContext {
   newSite?: boolean;
   /** The editor has ended (the reader shows again). */
   onClose: () => void;
+  /** A short note over the reader ("terkirim"), shown after the editor has closed. */
+  notify?: (text: string) => void;
 }
 
 export interface Editor {
@@ -157,6 +159,8 @@ export function startEditor(ctx: EditorContext): Editor {
   const { doc, layer, host, root, t } = ctx;
   const win = doc.defaultView!;
   let mode: Mode = 'original';
+  const mouse = !!win.matchMedia?.('(pointer: fine)').matches;
+  const tapWord = (s: string) => (mouse ? s.replace(/\bKetuk\b/g, 'Klik').replace(/\bketuk\b/g, 'klik').replace(/\bTap\b/g, 'Click').replace(/\btap\b/g, 'click') : s);
   let marks: Marks = { green: [], red: [], region: null, cleanOf: new Map() };
   /** clean-view element → the page leaf it came from (the reverse of marks.cleanOf) */
   const pageOf = new Map<Element, Element>();
@@ -176,6 +180,7 @@ export function startEditor(ctx: EditorContext): Editor {
   let official: OfficialView | undefined;
   let closed = false;
   let frame = 0;
+  let seenOriginal = !!ctx.newSite;
   const shape = (r?: PersonalRule) => JSON.stringify([r?.add, r?.remove, r?.fields, r?.newSite]);
   const startShape = shape(ctx.personal());
 
@@ -683,7 +688,7 @@ export function startEditor(ctx: EditorContext): Editor {
       fields.append(chip);
     }
     if (selected || headerKey) out.push(fields);
-    if (headerKey && mode === 'clean') out.push(h(doc, 'p', { class: 'ed-note' }, t.edHeaderElsewhere(t.edFieldNames[headerKey])));
+    if (headerKey && mode === 'clean') out.push(h(doc, 'p', { class: 'ed-note' }, tapWord(t.edHeaderElsewhere(t.edFieldNames[headerKey]))));
     else if (headerKey && !selected) out.push(h(doc, 'p', { class: 'ed-note' }, t.edFromData));
     return out;
   };
@@ -707,7 +712,7 @@ export function startEditor(ctx: EditorContext): Editor {
     } else if (hasPick()) {
       lines.push(...sheet());
     } else {
-      const hint = ctx.newSite ? t.nsHint(doc.location?.hostname ?? '') : mode === 'clean' ? t.edHintClean : t.edHint;
+      const hint = tapWord(ctx.newSite ? t.nsHint(doc.location?.hostname ?? '') : mode === 'clean' ? t.edHintClean : t.edHint);
       const more = button(t.edMore, 'quiet ed-more', 'more', () => { moreOpen = !moreOpen; renderBar(); }, { 'aria-expanded': String(moreOpen) });
       lines.push(h(doc, 'div', { class: 'ed-line' }, h(doc, 'p', { class: 'ed-text' }, hint), more));
       if (moreOpen) {
@@ -741,6 +746,11 @@ export function startEditor(ctx: EditorContext): Editor {
       ctx.showOriginal();
       compute();
       redraw();
+      // The first visit to the page: start at the article, as the editor used to when it opened there.
+      if (!seenOriginal) {
+        seenOriginal = true;
+        win.requestAnimationFrame(() => win.requestAnimationFrame(toArticle));
+      }
     }
     message = '';
     renderBar();
@@ -774,7 +784,7 @@ export function startEditor(ctx: EditorContext): Editor {
   const sendEdits = () => {
     const p = ctx.personal();
     const report = p && editReport(p);
-    if (report) void ctx.send(report);
+    if (report) void ctx.send(report).then((sent) => ctx.notify?.(sent ? t.edSent : t.edSendFailed));
   };
   /** The one-time question, answered: remember it, send if yes, and leave. */
   const answer = (yes: boolean) => {
@@ -874,8 +884,15 @@ export function startEditor(ctx: EditorContext): Editor {
   layer.dataset.mode = 'original';
   compute();
   redraw();
+  if (!ctx.newSite) {
+    // Marks are measured on the page above; then straight to Bersih, before anything paints.
+    mode = 'clean';
+    boxLayer.hidden = true;
+    layer.dataset.mode = 'clean';
+    ctx.showClean();
+  }
   renderBar();
-  layer.querySelector<HTMLElement>('[data-ed="view-clean"]')?.focus({ preventScroll: true });
+  layer.querySelector<HTMLElement>(`[data-ed="view-${mode === 'clean' ? 'original' : 'clean'}"]`)?.focus({ preventScroll: true });
   // Start at the article: scroll so its title (or first green part) sits just under the top bar.
   // The anchor must be in the page's flow (see floating): the sticky copy of a headline always looks "on screen".
   const inFlow = [sources.find((s) => s.key === 'title')?.el, ...marks.green].find(

@@ -573,6 +573,18 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
 
   const siteKey = () => article.ruleId ?? doc.location?.hostname ?? '';
 
+  // ── Note over the reader ─────────────────────────────────────────────────
+  /** A short message at the bottom of the screen for a few seconds (role=status, so it is read out too). */
+  const toast = (text: string) => {
+    shadow.querySelector('.toast')?.remove();
+    const el = h(doc, 'div', { class: 'toast tokens', role: 'status', 'data-theme': settings.theme }, broom(15), h(doc, 'span', {}, text));
+    shadow.append(el);
+    doc.defaultView?.setTimeout(() => {
+      el.classList.add('leaving');
+      doc.defaultView?.setTimeout(() => el.remove(), 260);
+    }, 3200);
+  };
+
   // ── Motion across re-renders ────────────────────────────────────────────
   // The panel is rebuilt on every change, so a switch or picker would simply appear in its new state. Remember
   // where each one was, draw the new one there first, then let its CSS transition carry it to where it is now.
@@ -642,6 +654,7 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
       send: async (input) => (opts.report?.send ? opts.report.send(article, input) : false),
       consent: () => (settings.sendEditsAsked ? (settings.sendEdits ? 'yes' : 'no') : 'ask'),
       setConsent: (yes) => change({ sendEdits: yes, sendEditsAsked: true }),
+      notify: (text) => toast(text),
       showClean: () => show(),
       showOriginal: () => {
         hide();
