@@ -112,6 +112,8 @@ export interface Article {
   content: HTMLElement;
   source: 'rule' | 'readability';
   pages: number;
+  /** The article goes on, but its other pages couldn't be loaded: a link to them on the site (render: a notice). */
+  unloaded?: string;
   /** How many distractions were removed (Baca Juga boxes, ads, promos, embeds), for the sweep line. */
   swept: number;
   ruleId?: string;

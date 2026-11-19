@@ -4,6 +4,12 @@ import type { Context, ResolvedRule } from '../types.ts';
 export interface Paginated {
   container: HTMLElement;
   pages: number;
+  /**
+   * The rest of the article couldn't be loaded (the site refused the request, e.g. a Cloudflare challenge on
+   * Pikiran Rakyat): where the reader can open it themselves. Their browser passes the check, and the reader
+   * runs again on that page.
+   */
+  unloaded?: string;
 }
 
 /** Same extractor that produced page 1 (site rule or Readability), reused on the other pages. */
@@ -20,6 +26,7 @@ export async function paginate(
   ctx: Context,
 ): Promise<Paginated> {
   const p = rule.pagination;
+  let next: string | undefined;
   try {
     switch (p.method) {
       // "inline" (all pages already shown on the page, Liputan6/Merdeka) is kept for older rule files; it is the same.
@@ -35,8 +42,11 @@ export async function paginate(
         full.searchParams.set(key, value);
         if (full.href === ctx.url.href) return { container, pages: 1 };
 
+        next = full.href;
         const doc = await ctx.fetchDocument(full);
         const merged = extract(doc);
+        // A page with no article on it is a refusal (a challenge page), not a site that ignores the param.
+        if (!merged) return { container, pages: 1, unloaded: next };
         // Only accept if the "full" version is actually longer (some sites silently ignore the param).
         if (merged && textLength(merged) > textLength(container)) {
           return { container: adopt(ctx.doc, merged), pages: countPageLinks(ctx.doc, ctx.url) || 2 };
@@ -47,6 +57,7 @@ export async function paginate(
       case 'fetch': {
         const urls = pageUrls(ctx, p.pageLinks, p.maxPages ?? 15);
         if (!urls.length) return { container, pages: 1 };
+        next = urls[0]!.href;
         const docs = await Promise.all(urls.map((u) => ctx.fetchDocument(u)));
         for (const doc of docs) {
           const part = extract(doc);
@@ -57,7 +68,7 @@ export async function paginate(
     }
   } catch (err) {
     ctx.log('pagination failed, keeping page 1', String(err));
-    return { container, pages: 1 };
+    return { container, pages: 1, unloaded: next };
   }
 }
 

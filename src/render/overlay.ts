@@ -297,6 +297,10 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
     if (updateOffer) parts.unshift(updateBar(t, updateOffer));
     if (loading) parts.push(h(doc, 'p', { class: 'status', role: 'status' }, h(doc, 'span', { class: 'spinner', 'aria-hidden': 'true' }), t.loadingMore));
 
+    // The article goes on, but the site wouldn't let its other pages load: say so, and link to them.
+    if (article.unloaded) {
+      parts.push(h(doc, 'p', { class: 'unloaded' }, t.unloaded, ' ', h(doc, 'a', { href: article.unloaded }, t.unloadedLink, arrow())));
+    }
     if (settings.sweepLine) {
       const bits: Node[] = [];
       if (article.swept > 0) bits.push(h(doc, 'span', { class: 'mark' }, broom(15), t.swept(article.swept)));

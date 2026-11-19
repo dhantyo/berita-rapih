@@ -254,6 +254,10 @@ h1 {
 .spinner { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--rule-strong); border-top-color: var(--accent); animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* The rest of the article couldn't be loaded: a quiet notice above the sweep line, linking to the site's full page. */
+.unloaded { margin: 2.2em 0 0; padding: 0.8em 0 0; border-top: 2px solid var(--ink); font: 0.8em/1.5 var(--sans); color: var(--ink); }
+.unloaded + .sweep { margin-top: 1.6em; }
+.unloaded a { display: inline-flex; align-items: center; gap: 4px; color: var(--ink); font-weight: 600; text-decoration: underline; text-decoration-color: var(--rule-strong); text-underline-offset: 0.2em; }
 .sweep {
   display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin: 2.6em 0 0; padding: 1em 0 3.5em;
   border-top: 1px solid var(--rule); font: 0.72em/1.45 var(--sans); color: var(--muted);
