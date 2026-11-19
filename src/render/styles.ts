@@ -140,9 +140,10 @@ a.btn { color: inherit; text-decoration: none; flex: none; }
 a.btn.primary { color: var(--bg); }
 .btn[aria-expanded="true"] { border-color: var(--ink); background: var(--chip); }
 .gear { width: var(--h-ctl); padding: 0; }
-.bar { transition: transform 180ms var(--ease); }
-.bar[data-hidden] { transform: translateY(-100%); }
-.bar[data-hidden] .outlet, .bar[data-hidden] .tools { visibility: hidden; transition: visibility 0s 180ms; }
+.bar { transition: transform 240ms var(--ease-out); will-change: transform; }
+/* While the finger moves, the bar moves with it, without easing. */
+.bar.tracking { transition: none; }
+.bar[data-hidden] .outlet, .bar[data-hidden] .tools { visibility: hidden; transition: visibility 0s 240ms; }
 /* Tucked away, the reading hairline stays at the very top of the screen. */
 .bar[data-hidden] .progress { bottom: auto; top: 100%; }
 .progress { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--accent); transform-origin: 0 50%; transform: scaleX(0); }

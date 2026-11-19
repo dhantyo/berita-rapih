@@ -391,6 +391,13 @@ async function barFlow() {
     await shot(page, `bar-${scheme}-visible.png`);
     await scroll(page, 1200);
     ok((await barBottom(page)) <= 0.5, `${scheme}: hidden again`);
+    // It follows the scroll: 20px up shows about 20px of it at once; let go there and it settles back to hidden.
+    await page.evaluate(() => { (document.querySelector('.sapuberita-overlay')!.shadowRoot!.querySelector('.root') as HTMLElement).scrollTop -= 20; });
+    await page.waitForTimeout(60);
+    const partial = await barBottom(page);
+    ok(partial > 12 && partial < 28, `${scheme}: 20px up shows about 20px of the bar (${Math.round(partial)})`);
+    await page.waitForTimeout(600);
+    ok((await barBottom(page)) <= 0.5, `${scheme}: a mostly hidden bar settles hidden`);
     await page.evaluate(() => (document.querySelector('.sapuberita-overlay')!.shadowRoot!.querySelector('.gear') as HTMLElement).click());
     await page.waitForTimeout(500);
     ok((await barBottom(page)) >= 55, `${scheme}: opening Pengaturan brings it back`);

@@ -12,7 +12,7 @@ import { parseNewsDate } from './dates.ts';
 import { textKey } from '../dom.ts';
 import { createFeedbackPage, type FeedbackPage } from './feedback.ts';
 import { createBackStack, type BackLayer } from './backstack.ts';
-import { barHiddenAfterScroll } from './barscroll.ts';
+import { nextBarOffset, settledBarOffset } from './barscroll.ts';
 import { applyPersonalContent, editPersonal, personalFor, personalMeta, resetPersonal, type PersonalRule } from '../personal.ts';
 import { startEditor, type Editor } from './editor.ts';
 
@@ -148,6 +148,7 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
     reopen.setAttribute('aria-label', t.reopenLong);
     applyPersonalContent(article.content, personalFor(settings.personal, siteKey()), doc);
     root.scrollTop = top;
+    placeBar(false); // the bar was rebuilt: put it back where it was, without a slide
     progressBar = progress;
     updateProgress();
   };
@@ -781,16 +782,43 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
   // Reading progress: a hairline of lidi ochre under the masthead.
   let progressBar: HTMLElement | null = null;
   let frame = 0;
-  let barHidden = false;
+  // The bar follows the scroll (render/barscroll.ts): barOffset px of it are pushed up out of view.
+  let barOffset = 0;
   let lastTop = 0;
+  let settleTimer: ReturnType<typeof setTimeout> | undefined;
+  const barHeight = () => (root.querySelector('.bar') as HTMLElement | null)?.offsetHeight || 56;
+  /** Draw the bar at barOffset; `glide` animates there (settling, or shown for the panel), otherwise it tracks the finger. */
+  const placeBar = (glide: boolean) => {
+    const bar = root.querySelector('.bar') as HTMLElement | null;
+    if (!bar) return;
+    bar.classList.toggle('tracking', !glide);
+    bar.style.transform = barOffset ? `translateY(${-barOffset}px)` : '';
+    bar.toggleAttribute('data-hidden', barOffset >= barHeight());
+  };
   const setBarHidden = (hidden: boolean) => {
-    barHidden = hidden;
-    root.querySelector('.bar')?.toggleAttribute('data-hidden', hidden);
+    barOffset = hidden ? barHeight() : 0;
+    placeBar(true);
+  };
+  const followScroll = (top: number) => {
+    if (!settings.hideBar || panelOpen) {
+      if (barOffset) setBarHidden(false);
+      return;
+    }
+    const height = barHeight();
+    barOffset = nextBarOffset(barOffset, lastTop, top, height);
+    placeBar(false);
+    clearTimeout(settleTimer);
+    settleTimer = setTimeout(() => {
+      const settled = settledBarOffset(barOffset, root.scrollTop, height);
+      if (settled === barOffset) return;
+      barOffset = settled;
+      placeBar(true);
+    }, 140);
   };
   const updateProgress = () => {
     frame = 0;
     const top = root.scrollTop;
-    setBarHidden(settings.hideBar && !panelOpen && barHiddenAfterScroll(barHidden, lastTop, top));
+    followScroll(top);
     lastTop = top;
     const max = root.scrollHeight - root.clientHeight;
     progressBar?.style.setProperty('transform', `scaleX(${max > 0 ? Math.min(1, root.scrollTop / max) : 0})`);
