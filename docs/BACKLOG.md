@@ -4,12 +4,11 @@ Work queued for the weekly run ([MAINTAINING.md](MAINTAINING.md)). One line per 
 
 ## Weekly queue
 
-### First: after 0.7.0 (released 2026-11-18)
+### First: after 0.8.0 (released 2026-11-19)
 
-1. Done on 2026-11-19: the user uploaded 0.7.0 to the Chrome Web Store with the new description, screenshots and privacy answers. Check it went live.
-2. Done on 2026-11-18: Firefox 0.7.0 submitted with its source zip (listing screenshots and description updated); Edge 0.7.0 submitted (in review; privacy tab, screenshots and description updated). Check both went live.
-3. **Automatic store uploads (the user creates the keys):** done 2026-11-19: all eight secrets are set. After the first release that uses them, check each store got the new version (the run's Stores summary, then each dashboard).
-4. Two weeks after 0.7.0 (from 2026-12-02), if the old Tally sheet is quiet, tell the user the Tally form can be deleted.
+1. **Chrome Web Store: send 0.8.0 again.** The automatic upload was refused because 0.7.0 was still in review there ("You may not edit or publish an item that is in review"). Once the dashboard shows 0.7.0 published, run `gh workflow run stores.yml -f tag=v0.8.0 -f stores=chrome` and read its summary. Then tell the user to fill in the permission justifications for `activeTab`, `scripting` and optional `<all_urls>` from [STORES.md](STORES.md) on the dashboard. Source: maintainer, 2026-11-19.
+2. Firefox 0.8.0 and Edge 0.8.0 were uploaded automatically on 2026-11-19 and are in review. Check both went live (and that Firefox approved its listing: then switch on `STORE.firefox`, see below).
+3. Two weeks after 0.7.0 (from 2026-12-02), if the old Tally sheet is quiet, tell the user the Tally form can be deleted.
 
 ### Other items
 
