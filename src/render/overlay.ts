@@ -365,23 +365,33 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
     const rows = (...keys: Switch[]) => h(doc, 'div', { class: 'rows' }, ...keys.map((k) => toggle(k)));
 
     // ── Tampilan ──
-    // Text size: A−, one dot per step (each one a button), A+, on a single row.
-    const step = (to: number) => () => change({ size: to }, `.size [data-size="${to}"]`);
-    const smaller = h(doc, 'button', { type: 'button', class: 'size-btn', 'aria-label': t.smaller, 'data-size': String(settings.size - 1) }, 'A−') as HTMLButtonElement;
-    const larger = h(doc, 'button', { type: 'button', class: 'size-btn big', 'aria-label': t.larger, 'data-size': String(settings.size + 1) }, 'A+') as HTMLButtonElement;
-    smaller.disabled = settings.size === 0;
-    larger.disabled = settings.size === SIZE_STEPS - 1;
-    smaller.addEventListener('click', step(settings.size - 1));
-    larger.addEventListener('click', step(settings.size + 1));
-    const dots = h(doc, 'div', { class: 'dots', role: 'radiogroup', 'aria-label': t.textSize });
-    for (let i = 0; i < SIZE_STEPS; i++) {
-      const dot = h(doc, 'button', {
-        type: 'button', role: 'radio', 'aria-checked': String(i === settings.size), 'aria-label': t.sizeStep(i + 1, SIZE_STEPS), 'data-size': String(i),
-      });
-      dot.addEventListener('click', step(i));
-      dots.append(dot);
-    }
-    const sizeRow = h(doc, 'div', { class: 'size' }, h(doc, 'span', { class: 'row-label' }, t.textSize), h(doc, 'div', { class: 'size-ctl' }, smaller, dots, larger));
+    // Text size: a notched slider as wide as the pickers below it, with A− and A+ as one-step buttons.
+    // Dragging resizes the article live; the setting is saved (and the panel redrawn) when the thumb is let go.
+    const last = SIZE_STEPS - 1;
+    const pct = (v: number) => `${(v / last) * 100}%`;
+    const range = h(doc, 'input', {
+      type: 'range', min: '0', max: String(last), step: '1', value: String(settings.size),
+      'aria-label': t.textSize, 'aria-valuetext': t.sizeStep(settings.size + 1, SIZE_STEPS),
+    }) as HTMLInputElement;
+    range.style.setProperty('--p', pct(settings.size));
+    range.addEventListener('input', () => {
+      const v = Number(range.value);
+      range.style.setProperty('--p', pct(v));
+      range.setAttribute('aria-valuetext', t.sizeStep(v + 1, SIZE_STEPS));
+      root.style.setProperty('--fs', `${SIZES[v]}px`);
+      [...ticks.children].forEach((tick, i) => tick.setAttribute('data-on', String(i <= v)));
+    });
+    range.addEventListener('change', () => change({ size: Number(range.value) }, '.size input'));
+    const ticks = h(doc, 'div', { class: 'ticks', 'aria-hidden': 'true' });
+    for (let i = 0; i <= last; i++) ticks.append(h(doc, 'i', { 'data-on': String(i <= settings.size) }));
+    const stepBtn = (to: number, label: string, text: string, cls: string) => {
+      const b = h(doc, 'button', { type: 'button', class: `size-btn ${cls}`, 'aria-label': label, tabindex: '-1' }, text) as HTMLButtonElement;
+      b.disabled = to < 0 || to > last;
+      b.addEventListener('click', () => change({ size: to }, '.size input'));
+      return b;
+    };
+    const sizeRow = h(doc, 'div', { class: 'size' },
+      stepBtn(settings.size - 1, t.smaller, 'A', 'small'), h(doc, 'div', { class: 'slider' }, ticks, range), stepBtn(settings.size + 1, t.larger, 'A', 'big'));
 
     // Font: each option previews itself in its own face. Theme: a swatch of each ground.
     const faces: Record<Font, string> = { serif: 'var(--serif)', sans: 'var(--sans)', legible: 'var(--legible)' };
@@ -401,7 +411,7 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
       } else sw.style.background = grounds[v];
       btn.prepend(sw);
     });
-    panel.append(section(t.secLook, sizeRow, field(t.font, font), field(t.theme, theme)));
+    panel.append(section(t.secLook, field(t.textSize, sizeRow), field(t.font, font), field(t.theme, theme)));
 
     // ── Di dalam artikel: in the order the parts appear on the page ──
     panel.append(section(t.inArticle, rows('hero', 'summaries', 'links', 'embeds', 'sweepLine')));

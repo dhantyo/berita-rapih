@@ -11,14 +11,14 @@ const LIGHT = `
   --rule: rgb(0 0 0 / 0.1); --rule-strong: rgb(0 0 0 / 0.26); --chip: rgb(0 0 0 / 0.045);
   --panel: rgb(255 255 255); --accent: rgb(176 122 18); --plate: transparent; --shadow: rgb(0 0 0 / 0.16);
   --text-weight: 400; --text-track: 0em;
-  --seg-on: rgb(255 255 255);
+  --seg-on: rgb(255 255 255); --control: var(--accent); --control-on: rgb(255 255 255);
   --ed-green: rgb(22 140 76); --ed-red: rgb(204 42 42); --ed-blue: rgb(28 98 214); --ed-on: rgb(255 255 255);`;
 const SEPIA = `
   --bg: rgb(247 241 228); --ink: rgb(44 34 22); --muted: rgb(104 88 68);
   --rule: rgb(60 40 10 / 0.12); --rule-strong: rgb(60 40 10 / 0.3); --chip: rgb(60 40 10 / 0.06);
   --panel: rgb(251 247 238); --accent: rgb(160 106 10); --plate: rgb(255 255 255); --shadow: rgb(60 40 10 / 0.2);
   --text-weight: 400; --text-track: 0em;
-  --seg-on: rgb(255 253 248);
+  --seg-on: rgb(255 253 248); --control: var(--accent); --control-on: rgb(255 255 255);
   --ed-green: rgb(26 128 70); --ed-red: rgb(190 44 36); --ed-blue: rgb(36 94 200); --ed-on: rgb(255 255 255);`;
 const DARK = `
   --bg: rgb(18 18 18); --ink: rgb(232 232 230); --muted: rgb(168 168 165);
@@ -26,7 +26,7 @@ const DARK = `
   --panel: rgb(30 30 30); --accent: rgb(222 172 70); --plate: rgb(255 255 255); --shadow: rgb(0 0 0 / 0.5);
   /* Light text on black looks heavier: a touch lighter and looser (Geist is variable; others snap to 400). */
   --text-weight: 370; --text-track: 0.006em;
-  --seg-on: rgb(64 64 62);
+  --seg-on: rgb(64 64 62); --control: var(--accent); --control-on: rgb(18 18 18);
   --ed-green: rgb(58 196 116); --ed-red: rgb(255 104 92); --ed-blue: rgb(104 164 255); --ed-on: rgb(10 14 24);`;
 
 /* One scale for all of Sapu's chrome (not the article, which is sized in em against the reader's text size).
@@ -303,20 +303,29 @@ svg { flex: none; }
 .field.inline .seg { flex: 0 1 200px; }
 .field.inline .seg button { min-height: 34px; }
 
-/* Text size: one row. The current dot is the setting's Sapu mark. */
-.size { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); padding: 2px 0 var(--sp-1); }
-.row-label { font: 500 var(--fs-sm)/1.3 var(--sans); }
-.size-ctl { display: flex; align-items: center; }
-.size-btn { width: 40px; height: 40px; display: grid; place-items: center; border: 0; border-radius: var(--r-md); background: transparent; cursor: pointer;
-  font: 650 var(--fs-sm)/1 var(--sans); letter-spacing: -0.02em; color: var(--ink); transition: background-color var(--dur-1) var(--ease); }
-.size-btn.big { font-size: 18px; }
-.size-btn:hover { background: var(--chip); }
+/* Text size: a slider with a notch per step, A small on the left and A large on the right. */
+.size { display: flex; align-items: center; gap: var(--sp-1); }
+.size-btn { flex: none; width: 36px; height: 40px; display: grid; place-items: center; border: 0; border-radius: var(--r-md); background: transparent; cursor: pointer;
+  font: 600 13px/1 var(--sans); color: var(--muted); transition: background-color var(--dur-1) var(--ease), color var(--dur-1) var(--ease); }
+.size-btn.big { font-size: 20px; }
+.size-btn:hover { background: var(--chip); color: var(--ink); }
 .size-btn:disabled { opacity: 0.3; cursor: default; background: transparent; }
-.dots { display: flex; align-items: center; }
-.dots button { width: 22px; height: 40px; display: grid; place-items: center; padding: 0; border: 0; background: transparent; cursor: pointer; }
-.dots button::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--rule-strong); transition: transform var(--dur-1) var(--ease), background-color var(--dur-1) var(--ease); }
-.dots button:hover::before { background: var(--muted); }
-.dots button[aria-checked="true"]::before { background: var(--accent); transform: scale(1.6); }
+.slider { position: relative; flex: 1; height: 40px; }
+/* Thumb is 22px: the notches sit between the thumb's centre at each end. */
+.ticks { position: absolute; left: 10px; right: 10px; top: 50%; height: 12px; margin-top: -6px; display: flex; justify-content: space-between; pointer-events: none; }
+.ticks i { width: 2px; height: 12px; border-radius: 1px; background: var(--rule-strong); }
+.ticks i[data-on="true"] { background: var(--control); }
+.slider input { -webkit-appearance: none; appearance: none; position: relative; display: block; width: 100%; height: 40px; margin: 0; padding: 0; background: transparent; cursor: pointer; touch-action: pan-y; }
+.slider input:focus-visible { outline: none; }
+.slider input::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: linear-gradient(to right, var(--control) var(--p), var(--rule-strong) var(--p)); }
+.slider input::-moz-range-track { height: 4px; border-radius: 2px; background: var(--rule-strong); }
+.slider input::-moz-range-progress { height: 4px; border-radius: 2px; background: var(--control); }
+.slider input::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; margin-top: -9px; border: 0; border-radius: 50%;
+  background: var(--seg-on); box-shadow: 0 1px 3px var(--shadow), 0 0 0 1px var(--rule-strong); transition: transform var(--dur-1) var(--ease); }
+.slider input::-moz-range-thumb { width: 22px; height: 22px; border: 0; border-radius: 50%; background: var(--seg-on); box-shadow: 0 1px 3px var(--shadow), 0 0 0 1px var(--rule-strong); }
+.slider input:active::-webkit-slider-thumb { transform: scale(1.12); }
+.slider input:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 2px var(--panel), 0 0 0 4px var(--accent); }
+.slider input:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 2px var(--panel), 0 0 0 4px var(--accent); }
 
 /* Segmented control: a quiet track; the chosen option is lifted, not outlined. */
 .seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 2px; padding: 3px; border-radius: var(--r-md); background: var(--chip); }
@@ -343,8 +352,8 @@ svg { flex: none; }
   transition: background-color var(--dur-2) var(--ease), border-color var(--dur-2) var(--ease); }
 .switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 13px; height: 13px; border-radius: 50%; background: var(--muted);
   transition: transform var(--dur-2) var(--ease-out), background-color var(--dur-2) var(--ease); }
-.switch[aria-checked="true"] { background: var(--ink); border-color: var(--ink); }
-.switch[aria-checked="true"]::after { transform: translateX(14px); background: var(--panel); }
+.switch[aria-checked="true"] { background: var(--control); border-color: var(--control); }
+.switch[aria-checked="true"]::after { transform: translateX(14px); background: var(--control-on); }
 
 /* A row that opens something (Atur isi artikel). */
 .nav-row { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); width: 100%; min-height: 52px; padding: var(--sp-2) 0; border: 0; background: transparent;
@@ -526,7 +535,7 @@ svg { flex: none; }
 
 @media (prefers-reduced-motion: reduce) {
   .nsprompt { animation: none; }
-  .panel, .panel[data-open="true"], .btn, .seg button, .fb-choice, .fb-chip, .switch, .switch::after, .size-btn, .dots button::before, .icon-btn, .nav-row svg { transition: none; }
+  .panel, .panel[data-open="true"], .btn, .seg button, .fb-choice, .fb-chip, .switch, .switch::after, .size-btn, .icon-btn, .nav-row svg { transition: none; }
   .reopen { animation: none; }
   .bar { transition: none; }
   .bar[data-hidden] .outlet, .bar[data-hidden] .tools { transition: none; }
