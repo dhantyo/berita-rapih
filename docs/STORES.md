@@ -111,7 +111,7 @@ Don't list outlet names in a store description: the Chrome Web Store rejected 0.
 **Single purpose** (Chrome):
 > Shows articles on Indonesian news sites in a clean reading view, without ads and with all pages merged.
 
-**Permission justifications** (Chrome):
+**Permission justifications** (Chrome). When a release adds a permission, fill in its justification on the dashboard before tagging: the API uploads the new version but can't publish it until every permission is justified, and it stays a draft (0.8.0 did).
 - `storage`: saves the reader's own settings on their device: text size, font, theme, their own corrections to which parts of an article are shown, and whether they agreed to send those corrections to the developer. Settings themselves are never sent. (Edge has this text since 0.7.0; use it for Chrome too.)
 - **Host permissions** (content script on the listed news domains): the reader view runs only on these news sites, to read the article on the page and show it cleaned up. No other site is touched unless the reader opts in (below).
 - `activeTab` (since 0.8): when the reader clicks the toolbar button, the popup looks at that one tab to tell whether it is a news article, and offers to tidy it up. Nothing is sent.
