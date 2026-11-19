@@ -11,6 +11,7 @@ import { quietPage } from './quiet.ts';
 import { parseNewsDate } from './dates.ts';
 import { textKey } from '../dom.ts';
 import { createFeedbackPage, type FeedbackPage } from './feedback.ts';
+import { BROOM_PATHS } from './broom.ts';
 import { createBackStack, type BackLayer } from './backstack.ts';
 import { nextBarOffset, settledBarOffset } from './barscroll.ts';
 import { applyPersonalContent, editPersonal, personalFor, personalMeta, resetPersonal, type PersonalRule } from '../personal.ts';
@@ -30,6 +31,8 @@ export interface OverlayHandle {
   doneLoading(): void;
   show(): void;
   hide(): void;
+  /** Show the reader with Pengaturan open (the extension's popup). */
+  openSettings(): void;
   destroy(): void;
   /** Show the "new version available" bar (once per article view; the reader can dismiss it). */
   offerUpdate(offer: UpdateOffer): void;
@@ -906,6 +909,10 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
     },
     show,
     hide,
+    openSettings: () => {
+      show();
+      setPanel(true);
+    },
     offerUpdate: (offer) => {
       updateOffer = offer;
       render();
@@ -1052,9 +1059,8 @@ function icon(size: number, paths: string[]): SVGSVGElement {
     'stroke-width': '1.6', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true',
   }, ...paths.map((d) => svgEl('path', { d })));
 }
-/** The Sapu mark: a sapu lidi, handle up-right, bristles fanning down-left. Shared with Sapu Buzzer. */
-const broom = (size: number) =>
-  icon(size, ['M20 4 13 11', 'M11.2 9.2l3.6 3.6', 'M11.2 9.2C8 10 5.4 12.6 4 19c6.4-1.4 9-4 9.8-7.2', 'M6.8 16.4 9.6 13.6', 'M9 17.6l2.2-2.2']);
+/** The Sapu mark (render/broom.ts). */
+const broom = (size: number) => icon(size, BROOM_PATHS);
 const cross = () => icon(18, ['M6 6l12 12', 'M18 6 6 18']);
 const chevronIcon = () => icon(18, ['M9 6l6 6-6 6']);
 /** Settings: a gear (Lucide "settings", ISC licence). */

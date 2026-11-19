@@ -102,8 +102,8 @@ jobs:
           cp apk/sapu-berita.apk "out/sapu-berita-$V.apk"
           # Extension: one zip for Load unpacked, the Chrome Web Store and Edge Add-ons; one for addons.mozilla.org,
           # plus the source AMO asks for (content.js is bundled; build with `npm ci && npm run build`).
-          (cd builds/apps/extension && zip -q "$GITHUB_WORKSPACE/out/sapu-berita-extension-$V.zip" manifest.json content.js icons/*.png)
-          (cd builds/dist/extension-firefox && zip -q "$GITHUB_WORKSPACE/out/sapu-berita-firefox-$V.zip" manifest.json content.js icons/*.png)
+          (cd builds/apps/extension && zip -q "$GITHUB_WORKSPACE/out/sapu-berita-extension-$V.zip" manifest.json content.js popup.html popup.js background.js offer.js icons/*.png)
+          (cd builds/dist/extension-firefox && zip -q "$GITHUB_WORKSPACE/out/sapu-berita-firefox-$V.zip" manifest.json content.js popup.html popup.js background.js offer.js icons/*.png)
           git archive --format=zip -o "out/sapu-berita-source-$V.zip" HEAD
           cp builds/dist/shortcut.b64.js "out/sapu-berita-shortcut-$V.js"
           # Release channel, served by GitHub Pages: installed copies check update.json once a day

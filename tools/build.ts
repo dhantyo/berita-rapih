@@ -61,6 +61,10 @@ await Promise.all([
     outfile: join(ROOT, 'apps/extension/content.js'),
     sourcemap: true,
   }),
+  // The extension's toolbar popup, its background script and the opt-in page check (src/entries/ext-offer.ts).
+  build({ ...common, entryPoints: [join(ROOT, 'src/entries/popup.ts')], outfile: join(ROOT, 'apps/extension/popup.js'), minify: true }),
+  build({ ...common, entryPoints: [join(ROOT, 'src/entries/background.ts')], outfile: join(ROOT, 'apps/extension/background.js'), minify: true }),
+  build({ ...common, entryPoints: [join(ROOT, 'src/entries/offer.ts')], outfile: join(ROOT, 'apps/extension/offer.js'), minify: true }),
   build({ ...common, entryPoints: [join(ROOT, 'src/entries/webview.ts')], outfile: join(ROOT, 'dist/webview.js'), minify: true }),
   build({ ...common, entryPoints: [join(ROOT, 'src/entries/shortcut.ts')], outfile: join(ROOT, 'dist/shortcut.js'), minify: true }),
 ]);
@@ -99,6 +103,13 @@ manifest.version = version.split('-')[0];
 manifest.version_name = version;
 // Icons drawn by tools/store-assets.ts.
 manifest.icons = Object.fromEntries([16, 32, 48, 128].map((s) => [String(s), `icons/icon-${s}.png`]));
+// The toolbar button and its popup. activeTab: clicking it lets the popup look at that one tab (no install warning);
+// scripting: to run the article check and the reader there. All sites only on request, when the reader turns on
+// "Tawarkan Sapu Berita di situs berita lain" (src/entries/ext-offer.ts).
+manifest.action = { default_popup: 'popup.html', default_title: 'Sapu Berita', default_icon: manifest.icons };
+manifest.permissions = ['storage', 'activeTab', 'scripting'];
+manifest.optional_host_permissions = ['<all_urls>'];
+manifest.background = { service_worker: 'background.js' };
 writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
 
 // Firefox (desktop and Android, via addons.mozilla.org): the same extension plus Gecko's own keys.
@@ -109,12 +120,14 @@ const firefox = join(ROOT, 'dist/extension-firefox');
 rmSync(firefox, { recursive: true, force: true });
 mkdirSync(join(firefox, 'icons'), { recursive: true });
 const { version_name: _label, ...firefoxManifest } = manifest;
+// Firefox runs background scripts as an event page, not a service worker.
+firefoxManifest.background = { scripts: ['background.js'] };
 firefoxManifest.browser_specific_settings = {
   gecko: { id: 'sapu-berita@dhantyo.github.io', strict_min_version: '140.0', data_collection_permissions: { required: ['browsingActivity', 'websiteContent'] } },
   gecko_android: { strict_min_version: '142.0' },
 };
 writeFileSync(join(firefox, 'manifest.json'), JSON.stringify(firefoxManifest, null, 2) + '\n');
-copyFileSync(join(ROOT, 'apps/extension/content.js'), join(firefox, 'content.js'));
+for (const f of ['content.js', 'popup.html', 'popup.js', 'background.js', 'offer.js']) copyFileSync(join(ROOT, 'apps/extension', f), join(firefox, f));
 for (const s of [16, 32, 48, 128]) copyFileSync(join(ROOT, `apps/extension/icons/icon-${s}.png`), join(firefox, `icons/icon-${s}.png`));
 
 // Android app assets: the WebView script and the list of news hosts the router keeps in-app.

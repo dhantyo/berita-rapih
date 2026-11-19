@@ -68,10 +68,12 @@ function mountCard(doc: Document, theme: Settings['theme'], label: string) {
   return { text, make, close };
 }
 
-export function showNewSitePrompt(doc: Document, t: Strings, theme: Settings['theme'], onTry: () => void): NewSitePrompt {
+export function showNewSitePrompt(doc: Document, t: Strings, theme: Settings['theme'], onTry: () => void, onSilence?: () => void): NewSitePrompt {
   const { text, make, close } = mountCard(doc, theme, t.nsPrompt);
   const tryBtn = make(t.nsTry, 'primary', 'try', onTry);
   const closeBtn = make(t.nsClose, '', 'close', () => close());
+  // The extension's own page check offered this: let the reader stop it for this site.
+  if (onSilence) make(t.offerSilence, 'quiet', 'silence', () => { onSilence(); close(); });
   tryBtn.focus({ preventScroll: true });
   return {
     close,

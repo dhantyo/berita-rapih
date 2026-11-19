@@ -13,9 +13,9 @@ import { normalizeSettings, outletDomain, outletStore, type Settings, type Setti
 import type { Article, OfficialView, RuleSet } from '../types.ts';
 import type { ReportInput } from '../render/overlay.ts';
 import { adblockSelectors, findRule } from '../rules/match.ts';
-import { personalForPage } from '../personal.ts';
+import { matchPersonalSite, personalForPage } from '../personal.ts';
 import { genericRuleFor, needsNewSitePrompt } from '../newsite.ts';
-import { showFailCard, showNewSitePrompt } from '../render/newsiteprompt.ts';
+import { showFailCard, showNewSitePrompt, type NewSitePrompt } from '../render/newsiteprompt.ts';
 import { strings } from '../render/i18n.ts';
 import { ensureFonts } from '../render/fonts.ts';
 import { cachedManifest, formPost, isSnoozed, latestManifest, offerFor, reportLink, sendForm, snoozeOffer, type Platform, type ReportFields } from '../update.ts';
@@ -33,6 +33,12 @@ const CHANNEL = __CHANNEL_URL__ || undefined;
 export interface BootResult {
   result: RunResult;
   rendered: boolean;
+  /** A rule (official or the reader's own) covers this page's site. */
+  supported: boolean;
+  /** The reader on this page, once there is one (the extension's popup opens it or its settings). */
+  overlay: () => OverlayHandle | null;
+  /** Read this page as a new site right away (the popup's "Coba Sapu Berita di halaman ini"). */
+  tryHere: () => void;
 }
 
 export interface BootOptions {
@@ -47,6 +53,12 @@ export interface BootOptions {
   selfUpdating?: boolean;
   /** Installed from a browser store, which updates it: no update offer, but the daily rules check stays a setting. */
   storeInstall?: boolean;
+  /** The extension's popup asked to read this page as a new site: skip the offer card and go straight in. */
+  tryHere?: boolean;
+  /** The extension's opt-in page check found an article on a site without a rule: show the offer card by itself. */
+  offer?: boolean;
+  /** "Jangan tawarkan di situs ini" on the offer card (offer mode only). */
+  onSilence?: () => void;
 }
 
 /**
@@ -162,20 +174,31 @@ export async function boot(options: BootOptions = {}): Promise<BootResult> {
 
   if (!result.ok && !overlay) debug('skipped:', `${result.reason} ${result.detail ?? ''}`);
 
-  // The bookmark on a site without a rule: offer to set it up (docs/FEEDBACK.md §5). Only the bookmark/Shortcut
-  // build asks to open (forceOpen); the extension and the Android app never get here.
-  if (!overlay && needsNewSitePrompt({ forceOpen: options.forceOpen, result, url, personal: settings0.personal, rules })) {
-    const prompt = showNewSitePrompt(document, strings(settings0.lang), settings0.theme, () => {
-      prompt.working();
-      void (async () => {
-        newSiteMode = true;
-        const r = await run({ doc: document, url, rules, personal, generic: true, fetchDocument: (u) => fetchSameOriginDocument(u, url.origin), log: debug });
-        if (!r.ok) return prompt.fail();
-        prompt.close();
-        overlay = renderOverlay(document, r.article, { ...overlayOptions(await settingsReady, false), startHidden: false, newSite: true });
-      })();
-    });
-  } else if (!overlay && !result.ok && (options.forceOpen || (platform === 'android' && result.reason !== 'not-article'))) {
+  /** Read the page with Readability as a site without a rule, and open the editor in new-site mode on it. */
+  const startNewSite = async (prompt?: NewSitePrompt) => {
+    if (overlay) return overlay.show();
+    newSiteMode = true;
+    const r = await run({ doc: document, url, rules, personal, generic: true, fetchDocument: (u) => fetchSameOriginDocument(u, url.origin), log: debug });
+    if (!r.ok) {
+      if (prompt) prompt.fail();
+      else showFailCard(document, strings(settings0.lang), settings0.theme, false);
+      return;
+    }
+    prompt?.close();
+    overlay = renderOverlay(document, r.article, { ...overlayOptions(await settingsReady, false), startHidden: false, newSite: true });
+  };
+
+  // A site without a rule: the bookmark (forceOpen) offers to set it up (docs/FEEDBACK.md §5); so does the
+  // extension's opt-in page check (offer); the extension's popup goes straight in (tryHere).
+  if (!overlay && needsNewSitePrompt({ forceOpen: options.forceOpen || options.offer || options.tryHere, result, url, personal: settings0.personal, rules })) {
+    if (options.tryHere) void startNewSite();
+    else {
+      const prompt: NewSitePrompt = showNewSitePrompt(document, strings(settings0.lang), settings0.theme, () => {
+        prompt.working();
+        void startNewSite(prompt);
+      }, options.offer ? options.onSilence : undefined);
+    }
+  } else if (!overlay && !result.ok && !options.offer && (options.forceOpen || (platform === 'android' && result.reason !== 'not-article'))) {
     // Asked to open this page (bookmark, Shortcut, or an article link opened in the Android app) and couldn't: say so,
     // and let the report carry why. The extension runs on every page by itself, so it stays quiet; so does the app on
     // an outlet's other pages (its home page, a section), which it also opens.
@@ -189,5 +212,6 @@ export async function boot(options: BootOptions = {}): Promise<BootResult> {
       window.open(link, '_blank', 'noopener');
     } : undefined);
   }
-  return { result, rendered: overlay !== null };
+  const supported = !!findRule(rules, url) || !!matchPersonalSite(personal, url, rules);
+  return { result, rendered: overlay !== null, supported, overlay: () => overlay, tryHere: () => void startNewSite() };
 }
