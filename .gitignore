@@ -22,3 +22,10 @@ test/fixtures/**/*.html
 
 # UI review screenshots (tools/ui-shots.ts): live news pages, not committed
 .impeccable/shots/
+
+# Taste skill working files (deal history, gate state, checker profiles)
+.taste-skill/
+site/shots/
+
+# Local copy for checking the install page (CI copies fonts/ into the channel)
+site/fonts/

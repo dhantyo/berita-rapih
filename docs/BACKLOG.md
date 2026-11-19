@@ -14,14 +14,6 @@ Work queued for the weekly run ([MAINTAINING.md](MAINTAINING.md)). One line per 
 ### Other items
 
 - **Old Chromium (Kiwi 107): the send question didn't show.** Not reproducible with the Popover API switched off (the question sits on top and can be tapped). Most likely the switch in Pengaturan had already been touched once, which counts as an answer. Since the UI sweep a note says when edits were sent, so this shows on the phone. Close this if the user sees the note on Kiwi. Source: user, 2026-11-18.
-- **Revamp the install page with the Taste skill (`design-taste-frontend`).** `site/index.html`, served at dhantyo.github.io/sapu-berita. The user wants it rebuilt with Taste, not only polished. Source: user, 2026-11-19.
-  - Keep its job and its moving parts: install buttons per platform; the `STORE` links (a store without a URL stays hidden); reading `update.json` (`m.form || m.report`, version); the bookmark and Shortcut steps; the link to the privacy page; the visible AI-help note (no model named).
-  - The real product is the visual: phone and desktop screenshots of the reader (`docs/img`, retaken by `node tools/screenshots.ts`), not stock photos of people reading.
-  - Privacy: no analytics, no third-party requests. Self-host fonts and every image (the page already uses self-hosted Geist). Taste's scripts fetch photos and icons while building; whatever the page uses is committed, and the page loads nothing from other hosts.
-  - Indonesian first, in full natural sentences (see MAINTAINING.md), English version as now.
-  - Phone first: most visitors arrive from Reddit or a link on a phone. Check at 390px before 1440px.
-  - Do it after the app's sweep (above) if that one changes the look, so the screenshots on the page show the new design. Its own PR.
-
 - **Pikiran Rakyat: pages 2+ can't be merged.** Cloudflare answers the reader's page=all request with a challenge (403), even from inside the page, and a hidden frame stays on it too. Getting past it would mean defeating bot protection, so don't. Since the UI sweep the article ends with a link to the full page; opening it passes the check and the reader sweeps it. Revisit only if Pikiran Rakyat changes its setup. Source: maintainer.
 - **Detik: some paragraphs contain their subhead run into the text** ("Harga tiket dan fasilitas paramotor Cikarang Sebelum menikmati…"). It is in Detik's own text with no break, so there's nothing reliable to split on. Leave unless it turns out to be common. Source: maintainer, 2026-11-19.
 - **Extension popup: first real use on a phone.** Kiwi and Edge for Android open the popup as a sheet or page, Firefox for Android as a tab; the permission prompt for "Tawarkan…" also differs per browser. Check each once after 0.8.0 is in the stores. Source: maintainer, 2026-11-19.
