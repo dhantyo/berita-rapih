@@ -183,4 +183,14 @@ describe('applyPersonalContent', () => {
     applyPersonalContent(content, undefined, doc);
     expect(content.querySelectorAll('[data-user-hidden]').length).toBe(0);
   });
+  it('a text fingerprint hides a paragraph wrapped in an inline element (Kompas "Gabung Kompas.com PLUS")', () => {
+    const doc = new DOMParser().parseFromString(
+      '<article><p>Paragraf pertama yang panjang tentang kejadian.</p><i><p>Terima kasih atas dukungan kepada KOMPAS.com untuk terus memberikan fakta jernih dari lapangan. Turut mendukung dengan <a href="#">Gabung Kompas.com PLUS</a></p></i></article>',
+      'text/html');
+    const content = doc.querySelector('article') as HTMLElement;
+    applyPersonalContent(content, personal({ remove: ['t:terima kasih atas dukungan kepada kompas com untuk terus memberikan fakta jernih'] }), doc);
+    const hidden = [...content.querySelectorAll('[data-user-hidden]')];
+    expect(hidden.length).toBe(1);
+    expect(hidden[0]!.textContent).toMatch(/Gabung Kompas.com PLUS/);
+  });
 });

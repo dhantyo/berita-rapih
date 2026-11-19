@@ -19,7 +19,8 @@
     "^gabung membership kompas\\.com\\+",
     "^dukung kompas\\.com\\b",
     "^baca berita tanpa iklan\\b",
-    "^akses tanya langsung\\b"
+    "^akses tanya langsung\\b",
+    "^terima kasih atas dukungan kepada kompas\\.com\\b"
   ],
   "pagination": {
     "method": "param",

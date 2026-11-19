@@ -545,7 +545,14 @@ export function startEditor(ctx: EditorContext): Editor {
   const removePart = () => {
     const part = selected;
     if (!part) {
-      // A clean-view part with no source on the page: out of this article only.
+      // A clean-view part with no source on the page (e.g. Kompas's "Gabung Kompas.com PLUS" line, a paragraph the
+      // reader rebuilt inside an <i>): remember it by its own text or photo, so it stays gone here and in later
+      // articles with the same line. Only a part with neither is hidden for this article alone.
+      const key = cleanEl ? fingerprint(cleanEl) : undefined;
+      if (key) {
+        ctx.edit((p) => ({ ...p, remove: withEntry(p.remove, key) }));
+        return afterEdit(t.edRemoved);
+      }
       cleanEl?.setAttribute('data-user-hidden', '');
       return afterEdit(t.edRemovedOnce);
     }

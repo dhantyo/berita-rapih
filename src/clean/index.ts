@@ -135,7 +135,7 @@ function fixMedia(root: HTMLElement, baseUrl: URL): void {
 }
 
 function removeEmpty(root: HTMLElement): void {
-  for (const el of [...root.querySelectorAll('p, div, span, strong, em, section')].reverse()) {
+  for (const el of [...root.querySelectorAll('p, div, span, strong, em, b, i, section')].reverse()) {
     if (!el.textContent?.trim() && !el.querySelector('img, picture, video, figure, table')) el.remove();
   }
 }

@@ -15,6 +15,8 @@ The first four releases were published as 0.1.0-beta.1 to beta.4 and renamed on 
 - **Masukan** opens in the same place as the settings, and its back arrow returns there.
 - The **Sapu** button over the original page and the offer on unsupported sites moved to the bottom of the screen, clear of the site's own buttons.
 - Fixed: toggling a setting near the bottom of the settings no longer scrolls the panel back to the top.
+- Fixed: in **Atur isi artikel**, removing a part that only exists in the clean view (like Kompas's "Gabung Kompas.com PLUS" line) now saves, so it stays gone in later articles too. Before, it was hidden for a moment and came back.
+- Kompas: the "Terima kasih atas dukungan kepada KOMPAS.com… Gabung Kompas.com PLUS" line at the end of articles is swept.
 
 ## [0.7.0] - 2026-11-18
 
