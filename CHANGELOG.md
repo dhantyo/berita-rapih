@@ -16,7 +16,15 @@ The first four releases were published as 0.1.0-beta.1 to beta.4 and renamed on 
 - The **Sapu** button over the original page and the offer on unsupported sites moved to the bottom of the screen, clear of the site's own buttons.
 - Fixed: toggling a setting near the bottom of the settings no longer scrolls the panel back to the top.
 - Fixed: in **Atur isi artikel**, removing a part that only exists in the clean view (like Kompas's "Gabung Kompas.com PLUS" line) now saves, so it stays gone in later articles too. Before, it was hidden for a moment and came back.
-- Kompas: the "Terima kasih atas dukungan kepada KOMPAS.com… Gabung Kompas.com PLUS" line at the end of articles is swept.
+- Kompas: the "Terima kasih atas dukungan kepada KOMPAS.com… Gabung Kompas.com PLUS" line at the end of articles is swept, and so is the "Lihat Foto" label on photos.
+- **Extension:** the toolbar button now opens a small menu. On a supported site it opens the clean view or its settings. On another site, if the page looks like a news article, **Coba Sapu Berita di halaman ini** tidies it up for you, and **Sarankan situs ini** asks for the site to be added.
+- **Extension:** a new, optional switch in that menu, **Tawarkan Sapu Berita di situs berita lain**, offers Sapu Berita by itself on articles from sites it doesn't support yet. It is off by default and asks your browser's permission when you turn it on. Its card has **Jangan tawarkan di situs ini**.
+- When the bookmark, the Shortcut or the Android app can't tidy up an article, it now says so, with **Laporkan** to report it. The report says why it failed.
+- When a site won't let Sapu Berita load an article's next pages (Pikiran Rakyat), the article now ends with a link to the full version on the site, instead of looking complete.
+- Android: **Kirim masukan** on the app's home screen.
+- Fixed: Detik's first paragraph ran into the second one on phones.
+- Fixed: Tribun's lead-in subheads ("Berikut rangkuman…") looked cramped.
+- Fixed: Kontan showed the Kontan Academy logo instead of its own on computers.
 
 ## [0.7.0] - 2026-11-18
 

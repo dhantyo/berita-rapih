@@ -95,8 +95,19 @@ The bookmark always opens the clean view when tapped, so it has no "Buka otomati
 - **A per-site on/off switch, in the panel or the popup.** Nobody asked for it, and Buka otomatis plus the Sapu button already cover "not here". Add it if feedback asks.
 - **A list of every site with the reader's own edits.** Each site's Kembalikan is enough for now.
 
-## Planned (in BACKLOG.md, not built yet)
+## The extension's toolbar popup
 
-- **Tawarkan Sapu Berita di situs berita lain** (Umum, extension only, off by default). It asks for access to all sites only when switched on. Under it: "Situs yang tidak ditawarkan", with a way to undo each.
-- **Toolbar popup** (extension): open the reader, open settings (the same panel), and "Coba Sapu Berita di halaman ini" plus "Sarankan situs ini" on article pages of unsupported sites.
-- **Offer card** on articles from unsupported sites, only when "Tawarkan…" is on, with "Jangan tawarkan di situs ini".
+Code: `src/entries/popup.ts`, `ext-offer.ts`, `offer.ts`, `background.ts`.
+
+- **On a supported site:** "Situs ini didukung Sapu Berita." with **Buka tampilan bersih** and **Pengaturan**, which opens the reader with this panel. On a page there that isn't an article, it says so.
+- **On another site, if the page looks like a news article** (`src/looks-like-article.ts`: JSON-LD, og:type with a publish time, or a body of long paragraphs):
+  - **Coba Sapu Berita di halaman ini** reads it as a new site and opens the editor.
+  - **Sarankan situs ini** opens the feedback form for that site.
+- **On anything else:** it says the page isn't an article, or that it can't run there (the browser's own pages).
+- **Always: "Tawarkan Sapu Berita di situs berita lain"** (off by default). This switch lives in the popup, not in this panel, because only an extension page may ask the browser for permissions.
+  - Turning it on asks for access to all sites. A tiny check then offers the reader, by itself, on articles from sites without a rule. Its card has **Jangan tawarkan di situs ini**.
+  - Silenced sites are listed under the switch, each with a way to undo it.
+  - Turning it off removes the check and gives the access back.
+- Stored in extension storage under `offer` (`{ on, silenced }`), apart from the reader's settings.
+
+The Android app's home screen has **Kirim masukan** (the feedback form), for feedback without an article open.

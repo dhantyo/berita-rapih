@@ -113,7 +113,10 @@ Don't list outlet names in a store description: the Chrome Web Store rejected 0.
 
 **Permission justifications** (Chrome):
 - `storage`: saves the reader's own settings on their device: text size, font, theme, their own corrections to which parts of an article are shown, and whether they agreed to send those corrections to the developer. Settings themselves are never sent. (Edge has this text since 0.7.0; use it for Chrome too.)
-- **Host permissions** (content script on the listed news domains): the reader view runs only on these news sites, to read the article on the page and show it cleaned up. No other site is touched.
+- **Host permissions** (content script on the listed news domains): the reader view runs only on these news sites, to read the article on the page and show it cleaned up. No other site is touched unless the reader opts in (below).
+- `activeTab` (since 0.8): when the reader clicks the toolbar button, the popup looks at that one tab to tell whether it is a news article, and offers to tidy it up. Nothing is sent.
+- `scripting` (since 0.8): runs that article check, and the reader view itself, in the tab the reader chose from the popup; and, only if the reader turns on "Tawarkan Sapu Berita di situs berita lain", registers the small check that offers the reader view on news articles from sites it doesn't support yet.
+- **Optional host permission `<all_urls>`** (since 0.8): asked for only when the reader turns on "Tawarkan Sapu Berita di situs berita lain" in the popup, and given back when they turn it off. Used only for the on-device article check above. Nothing is sent.
 - **Remote code:** no. The daily `rules.json` is data (CSS selectors per site), not code.
 
 **Data usage** (Chrome and Edge), since 0.7: tick **Web history** (the article link sent with feedback and with edits) and **Website content** (the parts of the article an edit changes, and what the reader writes on the feedback page). Nothing else. Both are sent only when the reader presses Kirim on the feedback page, or after they agreed once to send edits from Atur isi artikel; they go to the developer's Google Form. Tick all three certifications: no selling, no use beyond the single purpose, no creditworthiness use. The Chrome dashboard is filled in by hand (extensions can't script it); Edge can be done through Brave.

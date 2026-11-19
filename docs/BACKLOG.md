@@ -22,27 +22,9 @@ Work queued for the weekly run ([MAINTAINING.md](MAINTAINING.md)). One line per 
   - Phone first: most visitors arrive from Reddit or a link on a phone. Check at 390px before 1440px.
   - Do it after the app's sweep (above) if that one changes the look, so the screenshots on the page show the new design. Its own PR.
 
-- **Toolbar button with a popup.** Clicking the extension icon now does nothing (the manifest has no `action`). Give it a small, phone-first popup, like uBlock Origin's but easier to use with a thumb. Mobile Chromium browsers open it as a sheet or page, and Firefox for Android opens it as a tab.
-  - On a supported site: open the reader and open settings. No per-site switch (SETTINGS.md, "Left out on purpose").
-  - On any other site, only when the page looks like a news article: "Coba Sapu Berita di halaman ini". Never shown on other pages, and nothing appears on any page until the icon is clicked.
-    - Clicking the icon grants `activeTab` for that tab (no install warning), so the popup can check the page: JSON-LD `NewsArticle`/`Article`, `og:type` article, and Readability's `isProbablyReaderable` (already a dependency).
-    - Not an article: the popup shows only settings. The user's example is DW Indonesia (dw.com/id), an article from an unsupported site.
-    - The button runs the reader on that page through `scripting`, then lets the user fix it with the editor and keep it as a personal preset for that domain (`src/personal.ts`).
-    - Also offer "Sarankan situs ini" through the feedback form, so popular sites can become built-in.
-    - Optional on-page offer, a setting (user, 2026-11-19): "Tawarkan Sapu Berita di situs berita lain", off by default. When on, an article on an unsupported site shows the small offer card by itself, reusing the bookmark's `showNewSitePrompt` (`src/render/newsiteprompt.ts`). When off, the offer is only in the icon's popup.
-      - Checking every page needs access to all sites. Put `<all_urls>` in `optional_host_permissions` and request it with `permissions.request` only when the switch is turned on. Then only those users see the browser's "read and change all your data" prompt, and installs stay warning-free.
-      - Once granted, `scripting.registerContentScripts` adds a tiny script on all sites that runs the article check and loads nothing else on other pages. Turning the switch off unregisters it and removes the permission.
-      - The card needs its own "don't offer on this site" and a link to the switch, so it's easy to silence.
-  - Settings can live in the popup too, reusing the overlay's settings panel.
-  - Adding `action` and `scripting` changes the manifest, so the stores review it again and Firefox may ask users to accept the new permission. Check what each browser shows.
-  - Source: user, 2026-11-18.
-- **Tribun "5 Populer Regional": the summary heading renders cramped.** "Berikut rangkuman berita populer regional selengkapnya selama 24 jam terakhir:" shows as a bold block whose two lines sit much tighter than the next heading ("1. Sultan Banten Tolak Badak..."), as if a bold paragraph with a `<br>` became a heading without the heading line height. Check how that block is built on the page and how the clean view classifies it. https://www.tribunnews.com/regional/7913400/5-populer-regional-sultan-banten-tolak-badak-jawa-dipindah-polisi-ajak-tersangka-makan-di-restoran (seen in dark theme, Jelas font). Source: user, 2026-11-19.
-- **Kompas: "Lihat Foto" left in the clean view** under photos (the caption's link to the photo gallery). Seen on https://www.kompas.com/food/read/2026/11/18/203014675/10-hidangan-sup-terbaik-di-asia-tenggara-ada-3-dari-indonesia. Source: maintainer.
-- **Detik Travel: two paragraphs run together** without a gap ("…PUBG Mobile. Bagi traveler…") on https://travel.detik.com/cerita-perjalanan/d-8758455/hidden-gem-paramotor-di-cikarang-wisatawan-serasa-main-pubg. Probably a `<br>` between them. Source: maintainer.
-- **Report button in the Android app.** The app has no way into the feedback page outside the reader. Source: maintainer.
-- **Say why extraction failed, in reports.** When the reader can't open an article, the report should carry the reason (`not-article`, `no-body`, blocked…). Source: maintainer.
-- **Kontan: wrong or missing logo.** Source: maintainer.
-- **Pikiran Rakyat: pages 2+ aren't merged.** The site is behind Cloudflare, so the page fetches fail. Source: maintainer.
+- **Pikiran Rakyat: pages 2+ can't be merged.** Cloudflare answers the reader's page=all request with a challenge (403), even from inside the page, and a hidden frame stays on it too. Getting past it would mean defeating bot protection, so don't. Since the UI sweep the article ends with a link to the full page; opening it passes the check and the reader sweeps it. Revisit only if Pikiran Rakyat changes its setup. Source: maintainer.
+- **Detik: some paragraphs contain their subhead run into the text** ("Harga tiket dan fasilitas paramotor Cikarang Sebelum menikmati…"). It is in Detik's own text with no break, so there's nothing reliable to split on. Leave unless it turns out to be common. Source: maintainer, 2026-11-19.
+- **Extension popup: first real use on a phone.** Kiwi and Edge for Android open the popup as a sheet or page, Firefox for Android as a tab; the permission prompt for "Tawarkan…" also differs per browser. Check each once after 0.8.0 is in the stores. Source: maintainer, 2026-11-19.
 - **Firefox listing approved → switch it on:** set `STORE.firefox` in `site/index.html` to https://addons.mozilla.org/firefox/addon/sapu-berita/, add it to README.md and docs/install-android.md, release. Check the AMO status first (`curl -s https://addons.mozilla.org/api/v5/addons/addon/sapu-berita/`). Source: maintainer.
 
 ## Pinned by the user
