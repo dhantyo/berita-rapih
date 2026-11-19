@@ -128,6 +128,8 @@ writeFileSync(
     // Per site: its registrable domains (host === d or ends with "." + d) and its article-path regex.
     // Article links open in the reader; any other page on these hosts goes to the user's browser.
     sites: rules.sites.map((s) => ({ domains: s.domains, article: s.articleUrl })),
+    // The feedback form's prefilled link (the same template the reader uses): the home screen's "Kirim masukan".
+    feedback: REPORT_URL,
   }),
 );
 
