@@ -132,11 +132,20 @@ export function absoluteLogoUrl(src: string, base: string): string | undefined {
   }
 }
 
+/** The site a host belongs to: its last two labels, or three under Indonesia's second-level zones (kontan.co.id). */
+function siteOf(host: string): string {
+  const labels = host.toLowerCase().replace(/^www\./, '').split('.');
+  const zone = labels.length >= 3 && /^(co|go|ac|or|web|my|sch|net|mil|biz|ponpes|desa)$/.test(labels[labels.length - 2]!);
+  return labels.slice(zone ? -3 : -2).join('.');
+}
+
+/** A link to the front page of this same site (another site's home is a sister brand: Kontan Academy). */
 function isHomeLink(doc: Document, href: string | null): boolean {
   if (!href) return false;
   try {
     const u = new URL(href, doc.baseURI);
-    return u.pathname === '/' || u.pathname === '';
+    if (u.pathname !== '/' && u.pathname !== '') return false;
+    return siteOf(u.hostname) === siteOf(new URL(doc.baseURI).hostname);
   } catch {
     return false;
   }
