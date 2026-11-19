@@ -39,3 +39,25 @@ describe.skipIf(!savedPagesPresent())('progressive rendering', () => {
     expect(flags).toEqual([false]);
   });
 });
+
+describe('other pages refused (Cloudflare on Pikiran Rakyat)', () => {
+  const html = '<html><head><title>Judul</title><meta property="og:title" content="Judul berita yang panjang"></head><body>' +
+    '<section class="read__content">' + '<p>Paragraf pertama yang cukup panjang untuk lolos pemeriksaan kualitas artikel ini.</p>'.repeat(8) + '</section>' +
+    '<div class="paging__all"><a href="?page=all">Lihat Semua</a></div></body></html>';
+  const url = 'https://www.pikiran-rakyat.com/news/pr-0110559757/judul-berita';
+
+  it('keeps page 1 and links to the full page when the request is refused', async () => {
+    const doc = documentFromHtml(html, url);
+    const result = await run({ doc, url: new URL(url), rules, fetchDocument: async () => { throw new Error('HTTP 403'); }, log: () => {} });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.article.pages).toBe(1);
+    expect(result.article.unloaded).toBe(`${url}?page=all`);
+  });
+
+  it('says nothing when the full page loads but has no more text (the site ignores the param)', async () => {
+    const doc = documentFromHtml(html, url);
+    const result = await run({ doc, url: new URL(url), rules, fetchDocument: async () => documentFromHtml(html, url), log: () => {} });
+    expect(result.ok && result.article.unloaded).toBeFalsy();
+  });
+});

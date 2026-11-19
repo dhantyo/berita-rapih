@@ -55,8 +55,7 @@ await sepia.waitForTimeout(600);
 await shot(sepia, 'phone-settings.png');
 // Phone, the editor: a paragraph picked in the clean view, "Bagian ini apa?" open.
 await light.locator('.gear').click();
-await light.getByRole('button', { name: 'Beri masukan' }).click();
-await light.locator(`${SHADOW} .fb-choice`).first().click();
+await light.locator(`${SHADOW} .nav-row`).click();
 await light.waitForTimeout(1500);
 await light.locator(`${SHADOW} [data-ed="view-clean"]`).click();
 await light.waitForTimeout(500);

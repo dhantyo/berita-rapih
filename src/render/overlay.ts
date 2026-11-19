@@ -11,8 +11,9 @@ import { quietPage } from './quiet.ts';
 import { parseNewsDate } from './dates.ts';
 import { textKey } from '../dom.ts';
 import { createFeedbackPage, type FeedbackPage } from './feedback.ts';
+import { BROOM_PATHS } from './broom.ts';
 import { createBackStack, type BackLayer } from './backstack.ts';
-import { barHiddenAfterScroll } from './barscroll.ts';
+import { nextBarOffset, settledBarOffset } from './barscroll.ts';
 import { applyPersonalContent, editPersonal, personalFor, personalMeta, resetPersonal, type PersonalRule } from '../personal.ts';
 import { startEditor, type Editor } from './editor.ts';
 
@@ -30,6 +31,8 @@ export interface OverlayHandle {
   doneLoading(): void;
   show(): void;
   hide(): void;
+  /** Show the reader with Pengaturan open (the extension's popup). */
+  openSettings(): void;
   destroy(): void;
   /** Show the "new version available" bar (once per article view; the reader can dismiss it). */
   offerUpdate(offer: UpdateOffer): void;
@@ -52,6 +55,10 @@ export interface OverlayOptions {
    * version, site fixes included, every time they run.
    */
   updatesSetting?: boolean;
+  /** "Update otomatis" only brings site fixes here (a store install: the store brings new versions). */
+  updatesFixesOnly?: boolean;
+  /** Links at the foot of the settings panel: the install page, the privacy page, the release notes. */
+  links?: { home: string; privacy: string; changes: string };
   /** Link target for "read on the original site". */
   originalUrl?: string;
   /** Where feedback goes: the form's prefilled link (opened when sending directly fails), and direct sending. */
@@ -128,17 +135,23 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
     root.setAttribute('aria-label', viewMeta().title);
 
     const progress = h(doc, 'div', { class: 'progress', 'aria-hidden': 'true' });
+    const oldPanel = root.querySelector('.panel') as HTMLElement | null;
+    const panelTop = oldPanel?.scrollTop ?? 0;
+    const before = oldPanel ? controlStates(oldPanel) : undefined;
     root.replaceChildren(
       masthead(t, progress),
       articleView(t),
       settingsPanel(t),
     );
     if (feedback) root.append(feedback.el);
+    if (panelTop) (root.querySelector('.panel') as HTMLElement).scrollTop = panelTop;
+    if (before && panelOpen) carryMotion(root.querySelector('.panel') as HTMLElement, before);
     reopen.replaceChildren(broom(16), doc.createTextNode(t.reopen));
     reopen.title = t.reopenLong;
     reopen.setAttribute('aria-label', t.reopenLong);
     applyPersonalContent(article.content, personalFor(settings.personal, siteKey()), doc);
     root.scrollTop = top;
+    placeBar(false); // the bar was rebuilt: put it back where it was, without a slide
     progressBar = progress;
     updateProgress();
   };
@@ -287,6 +300,10 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
     if (updateOffer) parts.unshift(updateBar(t, updateOffer));
     if (loading) parts.push(h(doc, 'p', { class: 'status', role: 'status' }, h(doc, 'span', { class: 'spinner', 'aria-hidden': 'true' }), t.loadingMore));
 
+    // The article goes on, but the site wouldn't let its other pages load: say so, and link to them.
+    if (article.unloaded) {
+      parts.push(h(doc, 'p', { class: 'unloaded' }, t.unloaded, ' ', h(doc, 'a', { href: article.unloaded }, t.unloadedLink, arrow())));
+    }
     if (settings.sweepLine) {
       const bits: Node[] = [];
       if (article.swept > 0) bits.push(h(doc, 'span', { class: 'mark' }, broom(15), t.swept(article.swept)));
@@ -336,81 +353,136 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
         later));
   };
 
+  // Settings, ordered by how often each part is used (docs/SETTINGS.md): how the article looks, what shows in it,
+  // this site, how Sapu behaves, then the rarely changed rest. Every section has a title; each thing appears once.
   const settingsPanel = (t: Strings) => {
     const panel = h(doc, 'section', { class: 'panel', id: 'sb-panel', role: 'dialog', 'aria-label': t.settings, 'data-open': String(panelOpen) });
     panel.addEventListener('click', (e) => e.stopPropagation());
+    panel.addEventListener('keydown', (e) => {
+      if (e.key !== 'Tab') return;
+      const stops = [...panel.querySelectorAll<HTMLElement>('button, input, a[href]')]
+        .filter((el) => !(el as HTMLButtonElement).disabled && el.tabIndex >= 0 && el.offsetParent !== null);
+      const active = (panel.getRootNode() as ShadowRoot | Document).activeElement;
+      const first = stops[0];
+      const last = stops[stops.length - 1];
+      if (e.shiftKey && active === first) {
+        e.preventDefault();
+        last?.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first?.focus();
+      }
+    });
     swipeToClose(panel);
-    panel.append(h(doc, 'div', { class: 'grabber', 'aria-hidden': 'true' }));
     const close = h(doc, 'button', { type: 'button', class: 'icon-btn', 'aria-label': t.close }, cross());
     close.addEventListener('click', () => setPanel(false));
-    // Feedback is also one tap from the top, so nobody has to scroll past every setting to find it.
-    const feedbackTop = h(doc, 'button', { type: 'button', class: 'btn quiet head-feedback' }, t.fbShort);
+    // The one way into feedback, at the top so nobody has to scroll for it.
+    const feedbackTop = h(doc, 'button', { type: 'button', class: 'btn head-feedback' }, t.fbShort);
     feedbackTop.addEventListener('click', (e) => {
       e.stopPropagation();
       openFeedback();
     });
-    panel.append(h(doc, 'div', { class: 'panel-head' }, h(doc, 'h2', {}, t.settings), h(doc, 'div', { class: 'head-actions' }, feedbackTop, close)));
+    panel.append(h(doc, 'div', { class: 'panel-head' },
+      h(doc, 'div', { class: 'grabber', 'aria-hidden': 'true' }),
+      h(doc, 'h2', {}, t.settings), h(doc, 'div', { class: 'head-actions' }, feedbackTop, close)));
 
-    // Text size
-    const smaller = h(doc, 'button', { type: 'button', class: 'icon-btn', 'aria-label': t.smaller }, 'A−') as HTMLButtonElement;
-    const larger = h(doc, 'button', { type: 'button', class: 'icon-btn', 'aria-label': t.larger }, 'A+') as HTMLButtonElement;
-    smaller.style.fontSize = '13px';
-    larger.style.fontSize = '18px';
-    smaller.disabled = settings.size === 0;
-    larger.disabled = settings.size === SIZE_STEPS - 1;
-    smaller.addEventListener('click', () => change({ size: settings.size - 1 }, '.size .icon-btn:first-child'));
-    larger.addEventListener('click', () => change({ size: settings.size + 1 }, '.size .icon-btn:last-child'));
-    const dots = h(doc, 'div', { class: 'dots', role: 'img', 'aria-label': `${t.textSize} ${settings.size + 1}/${SIZE_STEPS}` });
-    for (let i = 0; i < SIZE_STEPS; i++) dots.append(h(doc, 'i', { 'data-on': String(i === settings.size) }));
-    panel.append(group(t.textSize, h(doc, 'div', { class: 'size' }, smaller, dots, larger)));
+    const section = (title: Node | string, ...children: Node[]) =>
+      h(doc, 'div', { class: 'sec' }, h(doc, 'h3', { class: 'sec-title' }, title), ...children);
+    const rows = (...keys: Switch[]) => h(doc, 'div', { class: 'rows' }, ...keys.map((k) => toggle(k)));
 
-    // Font: each option previews itself in its own face
+    // ── Tampilan ──
+    // Text size: a notched slider as wide as the pickers below it, with A− and A+ as one-step buttons.
+    // Dragging resizes the article live; the setting is saved (and the panel redrawn) when the thumb is let go.
+    const last = SIZE_STEPS - 1;
+    const pct = (v: number) => `${(v / last) * 100}%`;
+    const range = h(doc, 'input', {
+      type: 'range', min: '0', max: String(last), step: 'any', value: String(settings.size),
+      'aria-label': t.textSize, 'aria-valuetext': t.sizeStep(settings.size + 1, SIZE_STEPS),
+    }) as HTMLInputElement;
+    const ticks = h(doc, 'div', { class: 'ticks', 'aria-hidden': 'true' });
+    for (let i = 0; i <= last; i++) ticks.append(h(doc, 'i', { 'data-on': String(i <= settings.size) }));
+    /** Draw the slider at v (fractional while moving) and size the article to the nearest step. */
+    const show = (v: number) => {
+      const step = Math.round(v);
+      range.value = String(v);
+      range.style.setProperty('--p', pct(v));
+      range.setAttribute('aria-valuetext', t.sizeStep(step + 1, SIZE_STEPS));
+      root.style.setProperty('--fs', `${SIZES[step]}px`);
+      [...ticks.children].forEach((tick, i) => tick.setAttribute('data-on', String(i <= v + 0.01)));
+    };
+    show(settings.size);
+    let glideFrame = 0;
+    /** Ease the thumb to a step, then save it (which redraws the panel at the same spot). */
+    const glide = (to: number) => {
+      to = Math.max(0, Math.min(last, to));
+      doc.defaultView?.cancelAnimationFrame(glideFrame);
+      const from = Number(range.value);
+      const win = doc.defaultView;
+      if (!win || reducedMotion() || Math.abs(to - from) < 0.01) {
+        show(to);
+        if (to !== settings.size) change({ size: to }, '.size input');
+        return;
+      }
+      const start = win.performance.now();
+      const dur = 160 + 60 * Math.min(2, Math.abs(to - from));
+      const frame = (now: number) => {
+        const k = Math.min(1, (now - start) / dur);
+        show(from + (to - from) * (1 - (1 - k) ** 3)); // ease-out cubic
+        if (k < 1) glideFrame = win.requestAnimationFrame(frame);
+        else if (to !== settings.size) change({ size: to }, '.size input');
+      };
+      glideFrame = win.requestAnimationFrame(frame);
+    };
+    range.addEventListener('input', () => show(Number(range.value)));
+    range.addEventListener('change', () => glide(Math.round(Number(range.value))));
+    range.addEventListener('keydown', (e) => {
+      const at = Math.round(Number(range.value));
+      const to = { ArrowRight: at + 1, ArrowUp: at + 1, ArrowLeft: at - 1, ArrowDown: at - 1, Home: 0, End: last }[e.key];
+      if (to === undefined) return;
+      e.preventDefault();
+      glide(to);
+    });
+    const stepBtn = (by: number, label: string, text: string, cls: string) => {
+      const b = h(doc, 'button', { type: 'button', class: `size-btn ${cls}`, 'aria-label': label, tabindex: '-1' }, text) as HTMLButtonElement;
+      b.disabled = settings.size + by < 0 || settings.size + by > last;
+      b.addEventListener('click', () => glide(Math.round(Number(range.value)) + by));
+      return b;
+    };
+    const sizeRow = h(doc, 'div', { class: 'size' },
+      stepBtn(-1, t.smaller, 'A', 'small'), h(doc, 'div', { class: 'slider' }, ticks, range), stepBtn(1, t.larger, 'A', 'big'));
+
+    // Font: each option previews itself in its own face. Theme: a swatch of each ground.
     const faces: Record<Font, string> = { serif: 'var(--serif)', sans: 'var(--sans)', legible: 'var(--legible)' };
-    panel.append(group(t.font, segmented<Font>(t.font, settings.font, [
+    const font = segmented<Font>(t.font, settings.font, [
       ['sans', t.fontSans], ['serif', t.fontSerif], ['legible', t.fontLegible],
-    ], (v) => change({ font: v }, `[data-value="${v}"]`), (btn, v) => (btn.style.fontFamily = faces[v]))));
-
-    // Theme: swatch of each ground
+    ], (v) => change({ font: v }, `[data-value="${v}"]`), (btn, v) => (btn.style.fontFamily = faces[v]));
     const grounds: Record<Exclude<Theme, 'auto'>, string> = {
       light: 'rgb(255 255 255)', sepia: 'rgb(247 241 228)', dark: 'rgb(18 18 18)',
     };
-    panel.append(group(t.theme, segmented<Theme>(t.theme, settings.theme, [
+    const theme = segmented<Theme>(t.theme, settings.theme, [
       ['auto', t.themeAuto], ['light', t.themeLight], ['sepia', t.themeSepia], ['dark', t.themeDark],
-    ], (v) => change({ theme: v }, `[data-value="${v}"]`), (btn, v) => {
+    ], (v) => fade(() => change({ theme: v }, `[data-value="${v}"]`)), (btn, v) => {
       const sw = h(doc, 'span', { class: 'swatch', 'aria-hidden': 'true' });
       if (v === 'auto') {
         sw.classList.add('split');
         sw.append(splitSwatch());
       } else sw.style.background = grounds[v];
       btn.prepend(sw);
-    })));
-
-    // Language
-    panel.append(group(t.language, segmented<Lang>(t.language, settings.lang, [
-      ['id', 'Indonesia'], ['en', 'English'],
-    ], (v) => change({ lang: v }, `[data-value="${v}"]`))));
-
-    // Switches. How Sapu Berita behaves first; then what shows in the article, in the order it appears
-    // on the page (photo under the headline, summary box, links and media in the text, the end note).
-    const rows = (...keys: Switch[]) => h(doc, 'div', {}, ...keys.map(toggle));
-    // "General" lists what this build can change (the bookmark has only the bar switch).
-    const general = () => {
-      const keys: Switch[] = [];
-      if (opts.autoOpenSetting !== false) keys.push('autoOpen');
-      if (opts.updatesSetting !== false) keys.push('updates');
-      keys.push('hideBar', 'sendEdits');
-      return [group(t.general, rows(...keys))];
-    };
-    panel.append(
-      ...general(),
-      group(t.inArticle, rows('hero', 'summaries', 'links', 'embeds', 'sweepLine')),
-    );
-    const give = h(doc, 'button', { type: 'button', class: 'btn' }, t.fbAction);
-    give.addEventListener('click', (e) => {
-      e.stopPropagation();
-      openFeedback();
     });
-    panel.append(h(doc, 'div', { class: 'group report' }, h(doc, 'span', { class: 'text' }, t.fbPrompt), give));
+    panel.append(section(t.secLook, field(t.textSize, sizeRow), field(t.font, font), field(t.theme, theme)));
+
+    // ── Di dalam artikel: in the order the parts appear on the page ──
+    panel.append(section(t.inArticle, rows('hero', 'summaries', 'links', 'embeds', 'sweepLine')));
+
+    // ── Situs ini: the editor, and the reader's own version of this site ──
+    const host = doc.location?.hostname?.replace(/^(www|m)\./, '') ?? '';
+    const edit = h(doc, 'button', { type: 'button', class: 'nav-row' },
+      h(doc, 'span', { class: 'text' }, t.edTitle, h(doc, 'span', { class: 'hint' }, t.editArticleHint)), chevronIcon());
+    edit.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openEditor();
+    });
+    const site: Node[] = [edit];
     if (personalFor(settings.personal, siteKey())) {
       const reset = h(doc, 'button', { type: 'button', class: 'btn' }, t.edReset);
       let sure = false;
@@ -423,40 +495,78 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
         }
         void resetRule();
       });
-      panel.append(h(doc, 'div', { class: 'report hidden-row' }, h(doc, 'span', { class: 'text' }, t.personalOn), reset));
+      site.push(h(doc, 'div', { class: 'personal-row' }, h(doc, 'span', { class: 'text' }, t.personalOn), reset));
+    }
+    panel.append(section(h(doc, 'span', {}, t.secSite, host ? h(doc, 'span', { class: 'sec-host' }, host) : ''), ...site));
+
+    // ── Umum: how Sapu behaves (the bookmark has no "open automatically": running it is the request to open) ──
+    const general: Switch[] = [];
+    if (opts.autoOpenSetting !== false) general.push('autoOpen');
+    general.push('hideBar', 'sendEdits');
+    panel.append(section(t.general, rows(...general)));
+
+    // ── Lainnya: set once, rarely changed ──
+    const more: Node[] = [field(t.language, segmented<Lang>(t.language, settings.lang, [
+      ['id', 'Indonesia'], ['en', 'English'],
+    ], (v) => change({ lang: v }, `[data-value="${v}"]`)), true)];
+    if (opts.updatesSetting !== false) more.push(h(doc, 'div', { class: 'rows' }, toggle('updates', opts.updatesFixesOnly ? t.updatesHintFixes : undefined)));
+    const foot = h(doc, 'p', { class: 'panel-foot' });
+    const links = opts.links;
+    if (links) {
+      for (const [href, label] of [[links.home, t.linkHome], [links.privacy, t.linkPrivacy], [links.changes, t.linkChanges]] as const) {
+        foot.append(h(doc, 'a', { href, target: '_blank', rel: 'noopener' }, label));
+      }
     }
     // Version, so bug reports say which build they came from.
-    panel.append(h(doc, 'p', { class: 'version' }, `Sapu Berita ${VERSION}`));
+    foot.append(h(doc, 'span', { class: 'version' }, `Sapu Berita ${VERSION}`));
+    more.push(foot);
+    panel.append(section(t.secMore, ...more));
     return panel;
   };
 
-  const group = (label: string, control: Node) =>
-    h(doc, 'div', { class: 'group' }, h(doc, 'span', { class: 'label' }, label), control);
+  const field = (label: string, control: Node, inline = false) =>
+    h(doc, 'div', { class: inline ? 'field inline' : 'field' }, h(doc, 'span', { class: 'label' }, label), control);
 
   function segmented<V extends string>(
     label: string, current: V, options: Array<[V, string]>, onPick: (v: V) => void,
     decorate?: (btn: HTMLElement, v: V) => void,
   ) {
     const seg = h(doc, 'div', { class: 'seg', role: 'radiogroup', 'aria-label': label });
+    const values = options.map(([v]) => v);
+    seg.style.setProperty('--n', String(values.length));
+    seg.style.setProperty('--i', String(Math.max(0, values.indexOf(current))));
     for (const [value, text] of options) {
-      const btn = h(doc, 'button', { type: 'button', role: 'radio', 'aria-checked': String(value === current), 'data-value': value }, text);
+      const btn = h(doc, 'button', {
+        type: 'button', role: 'radio', 'aria-checked': String(value === current), 'data-value': value, tabindex: value === current ? '0' : '-1',
+      }, text);
       decorate?.(btn, value);
       btn.addEventListener('click', () => onPick(value));
       seg.append(btn);
     }
+    seg.addEventListener('keydown', (e) => {
+      const by = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+      if (!by) return;
+      e.preventDefault();
+      const at = values.indexOf(current);
+      onPick(values[(at + by + values.length) % values.length]!);
+    });
     return seg;
   }
 
   /** One on/off row; its label and hint come from the strings named after the switch. */
-  function toggle(key: Switch) {
+  function toggle(key: Switch, hint?: string) {
     const t = strings(settings.lang);
     const label = t[key];
-    const text = h(doc, 'span', { class: 'text' }, label, h(doc, 'span', { class: 'hint' }, t[`${key}Hint`]));
+    const text = h(doc, 'span', { class: 'text' }, label, h(doc, 'span', { class: 'hint' }, hint ?? t[`${key}Hint`]));
     const on = settings[key];
     const sw = h(doc, 'button', { type: 'button', class: 'switch', role: 'switch', 'aria-checked': String(on), 'aria-label': label, 'data-switch': key });
     // Answering here also answers the editor's one-time question (sendEdits).
     sw.addEventListener('click', () => change({ [key]: !on, ...(key === 'sendEdits' ? { sendEditsAsked: true } : {}) }, `[data-switch="${key}"]`));
-    return h(doc, 'div', { class: 'switch-row' }, text, sw);
+    const row = h(doc, 'div', { class: 'switch-row' }, text, sw);
+    row.addEventListener('click', (e) => {
+      if (e.target !== sw) sw.click();
+    });
+    return row;
   }
 
   // ── State changes ───────────────────────────────────────────────────────
@@ -469,6 +579,53 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
   };
 
   const siteKey = () => article.ruleId ?? doc.location?.hostname ?? '';
+
+  // ── Note over the reader ─────────────────────────────────────────────────
+  /** A short message at the bottom of the screen for a few seconds (role=status, so it is read out too). */
+  const toast = (text: string) => {
+    shadow.querySelector('.toast')?.remove();
+    const el = h(doc, 'div', { class: 'toast tokens', role: 'status', 'data-theme': settings.theme }, broom(15), h(doc, 'span', {}, text));
+    shadow.append(el);
+    doc.defaultView?.setTimeout(() => {
+      el.classList.add('leaving');
+      doc.defaultView?.setTimeout(() => el.remove(), 260);
+    }, 3200);
+  };
+
+  // ── Motion across re-renders ────────────────────────────────────────────
+  // The panel is rebuilt on every change, so a switch or picker would simply appear in its new state. Remember
+  // where each one was, draw the new one there first, then let its CSS transition carry it to where it is now.
+  const reducedMotion = () => !!doc.defaultView?.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  const controlStates = (panel: HTMLElement) => ({
+    segs: new Map([...panel.querySelectorAll<HTMLElement>('.seg')].map((el) => [el.getAttribute('aria-label') ?? '', el.style.getPropertyValue('--i')])),
+    switches: new Map([...panel.querySelectorAll('[data-switch]')].map((el) => [el.getAttribute('data-switch') ?? '', el.getAttribute('aria-checked') ?? ''])),
+  });
+  const carryMotion = (panel: HTMLElement, was: ReturnType<typeof controlStates>) => {
+    if (reducedMotion()) return;
+    const win = doc.defaultView;
+    for (const el of panel.querySelectorAll<HTMLElement>('.seg')) {
+      const from = was.segs.get(el.getAttribute('aria-label') ?? '');
+      const to = el.style.getPropertyValue('--i');
+      if (!from || from === to) continue;
+      el.style.setProperty('--i', from);
+      win?.getComputedStyle(el, '::before').transform; // settle the old position before moving
+      el.style.setProperty('--i', to);
+    }
+    for (const el of panel.querySelectorAll<HTMLElement>('[data-switch]')) {
+      const from = was.switches.get(el.getAttribute('data-switch') ?? '');
+      const to = el.getAttribute('aria-checked') ?? '';
+      if (!from || from === to) continue;
+      el.setAttribute('aria-checked', from);
+      win?.getComputedStyle(el, '::after').transform;
+      el.setAttribute('aria-checked', to);
+    }
+  };
+  /** Run a change as a crossfade of the whole view (View Transitions: Chrome 111+, Safari 18+); elsewhere it just happens. */
+  const fade = (update: () => void) => {
+    const start = (doc as Document & { startViewTransition?: (cb: () => void) => unknown }).startViewTransition;
+    if (typeof start === 'function' && !reducedMotion()) start.call(doc, update);
+    else update();
+  };
 
   // ── Atur isi artikel: the editor (render/editor.ts), on the original page ──
   let editor: Editor | null = null;
@@ -504,6 +661,7 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
       send: async (input) => (opts.report?.send ? opts.report.send(article, input) : false),
       consent: () => (settings.sendEditsAsked ? (settings.sendEdits ? 'yes' : 'no') : 'ask'),
       setConsent: (yes) => change({ sendEdits: yes, sendEditsAsked: true }),
+      notify: (text) => toast(text),
       showClean: () => show(),
       showOriginal: () => {
         hide();
@@ -536,6 +694,7 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
   const openFeedback = () => {
     // Opened from the settings panel: take over its history entry, so Back closes the feedback page.
     const fromPanel = panelLayer;
+    const backToPanel = panelOpen;
     panelLayer = undefined;
     feedbackLayer = fromPanel ? fromPanel.hand(() => closeFeedback(true, true)) : backStack.push(() => closeFeedback(true, true));
     if (panelOpen) setPanel(false);
@@ -558,7 +717,12 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
       ],
       reportLink: (input) => opts.report?.link(article, input),
       send: async (input) => (opts.report?.send ? opts.report.send(article, input) : false),
-      close: () => closeFeedback(),
+      // Feedback lives where the settings panel was: its back arrow returns there.
+      close: () => {
+        closeFeedback(!backToPanel);
+        if (backToPanel) setPanel(true);
+      },
+      finish: () => closeFeedback(),
       editArticle: () => openEditor(),
       pushBack: (onBack) => backStack.push(onBack),
     });
@@ -629,7 +793,11 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
     else (aa as HTMLElement | null)?.focus();
   };
 
-  root.addEventListener('click', () => panelOpen && setPanel(false));
+  // A tap outside the open panel (or the feedback panel in its place) closes it.
+  root.addEventListener('click', (e) => {
+    if (panelOpen) setPanel(false);
+    else if (feedback && !e.composedPath().includes(feedback.el)) closeFeedback();
+  });
   attachGallery(root, () => strings(settings.lang));
   root.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && feedback) {
@@ -644,16 +812,43 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
   // Reading progress: a hairline of lidi ochre under the masthead.
   let progressBar: HTMLElement | null = null;
   let frame = 0;
-  let barHidden = false;
+  // The bar follows the scroll (render/barscroll.ts): barOffset px of it are pushed up out of view.
+  let barOffset = 0;
   let lastTop = 0;
+  let settleTimer: ReturnType<typeof setTimeout> | undefined;
+  const barHeight = () => (root.querySelector('.bar') as HTMLElement | null)?.offsetHeight || 56;
+  /** Draw the bar at barOffset; `glide` animates there (settling, or shown for the panel), otherwise it tracks the finger. */
+  const placeBar = (glide: boolean) => {
+    const bar = root.querySelector('.bar') as HTMLElement | null;
+    if (!bar) return;
+    bar.classList.toggle('tracking', !glide);
+    bar.style.transform = barOffset ? `translateY(${-barOffset}px)` : '';
+    bar.toggleAttribute('data-hidden', barOffset >= barHeight());
+  };
   const setBarHidden = (hidden: boolean) => {
-    barHidden = hidden;
-    root.querySelector('.bar')?.toggleAttribute('data-hidden', hidden);
+    barOffset = hidden ? barHeight() : 0;
+    placeBar(true);
+  };
+  const followScroll = (top: number) => {
+    if (!settings.hideBar || panelOpen) {
+      if (barOffset) setBarHidden(false);
+      return;
+    }
+    const height = barHeight();
+    barOffset = nextBarOffset(barOffset, lastTop, top, height);
+    placeBar(false);
+    clearTimeout(settleTimer);
+    settleTimer = setTimeout(() => {
+      const settled = settledBarOffset(barOffset, root.scrollTop, height);
+      if (settled === barOffset) return;
+      barOffset = settled;
+      placeBar(true);
+    }, 140);
   };
   const updateProgress = () => {
     frame = 0;
     const top = root.scrollTop;
-    setBarHidden(settings.hideBar && !panelOpen && barHiddenAfterScroll(barHidden, lastTop, top));
+    followScroll(top);
     lastTop = top;
     const max = root.scrollHeight - root.clientHeight;
     progressBar?.style.setProperty('transform', `scaleX(${max > 0 ? Math.min(1, root.scrollTop / max) : 0})`);
@@ -714,6 +909,10 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
     },
     show,
     hide,
+    openSettings: () => {
+      show();
+      setPanel(true);
+    },
     offerUpdate: (offer) => {
       updateOffer = offer;
       render();
@@ -860,10 +1059,10 @@ function icon(size: number, paths: string[]): SVGSVGElement {
     'stroke-width': '1.6', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true',
   }, ...paths.map((d) => svgEl('path', { d })));
 }
-/** The Sapu mark: a sapu lidi, handle up-right, bristles fanning down-left. Shared with Sapu Buzzer. */
-const broom = (size: number) =>
-  icon(size, ['M20 4 13 11', 'M11.2 9.2l3.6 3.6', 'M11.2 9.2C8 10 5.4 12.6 4 19c6.4-1.4 9-4 9.8-7.2', 'M6.8 16.4 9.6 13.6', 'M9 17.6l2.2-2.2']);
+/** The Sapu mark (render/broom.ts). */
+const broom = (size: number) => icon(size, BROOM_PATHS);
 const cross = () => icon(18, ['M6 6l12 12', 'M18 6 6 18']);
+const chevronIcon = () => icon(18, ['M9 6l6 6-6 6']);
 /** Settings: a gear (Lucide "settings", ISC licence). */
 const gear = () => icon(19, [
   'M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z',

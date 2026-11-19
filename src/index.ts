@@ -71,8 +71,10 @@ export async function run(ctx: Context, onProgress?: ProgressCallback): Promise<
     }
 
     // Other pages are extracted the same way page 1 was.
-    const { container, pages } = await paginate(body, rule, extract, ctx);
-    return report(finish(container, pages));
+    const { container, pages, unloaded } = await paginate(body, rule, extract, ctx);
+    const done = finish(container, pages);
+    if (done.ok && unloaded) done.article.unloaded = unloaded;
+    return report(done);
 
     function finish(container: HTMLElement, pages: number): RunResult {
       return finishArticle(container, pages, rule!, meta, source, ctx);

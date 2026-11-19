@@ -61,8 +61,10 @@ export interface FeedbackContext {
   reportLink: (input: ReportInput) => string | undefined;
   /** Send directly; false when it could not go out from this page (then the link is offered). */
   send: (input: ReportInput) => Promise<boolean>;
-  /** Leave the feedback page (back to the article, same scroll position). */
+  /** Back out of the feedback page (to where it was opened from: the settings panel, or the article). */
   close: () => void;
+  /** Done after sending: straight back to the article. Falls back to close. */
+  finish?: () => void;
   /** "Atur isi artikel": leave this page and open the editor on the original page. */
   editArticle: () => void;
   /** A sub page opened: Back returns to the choices (render/backstack.ts). */
@@ -110,7 +112,8 @@ export function createFeedbackPage(ctx: FeedbackContext): FeedbackPage {
   };
 
   const goBack = () => {
-    if (view === 'choices' || view === 'sent') return ctx.close();
+    if (view === 'choices') return ctx.close();
+    if (view === 'sent') return (ctx.finish ?? ctx.close)();
     sub?.release();
     sub = undefined;
     show('choices');
@@ -166,7 +169,7 @@ export function createFeedbackPage(ctx: FeedbackContext): FeedbackPage {
   // ── Terkirim ──
   const sentPage = () => {
     const back = h(doc, 'button', { type: 'button', class: 'btn' }, t.fbBackToArticle);
-    back.addEventListener('click', () => ctx.close());
+    back.addEventListener('click', () => (ctx.finish ?? ctx.close)());
     return h(doc, 'div', { class: 'fb-sent' }, h(doc, 'p', { class: 'fb-lead' }, t.fbSentLead), back);
   };
 

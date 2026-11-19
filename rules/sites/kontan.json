@@ -19,6 +19,7 @@
     "p:has(a.track-gnews)",
     ".article-column", ".persona-widget", "#showcase"
   ],
+  "logo": ["img.lgo_kontan", "img[src*='/logo/logo-putih']"],
   "pagination": { "method": "none" },
   "variants": [
     {
@@ -34,5 +35,5 @@
     "https://tv.kontan.co.id/video/5EgMhljX3yA"
   ],
   "verified": "2026-11-15",
-  "notes": "Kontan TV (tv.kontan.co.id/video/<youtube id>): body is .des_detail (first paragraph is just a kontan.co.id link); the page has no JSON-LD VideoObject usable as a player, only a YouTube og:image thumbnail and a link, which the reader turns into the video. Phones get a different page than desktop: the article is split over several .content-pos sections (hence bodyAll), with the Terpopuler showcase widget (#showcase, unbalanced markup) leaking into one of them; desktop uses .tmpt-desk-kon. Subdomain per channel (nasional., industri., keuangan., investasi., ...). Body is .tmpt-desk-kon, but its markup is unbalanced so tags, 'Video Terkait' and share bar end up inside it and are removed. Known quirk: the header logo is on a CDN without CORS so the reader falls back to the same-origin Kontan Academy banner image. Kontan Plus premium articles are paywalled: only free articles were checked. /feed/news/<channel> returns 403 to plain clients, so no feed."
+  "notes": "Kontan TV (tv.kontan.co.id/video/<youtube id>): body is .des_detail (first paragraph is just a kontan.co.id link); the page has no JSON-LD VideoObject usable as a player, only a YouTube og:image thumbnail and a link, which the reader turns into the video. Phones get a different page than desktop: the article is split over several .content-pos sections (hence bodyAll), with the Terpopuler showcase widget (#showcase, unbalanced markup) leaking into one of them; desktop uses .tmpt-desk-kon. Subdomain per channel (nasional., industri., keuangan., investasi., ...). Body is .tmpt-desk-kon, but its markup is unbalanced so tags, 'Video Terkait' and share bar end up inside it and are removed. The header logo is on a CDN without CORS, so detection used to fall back to the same-origin Kontan Academy banner on desktop: `logo` names the real one (desktop img.lgo_kontan, phones the white logo-putih), drawn on a plate. Kontan Plus premium articles are paywalled: only free articles were checked. /feed/news/<channel> returns 403 to plain clients, so no feed."
 }

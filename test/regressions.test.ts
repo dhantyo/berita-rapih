@@ -52,6 +52,15 @@ describe('other copies of the logo (Merdeka: masthead server forbids reading it)
     );
     expect(logoAlternates(doc, 'https://cdn1.example/mobile_logos/logo.png')).toEqual(['https://preview.example/merdeka/images/logo.png']);
   });
+  it("skips a sister brand's logo that links to another site's home (Kontan Academy)", () => {
+    const doc = documentFromHtml(
+      '<header><a href="https://www.kontan.co.id/"><img class="lgo_kontan" src="https://assets.kontan.co.id/img/logo-debar-kontan.png" alt="kontan.co.id"></a></header>' +
+        '<aside><a href="http://kontanacademy.com/"><img src="/assets/images/logo-kontan-academy.png" alt="Kontan Academy"></a></aside>' +
+        '<footer><a href="https://www.kontan.co.id/"><img src="https://asset.kontan.co.id/general/images/logo/logo.png" alt="Kontan Online"></a></footer>',
+      'https://industri.kontan.co.id/news/x',
+    );
+    expect(logoAlternates(doc, 'https://assets.kontan.co.id/img/logo-debar-kontan.png')).toEqual(['https://asset.kontan.co.id/general/images/logo/logo.png']);
+  });
 });
 
 describe('gallery counters (detikHot, foto.bisnis)', () => {

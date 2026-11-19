@@ -8,6 +8,8 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -29,6 +31,8 @@ final class NewsSites {
     }
 
     private final List<Site> sites = new ArrayList<>();
+    /** The feedback form's prefilled link, with {url} {title} {site} {version} {platform} {kind} {note} {detail} slots. */
+    private String feedback = "";
 
     static synchronized NewsSites get(Context context) {
         if (instance == null) instance = new NewsSites(context.getApplicationContext());
@@ -37,7 +41,9 @@ final class NewsSites {
 
     private NewsSites(Context context) {
         try (InputStream in = context.getAssets().open("domains.json")) {
-            JSONArray list = new JSONObject(readAll(in)).getJSONArray("sites");
+            JSONObject root = new JSONObject(readAll(in));
+            feedback = root.optString("feedback", "");
+            JSONArray list = root.getJSONArray("sites");
             for (int i = 0; i < list.length(); i++) {
                 JSONObject s = list.getJSONObject(i);
                 Site site = new Site();
@@ -52,6 +58,24 @@ final class NewsSites {
             }
         } catch (Exception e) {
             // No asset (a build without `npm run build`): nothing is treated as news.
+        }
+    }
+
+    /** The feedback form for general feedback from the app (not about one article); null when this build has none. */
+    String feedbackLink(String version) {
+        if (feedback.isEmpty()) return null;
+        String[][] fields = { { "url", "" }, { "title", "" }, { "site", "" }, { "version", version }, { "platform", "android" },
+            { "kind", "idea" }, { "note", "" }, { "detail", "" } };
+        String link = feedback;
+        for (String[] f : fields) link = link.replace("{" + f[0] + "}", encode(f[1]));
+        return link;
+    }
+
+    private static String encode(String value) {
+        try {
+            return URLEncoder.encode(value, "UTF-8").replace("+", "%20");
+        } catch (UnsupportedEncodingException e) {
+            return "";
         }
     }
 

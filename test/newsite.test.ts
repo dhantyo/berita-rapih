@@ -196,3 +196,24 @@ describe('the draft rules/sites/<id>.json', () => {
     expect(validate(JSON.parse(trimmed))).toBe(true);
   });
 });
+
+describe('the card for a page the reader could not open', () => {
+  it('offers a report for a failed article, only Tutup for a page that is not an article', async () => {
+    const { showFailCard } = await import('../src/render/newsiteprompt.ts');
+    const { strings } = await import('../src/render/i18n.ts');
+    const t = strings('id');
+    let reported = 0;
+    showFailCard(document, t, 'light', false, () => reported++);
+    const root = () => document.querySelector('.sapuberita-newsite')!.shadowRoot!;
+    expect(root().querySelector('.ns-text')!.textContent).toBe(t.failText);
+    (root().querySelector('[data-ns="report"]') as HTMLButtonElement).click();
+    expect(reported).toBe(1);
+    expect(document.querySelector('.sapuberita-newsite')).toBeNull();
+
+    showFailCard(document, t, 'light', true, () => reported++);
+    expect(root().querySelector('.ns-text')!.textContent).toBe(t.failNotArticle);
+    expect(root().querySelector('[data-ns="report"]')).toBeNull();
+    (root().querySelector('[data-ns="close"]') as HTMLButtonElement).click();
+    expect(document.querySelector('.sapuberita-newsite')).toBeNull();
+  });
+});

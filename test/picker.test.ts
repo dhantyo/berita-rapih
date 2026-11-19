@@ -79,8 +79,13 @@ group('splitBreaks on a body with no <p> (Sindonews, Medcom)', () => {
     expect(texts(root)).toEqual(['P:JAKARTA - Satu tautan di sini.', 'FIGURE:F', 'P:Dua miring.', 'H2:Judul', 'P:Tiga.']);
     expect(root.querySelector('p a')?.getAttribute('href')).toBe('/x');
   });
-  it('leaves a container that already has <p> children unchanged', async () => {
+  it('leaves short loose text in a container that already has <p> children unchanged', async () => {
     const html = '<p>Satu.</p>Teks lepas<br>lagi<p>Dua.</p>';
     expect((await make(html)).innerHTML).toBe(html);
+  });
+  it('wraps a long loose first paragraph next to real ones (Detik phone pages)', async () => {
+    const root = await make('<strong>Jakarta</strong> - Wisata paramotor tandem biasanya menyuguhkan pemandangan alam.<p></p><p>Bagi traveler yang suka bermain.</p>');
+    expect(texts(root).filter((x) => x !== 'P:')).toEqual(['P:Jakarta - Wisata paramotor tandem biasanya menyuguhkan pemandangan alam.', 'P:Bagi traveler yang suka bermain.']);
+    expect(root.querySelector('p > strong')?.textContent).toBe('Jakarta');
   });
 });

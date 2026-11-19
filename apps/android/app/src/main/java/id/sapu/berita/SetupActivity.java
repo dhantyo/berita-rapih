@@ -252,6 +252,12 @@ public class SetupActivity extends Activity {
         col.addView(status);
         col.addView(button(getString(R.string.home_fix), false, v -> show(2)));
         col.addView(button(getString(R.string.home_try), false, v -> openSample()));
+        // Feedback without an article open (in the reader it lives in Pengaturan → Masukan): the form, in the browser.
+        String feedback = NewsSites.get(this).feedbackLink(versionName());
+        if (feedback != null) {
+            col.addView(button(getString(R.string.home_feedback), false, v ->
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(feedback)).addCategory(Intent.CATEGORY_BROWSABLE))));
+        }
         TextView guide = body(getString(R.string.home_guide), 14, ochre, 18, 0);
         guide.setOnClickListener(v -> show(1));
         col.addView(guide);

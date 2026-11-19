@@ -59,6 +59,7 @@
     <string name="home_fix">Atur link berita</string>
     <string name="home_try">Buka contoh artikel</string>
     <string name="home_guide">Ulangi panduan</string>
+    <string name="home_feedback">Kirim masukan</string>
     <string name="version">Versi %1$s</string>
     <string name="privacy">Semuanya berjalan di ponselmu. Sapu Berita tidak punya server dan tidak tahu apa yang kamu baca. Sekali sehari, Sapu Berita mengecek versi baru dan perbaikan situs dari GitHub (bisa dimatikan di Pengaturan → Cek update).</string>
 </resources>

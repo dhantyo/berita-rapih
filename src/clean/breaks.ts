@@ -42,10 +42,42 @@ function wrapBareRuns(root: HTMLElement): number {
   return n;
 }
 
+/** Shortest loose run (in characters) that is a paragraph of its own, not a stray label or separator. */
+const LOOSE_PARAGRAPH = 40;
+
+/**
+ * A body with real <p>s that also holds a long loose run of text. Detik's phone pages write the first paragraph as
+ * bare text followed by an empty <p>:  <strong>Jakarta</strong> - Wisata paramotor…<p></p><p>Bagi traveler…</p>
+ * Left loose, it has no paragraph spacing and runs into the next one. Each such run becomes its own <p>.
+ */
+function wrapLooseRuns(root: HTMLElement): number {
+  const kids = [...root.childNodes];
+  if (!kids.some((k) => (k as Element).tagName === 'P')) return 0;
+  const doc = root.ownerDocument;
+  let run: Node[] = [];
+  let n = 0;
+  const flush = () => {
+    const text = run.map((x) => x.textContent ?? '').join('').replace(/\s+/g, ' ').trim();
+    if (text.length >= LOOSE_PARAGRAPH) {
+      const p = doc.createElement('p');
+      run[0]!.parentNode!.insertBefore(p, run[0]!);
+      p.append(...run);
+      n++;
+    }
+    run = [];
+  };
+  for (const k of kids) {
+    if (isBr(k) || isBlock(k)) flush();
+    else if (k.nodeType === 1 || k.nodeType === 3) run.push(k);
+  }
+  flush();
+  return n;
+}
+
 /** Returns how many paragraphs were split or created. */
 export function splitBreaks(root: HTMLElement): number {
   const doc = root.ownerDocument;
-  let n = wrapBareRuns(root);
+  let n = wrapBareRuns(root) + wrapLooseRuns(root);
   for (const p of [...root.querySelectorAll('p')]) {
     const nodes = [...p.childNodes];
     const groups: Node[][] = [[]];

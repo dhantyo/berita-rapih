@@ -87,9 +87,12 @@ const sel = (p: Page) =>
 
 async function toEditor(page: Page) {
   await page.locator('.gear').click();
-  await page.getByRole('button', { name: 'Beri masukan' }).click();
-  await page.locator(`${SHADOW} .fb-choice`).first().click();
+  await page.locator(`${SHADOW} .nav-row`).click(); // Pengaturan → Situs ini → Atur isi artikel
   await page.waitForSelector(`${SHADOW} .ed-bar`, { timeout: 5000 });
+  await page.waitForTimeout(800);
+  // It opens on Bersih (what the reader was reading); the flows below start on the page itself.
+  ok((await page.locator(`${SHADOW} [data-ed="view-clean"]`).getAttribute('aria-checked')) === 'true', 'the editor opens on Bersih');
+  await page.locator(`${SHADOW} [data-ed="view-original"]`).click();
   await page.waitForTimeout(1500);
 }
 
@@ -238,6 +241,7 @@ async function editorDetik(scheme: 'light' | 'dark') {
   const s = await settings(page);
   console.log('  posted:', JSON.stringify(posts).slice(0, 300));
   ok(posts.length === 1 && Object.values(posts[0]!).includes('edit'), 'Kirim posts the edit to the form');
+  ok(/terkirim/.test((await page.locator(`${SHADOW} .toast`).textContent()) ?? ''), 'and a note says it was sent');
   ok(s.sendEdits === true && s.sendEditsAsked === true, 'the answer is remembered');
   ok(await page.locator(`${SHADOW} .content p`).first().isVisible(), 'and the reader shows again');
 
@@ -253,7 +257,7 @@ async function editorDetik(scheme: 'light' | 'dark') {
 
   const again = await open(ctx, DETIK);
   await again.locator('.gear').click();
-  ok(/Perubahan buatanmu/.test((await again.locator('.hidden-row .text').first().textContent()) ?? ''), 'Pengaturan says the personal version is on');
+  ok(/Perubahan buatanmu/.test((await again.locator('.personal-row .text').first().textContent()) ?? ''), 'Pengaturan says the personal version is on');
   ok((await again.locator('[data-switch="sendEdits"]').getAttribute('aria-checked')) === 'true', 'and the send switch is on');
   await shot(again, 'editor-detik-light-settings.png');
   await again.close();
@@ -266,7 +270,7 @@ async function feedbackFlow() {
   const page = await open(ctx, DETIK);
   const posts = await catchForm(page);
   await page.locator('.gear').click();
-  await page.getByRole('button', { name: 'Beri masukan' }).click();
+  await page.locator(`${SHADOW} .head-feedback`).click();
   await page.getByText('Ide atau saran').first().click();
   await page.locator(`${SHADOW} textarea`).fill('Tolong tambahkan mode baca malam yang lebih redup.');
   await page.locator(`${SHADOW} .fb-send`).click();
@@ -369,7 +373,7 @@ async function migrateFlow() {
   console.log('  fingerprint:', fp.slice(0, 50), '| paragraphs', total, '->', n);
   ok(n === total - 1, 'legacy hidden entry applies');
   await p2.locator('.gear').click();
-  ok(/Perubahan buatanmu/.test((await p2.locator('.hidden-row .text').first().textContent()) ?? ''), 'Pengaturan shows the migrated personal version');
+  ok(/Perubahan buatanmu/.test((await p2.locator('.personal-row .text').first().textContent()) ?? ''), 'Pengaturan shows the migrated personal version');
   await ctx2.close();
 }
 
@@ -392,6 +396,13 @@ async function barFlow() {
     await shot(page, `bar-${scheme}-visible.png`);
     await scroll(page, 1200);
     ok((await barBottom(page)) <= 0.5, `${scheme}: hidden again`);
+    // It follows the scroll: 20px up shows about 20px of it at once; let go there and it settles back to hidden.
+    await page.evaluate(() => { (document.querySelector('.sapuberita-overlay')!.shadowRoot!.querySelector('.root') as HTMLElement).scrollTop -= 20; });
+    await page.waitForTimeout(60);
+    const partial = await barBottom(page);
+    ok(partial > 12 && partial < 28, `${scheme}: 20px up shows about 20px of the bar (${Math.round(partial)})`);
+    await page.waitForTimeout(600);
+    ok((await barBottom(page)) <= 0.5, `${scheme}: a mostly hidden bar settles hidden`);
     await page.evaluate(() => (document.querySelector('.sapuberita-overlay')!.shadowRoot!.querySelector('.gear') as HTMLElement).click());
     await page.waitForTimeout(500);
     ok((await barBottom(page)) >= 55, `${scheme}: opening Pengaturan brings it back`);
