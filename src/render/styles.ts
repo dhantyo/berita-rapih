@@ -459,15 +459,24 @@ svg { flex: none; }
 .update .later { border: 0; background: none; padding: 6px 4px; color: var(--muted); font: inherit; cursor: pointer; }
 @media (hover: hover) and (pointer: fine) { .update .later:hover { color: var(--ink); } }
 
-/* ── Beri masukan: a full view over the article (render/feedback.ts) ── */
-.feedback { position: fixed; inset: 0; z-index: 4; overflow-y: auto; overscroll-behavior: contain; background: var(--bg); color: var(--ink); -webkit-overflow-scrolling: touch; }
-.fb-bar {
-  position: sticky; top: 0; z-index: 1; height: 56px; display: flex; align-items: center; gap: 6px;
-  padding: 0 max(16px, env(safe-area-inset-right)) 0 max(8px, env(safe-area-inset-left)); background: var(--bg); border-bottom: 1px solid var(--rule);
+/* ── Masukan: drawn where the settings panel is (render/feedback.ts), a popover under the bar or a bottom sheet ── */
+.feedback { position: fixed; z-index: 4; top: 64px; right: 12px; width: 380px; max-height: calc(100vh - 76px); max-height: calc(100dvh - 76px); box-sizing: border-box;
+  overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; background: var(--panel); color: var(--ink);
+  border: 1px solid var(--rule); border-radius: var(--r-lg); box-shadow: 0 16px 40px -8px var(--shadow), 0 2px 6px var(--shadow);
+  transform-origin: top right; animation: fb-pop 150ms var(--ease-out); }
+@keyframes fb-pop { from { opacity: 0; transform: translateY(-4px) scale(0.97); } }
+@media (max-width: 600px) {
+  .feedback { top: auto; left: 0; right: 0; bottom: 0; width: auto; max-height: 86vh; max-height: 86dvh; border-width: 1px 0 0;
+    border-radius: var(--r-sheet) var(--r-sheet) 0 0; animation: fb-sheet 300ms var(--ease-drawer); }
+  @keyframes fb-sheet { from { transform: translateY(40px); opacity: 0; } }
 }
-.fb-bar h2 { margin: 0; font: 600 17px/1.3 var(--sans); letter-spacing: -0.01em; }
+.fb-bar {
+  position: sticky; top: 0; z-index: 1; height: 56px; display: flex; align-items: center; gap: var(--sp-1);
+  padding: 0 var(--sp-4) 0 var(--sp-2); background: var(--panel); border-bottom: 1px solid var(--rule);
+}
+.fb-bar h2 { margin: 0; font: 650 var(--fs-lg)/1.2 var(--sans); letter-spacing: -0.015em; }
 .fb-bar .icon-btn { color: var(--ink); }
-.fb-body { width: min(100% - 32px, 34em); margin: 0 auto; padding: 18px 0 max(40px, env(safe-area-inset-bottom)); font: 15px/1.5 var(--sans); }
+.fb-body { padding: var(--sp-4) var(--sp-4) max(var(--sp-4), env(safe-area-inset-bottom)); font: var(--fs-md)/1.5 var(--sans); }
 .fb-lead { margin: 0 0 14px; font: 14px/1.45 var(--sans); color: var(--muted); }
 /* The choices read like the settings panel: rows on hairlines, not boxed cards. */
 .fb-choices { display: flex; flex-direction: column; border-top: 1px solid var(--rule); }
@@ -479,16 +488,16 @@ svg { flex: none; }
 @media (hover: hover) and (pointer: fine) { .fb-choice:hover { background: var(--chip); } }
 .fb-choice:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 .fb-choice-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.fb-choice-title { font: 600 16px/1.3 var(--sans); }
+.fb-choice-title { font: 600 var(--fs-md)/1.3 var(--sans); }
 .fb-choice-desc { font: 400 14px/1.35 var(--sans); color: var(--muted); }
 .fb-chevron { color: var(--muted); }
 .fb-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; }
 .fb-chip {
-  min-height: 38px; padding: 0 14px; border-radius: 19px; border: 1px solid var(--rule-strong); background: transparent; cursor: pointer;
-  font: 500 14px/1.2 var(--sans); transition: background-color 160ms var(--ease), border-color 160ms var(--ease);
+  min-height: 36px; padding: 0 14px; border-radius: var(--r-pill); border: 1px solid var(--rule-strong); background: transparent; cursor: pointer; color: var(--ink);
+  font: 500 var(--fs-ui)/1.2 var(--sans); transition: background-color 160ms var(--ease), border-color 160ms var(--ease);
 }
 @media (hover: hover) and (pointer: fine) { .fb-chip:hover { background: var(--chip); } }
-.fb-chip[aria-pressed="true"] { border-color: var(--accent); background: var(--chip); font-weight: 650; }
+.fb-chip[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--panel); font-weight: 600; }
 .fb-field { margin: 0 0 18px; }
 .fb-field label { display: block; margin: 0 0 8px; font: 600 12px/1.3 var(--sans); color: var(--muted); }
 .fb-text { display: block; width: 100%; box-sizing: border-box; padding: 11px 12px; border: 1px solid var(--rule-strong); border-radius: 10px; background: transparent; color: var(--ink); font: 16px/1.45 var(--sans); resize: vertical; }
@@ -505,7 +514,7 @@ svg { flex: none; }
 .fb-details dd { margin: 0; overflow-wrap: anywhere; }
 /* Kirim stays in reach at the bottom while the reader types. */
 .fb-send-row { position: sticky; bottom: 0; display: flex; flex-direction: column; align-items: stretch; gap: 8px; margin-top: 12px;
-  padding: 14px 0 max(14px, env(safe-area-inset-bottom)); background: linear-gradient(transparent, var(--bg) 22%); }
+  padding: 14px 0 0; background: linear-gradient(transparent, var(--panel) 22%); }
 .btn.fb-send { width: 100%; height: var(--h-touch); font-size: var(--fs-md); text-decoration: none; }
 .fb-send-wrap { display: flex; flex-direction: column; gap: 8px; }
 .fb-fallback { margin: 0; font: 14px/1.45 var(--sans); color: var(--ink); text-align: center; }
@@ -556,7 +565,7 @@ svg { flex: none; }
 @media (prefers-reduced-motion: reduce) {
   .nsprompt { animation: none; }
   .panel, .panel[data-open="true"], .btn, .seg button, .switch-row, .nav-row, .fb-choice, .fb-chip, .switch, .switch::after, .size-btn, .icon-btn, .nav-row svg { transition: none; }
-  .reopen, .toast { animation: none; }
+  .reopen, .toast, .feedback { animation: none; }
   .bar { transition: none; }
   .panel { transform: none !important; }
   .seg::before { transition: none; }

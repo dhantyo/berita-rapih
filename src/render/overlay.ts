@@ -687,6 +687,7 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
   const openFeedback = () => {
     // Opened from the settings panel: take over its history entry, so Back closes the feedback page.
     const fromPanel = panelLayer;
+    const backToPanel = panelOpen;
     panelLayer = undefined;
     feedbackLayer = fromPanel ? fromPanel.hand(() => closeFeedback(true, true)) : backStack.push(() => closeFeedback(true, true));
     if (panelOpen) setPanel(false);
@@ -709,7 +710,12 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
       ],
       reportLink: (input) => opts.report?.link(article, input),
       send: async (input) => (opts.report?.send ? opts.report.send(article, input) : false),
-      close: () => closeFeedback(),
+      // Feedback lives where the settings panel was: its back arrow returns there.
+      close: () => {
+        closeFeedback(!backToPanel);
+        if (backToPanel) setPanel(true);
+      },
+      finish: () => closeFeedback(),
       editArticle: () => openEditor(),
       pushBack: (onBack) => backStack.push(onBack),
     });
@@ -780,7 +786,11 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
     else (aa as HTMLElement | null)?.focus();
   };
 
-  root.addEventListener('click', () => panelOpen && setPanel(false));
+  // A tap outside the open panel (or the feedback panel in its place) closes it.
+  root.addEventListener('click', (e) => {
+    if (panelOpen) setPanel(false);
+    else if (feedback && !e.composedPath().includes(feedback.el)) closeFeedback();
+  });
   attachGallery(root, () => strings(settings.lang));
   root.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && feedback) {
