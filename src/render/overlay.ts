@@ -52,6 +52,10 @@ export interface OverlayOptions {
    * version, site fixes included, every time they run.
    */
   updatesSetting?: boolean;
+  /** "Update otomatis" only brings site fixes here (a store install: the store brings new versions). */
+  updatesFixesOnly?: boolean;
+  /** Links at the foot of the settings panel: the install page, the privacy page, the release notes. */
+  links?: { home: string; privacy: string; changes: string };
   /** Link target for "read on the original site". */
   originalUrl?: string;
   /** Where feedback goes: the form's prefilled link (opened when sending directly fails), and direct sending. */
@@ -128,12 +132,14 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
     root.setAttribute('aria-label', viewMeta().title);
 
     const progress = h(doc, 'div', { class: 'progress', 'aria-hidden': 'true' });
+    const panelTop = (root.querySelector('.panel') as HTMLElement | null)?.scrollTop ?? 0;
     root.replaceChildren(
       masthead(t, progress),
       articleView(t),
       settingsPanel(t),
     );
     if (feedback) root.append(feedback.el);
+    if (panelTop) (root.querySelector('.panel') as HTMLElement).scrollTop = panelTop;
     reopen.replaceChildren(broom(16), doc.createTextNode(t.reopen));
     reopen.title = t.reopenLong;
     reopen.setAttribute('aria-label', t.reopenLong);
@@ -336,45 +342,56 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
         later));
   };
 
+  // Settings, ordered by how often each part is used (docs/SETTINGS.md): how the article looks, what shows in it,
+  // this site, how Sapu behaves, then the rarely changed rest. Every section has a title; each thing appears once.
   const settingsPanel = (t: Strings) => {
     const panel = h(doc, 'section', { class: 'panel', id: 'sb-panel', role: 'dialog', 'aria-label': t.settings, 'data-open': String(panelOpen) });
     panel.addEventListener('click', (e) => e.stopPropagation());
     swipeToClose(panel);
-    panel.append(h(doc, 'div', { class: 'grabber', 'aria-hidden': 'true' }));
     const close = h(doc, 'button', { type: 'button', class: 'icon-btn', 'aria-label': t.close }, cross());
     close.addEventListener('click', () => setPanel(false));
-    // Feedback is also one tap from the top, so nobody has to scroll past every setting to find it.
-    const feedbackTop = h(doc, 'button', { type: 'button', class: 'btn quiet head-feedback' }, t.fbShort);
+    // The one way into feedback, at the top so nobody has to scroll for it.
+    const feedbackTop = h(doc, 'button', { type: 'button', class: 'btn head-feedback' }, t.fbShort);
     feedbackTop.addEventListener('click', (e) => {
       e.stopPropagation();
       openFeedback();
     });
-    panel.append(h(doc, 'div', { class: 'panel-head' }, h(doc, 'h2', {}, t.settings), h(doc, 'div', { class: 'head-actions' }, feedbackTop, close)));
+    panel.append(h(doc, 'div', { class: 'panel-head' },
+      h(doc, 'div', { class: 'grabber', 'aria-hidden': 'true' }),
+      h(doc, 'h2', {}, t.settings), h(doc, 'div', { class: 'head-actions' }, feedbackTop, close)));
 
-    // Text size
-    const smaller = h(doc, 'button', { type: 'button', class: 'icon-btn', 'aria-label': t.smaller }, 'A−') as HTMLButtonElement;
-    const larger = h(doc, 'button', { type: 'button', class: 'icon-btn', 'aria-label': t.larger }, 'A+') as HTMLButtonElement;
-    smaller.style.fontSize = '13px';
-    larger.style.fontSize = '18px';
+    const section = (title: Node | string, ...children: Node[]) =>
+      h(doc, 'div', { class: 'sec' }, h(doc, 'h3', { class: 'sec-title' }, title), ...children);
+    const rows = (...keys: Switch[]) => h(doc, 'div', { class: 'rows' }, ...keys.map((k) => toggle(k)));
+
+    // ── Tampilan ──
+    // Text size: A−, one dot per step (each one a button), A+, on a single row.
+    const step = (to: number) => () => change({ size: to }, `.size [data-size="${to}"]`);
+    const smaller = h(doc, 'button', { type: 'button', class: 'size-btn', 'aria-label': t.smaller, 'data-size': String(settings.size - 1) }, 'A−') as HTMLButtonElement;
+    const larger = h(doc, 'button', { type: 'button', class: 'size-btn big', 'aria-label': t.larger, 'data-size': String(settings.size + 1) }, 'A+') as HTMLButtonElement;
     smaller.disabled = settings.size === 0;
     larger.disabled = settings.size === SIZE_STEPS - 1;
-    smaller.addEventListener('click', () => change({ size: settings.size - 1 }, '.size .icon-btn:first-child'));
-    larger.addEventListener('click', () => change({ size: settings.size + 1 }, '.size .icon-btn:last-child'));
-    const dots = h(doc, 'div', { class: 'dots', role: 'img', 'aria-label': `${t.textSize} ${settings.size + 1}/${SIZE_STEPS}` });
-    for (let i = 0; i < SIZE_STEPS; i++) dots.append(h(doc, 'i', { 'data-on': String(i === settings.size) }));
-    panel.append(group(t.textSize, h(doc, 'div', { class: 'size' }, smaller, dots, larger)));
+    smaller.addEventListener('click', step(settings.size - 1));
+    larger.addEventListener('click', step(settings.size + 1));
+    const dots = h(doc, 'div', { class: 'dots', role: 'radiogroup', 'aria-label': t.textSize });
+    for (let i = 0; i < SIZE_STEPS; i++) {
+      const dot = h(doc, 'button', {
+        type: 'button', role: 'radio', 'aria-checked': String(i === settings.size), 'aria-label': t.sizeStep(i + 1, SIZE_STEPS), 'data-size': String(i),
+      });
+      dot.addEventListener('click', step(i));
+      dots.append(dot);
+    }
+    const sizeRow = h(doc, 'div', { class: 'size' }, h(doc, 'span', { class: 'row-label' }, t.textSize), h(doc, 'div', { class: 'size-ctl' }, smaller, dots, larger));
 
-    // Font: each option previews itself in its own face
+    // Font: each option previews itself in its own face. Theme: a swatch of each ground.
     const faces: Record<Font, string> = { serif: 'var(--serif)', sans: 'var(--sans)', legible: 'var(--legible)' };
-    panel.append(group(t.font, segmented<Font>(t.font, settings.font, [
+    const font = segmented<Font>(t.font, settings.font, [
       ['sans', t.fontSans], ['serif', t.fontSerif], ['legible', t.fontLegible],
-    ], (v) => change({ font: v }, `[data-value="${v}"]`), (btn, v) => (btn.style.fontFamily = faces[v]))));
-
-    // Theme: swatch of each ground
+    ], (v) => change({ font: v }, `[data-value="${v}"]`), (btn, v) => (btn.style.fontFamily = faces[v]));
     const grounds: Record<Exclude<Theme, 'auto'>, string> = {
       light: 'rgb(255 255 255)', sepia: 'rgb(247 241 228)', dark: 'rgb(18 18 18)',
     };
-    panel.append(group(t.theme, segmented<Theme>(t.theme, settings.theme, [
+    const theme = segmented<Theme>(t.theme, settings.theme, [
       ['auto', t.themeAuto], ['light', t.themeLight], ['sepia', t.themeSepia], ['dark', t.themeDark],
     ], (v) => change({ theme: v }, `[data-value="${v}"]`), (btn, v) => {
       const sw = h(doc, 'span', { class: 'swatch', 'aria-hidden': 'true' });
@@ -383,34 +400,21 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
         sw.append(splitSwatch());
       } else sw.style.background = grounds[v];
       btn.prepend(sw);
-    })));
-
-    // Language
-    panel.append(group(t.language, segmented<Lang>(t.language, settings.lang, [
-      ['id', 'Indonesia'], ['en', 'English'],
-    ], (v) => change({ lang: v }, `[data-value="${v}"]`))));
-
-    // Switches. How Sapu Berita behaves first; then what shows in the article, in the order it appears
-    // on the page (photo under the headline, summary box, links and media in the text, the end note).
-    const rows = (...keys: Switch[]) => h(doc, 'div', {}, ...keys.map(toggle));
-    // "General" lists what this build can change (the bookmark has only the bar switch).
-    const general = () => {
-      const keys: Switch[] = [];
-      if (opts.autoOpenSetting !== false) keys.push('autoOpen');
-      if (opts.updatesSetting !== false) keys.push('updates');
-      keys.push('hideBar', 'sendEdits');
-      return [group(t.general, rows(...keys))];
-    };
-    panel.append(
-      ...general(),
-      group(t.inArticle, rows('hero', 'summaries', 'links', 'embeds', 'sweepLine')),
-    );
-    const give = h(doc, 'button', { type: 'button', class: 'btn' }, t.fbAction);
-    give.addEventListener('click', (e) => {
-      e.stopPropagation();
-      openFeedback();
     });
-    panel.append(h(doc, 'div', { class: 'group report' }, h(doc, 'span', { class: 'text' }, t.fbPrompt), give));
+    panel.append(section(t.secLook, sizeRow, field(t.font, font), field(t.theme, theme)));
+
+    // ── Di dalam artikel: in the order the parts appear on the page ──
+    panel.append(section(t.inArticle, rows('hero', 'summaries', 'links', 'embeds', 'sweepLine')));
+
+    // ── Situs ini: the editor, and the reader's own version of this site ──
+    const host = doc.location?.hostname?.replace(/^(www|m)\./, '') ?? '';
+    const edit = h(doc, 'button', { type: 'button', class: 'nav-row' },
+      h(doc, 'span', { class: 'text' }, t.edTitle, h(doc, 'span', { class: 'hint' }, t.editArticleHint)), chevronIcon());
+    edit.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openEditor();
+    });
+    const site: Node[] = [edit];
     if (personalFor(settings.personal, siteKey())) {
       const reset = h(doc, 'button', { type: 'button', class: 'btn' }, t.edReset);
       let sure = false;
@@ -423,15 +427,37 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
         }
         void resetRule();
       });
-      panel.append(h(doc, 'div', { class: 'report hidden-row' }, h(doc, 'span', { class: 'text' }, t.personalOn), reset));
+      site.push(h(doc, 'div', { class: 'personal-row' }, h(doc, 'span', { class: 'text' }, t.personalOn), reset));
+    }
+    panel.append(section(h(doc, 'span', {}, t.secSite, host ? h(doc, 'span', { class: 'sec-host' }, host) : ''), ...site));
+
+    // ── Umum: how Sapu behaves (the bookmark has no "open automatically": running it is the request to open) ──
+    const general: Switch[] = [];
+    if (opts.autoOpenSetting !== false) general.push('autoOpen');
+    general.push('hideBar', 'sendEdits');
+    panel.append(section(t.general, rows(...general)));
+
+    // ── Lainnya: set once, rarely changed ──
+    const more: Node[] = [field(t.language, segmented<Lang>(t.language, settings.lang, [
+      ['id', 'Indonesia'], ['en', 'English'],
+    ], (v) => change({ lang: v }, `[data-value="${v}"]`)), true)];
+    if (opts.updatesSetting !== false) more.push(h(doc, 'div', { class: 'rows' }, toggle('updates', opts.updatesFixesOnly ? t.updatesHintFixes : undefined)));
+    const foot = h(doc, 'p', { class: 'panel-foot' });
+    const links = opts.links;
+    if (links) {
+      for (const [href, label] of [[links.home, t.linkHome], [links.privacy, t.linkPrivacy], [links.changes, t.linkChanges]] as const) {
+        foot.append(h(doc, 'a', { href, target: '_blank', rel: 'noopener' }, label));
+      }
     }
     // Version, so bug reports say which build they came from.
-    panel.append(h(doc, 'p', { class: 'version' }, `Sapu Berita ${VERSION}`));
+    foot.append(h(doc, 'span', { class: 'version' }, `Sapu Berita ${VERSION}`));
+    more.push(foot);
+    panel.append(section(t.secMore, ...more));
     return panel;
   };
 
-  const group = (label: string, control: Node) =>
-    h(doc, 'div', { class: 'group' }, h(doc, 'span', { class: 'label' }, label), control);
+  const field = (label: string, control: Node, inline = false) =>
+    h(doc, 'div', { class: inline ? 'field inline' : 'field' }, h(doc, 'span', { class: 'label' }, label), control);
 
   function segmented<V extends string>(
     label: string, current: V, options: Array<[V, string]>, onPick: (v: V) => void,
@@ -448,10 +474,10 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
   }
 
   /** One on/off row; its label and hint come from the strings named after the switch. */
-  function toggle(key: Switch) {
+  function toggle(key: Switch, hint?: string) {
     const t = strings(settings.lang);
     const label = t[key];
-    const text = h(doc, 'span', { class: 'text' }, label, h(doc, 'span', { class: 'hint' }, t[`${key}Hint`]));
+    const text = h(doc, 'span', { class: 'text' }, label, h(doc, 'span', { class: 'hint' }, hint ?? t[`${key}Hint`]));
     const on = settings[key];
     const sw = h(doc, 'button', { type: 'button', class: 'switch', role: 'switch', 'aria-checked': String(on), 'aria-label': label, 'data-switch': key });
     // Answering here also answers the editor's one-time question (sendEdits).
@@ -864,6 +890,7 @@ function icon(size: number, paths: string[]): SVGSVGElement {
 const broom = (size: number) =>
   icon(size, ['M20 4 13 11', 'M11.2 9.2l3.6 3.6', 'M11.2 9.2C8 10 5.4 12.6 4 19c6.4-1.4 9-4 9.8-7.2', 'M6.8 16.4 9.6 13.6', 'M9 17.6l2.2-2.2']);
 const cross = () => icon(18, ['M6 6l12 12', 'M18 6 6 18']);
+const chevronIcon = () => icon(18, ['M9 6l6 6-6 6']);
 /** Settings: a gear (Lucide "settings", ISC licence). */
 const gear = () => icon(19, [
   'M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z',

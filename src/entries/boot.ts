@@ -93,6 +93,9 @@ export async function boot(options: BootOptions = {}): Promise<BootResult> {
     startHidden: !settings.autoOpen && !options.forceOpen,
     autoOpenSetting: !options.forceOpen,
     updatesSetting: !options.selfUpdating,
+    updatesFixesOnly: !!options.storeInstall,
+    // The release channel is the install page (GitHub Pages); the release notes live on GitHub.
+    links: CHANNEL ? { home: CHANNEL, privacy: new URL('privacy.html', CHANNEL).href, changes: 'https://github.com/dhantyo/sapu-berita/releases' } : undefined,
     originalUrl: url.href,
     official,
     platform,

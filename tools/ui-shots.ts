@@ -14,7 +14,6 @@ const dir = resolve(process.argv[2] ?? join(ROOT, '.impeccable/shots/now'));
 mkdirSync(dir, { recursive: true });
 
 const KOMPAS = 'https://www.kompas.com/food/read/2026/11/18/203014675/10-hidangan-sup-terbaik-di-asia-tenggara-ada-3-dari-indonesia';
-const DETIK = 'https://travel.detik.com/cerita-perjalanan/d-8758455/hidden-gem-paramotor-di-cikarang-wisatawan-serasa-main-pubg';
 const TRIBUN = 'https://m.tribunnews.com/travel/7905546/batagor-indonesia-masuk-10-besar-hidangan-seafood-terbaik-dunia-versi-tasteatlas';
 const UNSUPPORTED = 'https://www.dw.com/id/wacana-badak-jawa-dipindah-tuai-sorotan/a-79964682';
 
@@ -116,7 +115,7 @@ await step('phone original', async () => {
   await p.close();
 });
 await step('phone dark', async () => {
-  const p = await open(DETIK, { dark: true });
+  const p = await open(KOMPAS, { dark: true });
   await shot(p, 'p11-dark.png');
   await p.locator('.gear').click();
   await shot(p, 'p12-dark-settings.png');
@@ -125,6 +124,8 @@ await step('phone dark', async () => {
 await step('phone sepia', async () => {
   const p = await open(KOMPAS, { settings: { theme: 'sepia', font: 'serif' } });
   await shot(p, 'p13-sepia-serif.png');
+  await p.locator('.gear').click();
+  await shot(p, 'p13b-sepia-settings.png');
   await p.close();
 });
 await step('phone new site', async () => {
@@ -158,8 +159,10 @@ await step('desktop editor', async () => {
   await d.close();
 });
 await step('desktop dark', async () => {
-  const d = await open(DETIK, { desktop: true, dark: true });
+  const d = await open(TRIBUN, { desktop: true, dark: true });
   await shot(d, 'd07-dark.png');
+  await d.locator('.gear').click();
+  await shot(d, 'd08-dark-settings.png');
   await d.close();
 });
 
