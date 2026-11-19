@@ -43,7 +43,7 @@ async function load(url: string): Promise<Page> {
 const p1 = await load(FIRST);
 await p1.waitForSelector('.sapuberita-newsite', { state: 'attached', timeout: 15_000 });
 await p1.waitForTimeout(600);
-ok((await shadow(p1, '.ns-text', '.sapuberita-newsite')) === 'Situs ini belum didukung Sapu Berita.', 'the offer appears on a site without a rule');
+ok((await shadow(p1, '.ns-text', '.sapuberita-newsite')) === 'Situs ini belum didukung oleh Sapu Berita.', 'the offer appears on a site without a rule');
 ok(!(await p1.$('.sapuberita-overlay')), 'the reader is not open yet');
 await shot(p1, 'newsite-prompt.png');
 
@@ -107,12 +107,12 @@ ok(read.paras > 5, 'the reader opens with the personal rule', read);
 await shot(p2, 'newsite-reader.png');
 
 // ── 5. Pengaturan: Perubahan buatanmu, Kembalikan removes the new site ──
-await p2.evaluate(() => (document.querySelector('.sapuberita-overlay')!.shadowRoot!.querySelector('.aa') as HTMLElement).click());
+await p2.evaluate(() => (document.querySelector('.sapuberita-overlay')!.shadowRoot!.querySelector('.gear') as HTMLElement).click());
 await p2.waitForTimeout(500);
-ok(/Perubahan buatanmu/.test((await shadow(p2, '.hidden-row')) ?? ''), 'Pengaturan says "Perubahan buatanmu"');
-await shot(p2, 'newsite-aa.png');
+ok(/Perubahan buatanmu/.test((await shadow(p2, '.personal-row')) ?? ''), 'Pengaturan says "Perubahan buatanmu"');
+await shot(p2, 'newsite-settings.png');
 await p2.evaluate(() => {
-  const btn = document.querySelector('.sapuberita-overlay')!.shadowRoot!.querySelector('.hidden-row .btn') as HTMLElement;
+  const btn = document.querySelector('.sapuberita-overlay')!.shadowRoot!.querySelector('.personal-row .btn') as HTMLElement;
   btn.click();
   btn.click();
 });
