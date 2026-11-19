@@ -130,10 +130,6 @@ button, .switch-row, .nav-row, .seg, .size { -webkit-user-select: none; user-sel
   transition: background-color var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease), color var(--dur-1) var(--ease), transform 120ms var(--ease-out);
 }
 @media (hover: hover) and (pointer: fine) { .btn:hover { background: var(--chip); } }
-.btn:active { transform: scale(0.97); }
-/* Press feedback on every control in the chrome (120ms, ease-out). */
-.icon-btn:active, .size-btn:active, .seg button:active { transform: scale(0.94); }
-.switch:active { transform: scale(0.94); }
 .nav-row:active, .switch-row:active { background: var(--chip); }
 .btn.primary { background: var(--ink); border-color: var(--ink); color: var(--bg); }
 @media (hover: hover) and (pointer: fine) { .btn.primary:hover { background: color-mix(in srgb, var(--ink) 84%, var(--bg)); border-color: transparent; } }
@@ -330,19 +326,21 @@ svg { flex: none; }
 .slider input::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; margin-top: -9px; border: 0; border-radius: 50%;
   background: var(--thumb); box-shadow: 0 1px 3px rgb(0 0 0 / 0.3), 0 0 0 1px var(--muted); transition: transform var(--dur-1) var(--ease); }
 .slider input::-moz-range-thumb { width: 22px; height: 22px; border: 0; border-radius: 50%; background: var(--thumb); box-shadow: 0 1px 3px rgb(0 0 0 / 0.3), 0 0 0 1px var(--muted); }
-.slider input:active::-webkit-slider-thumb { transform: scale(1.12); }
 .slider input:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 2px var(--panel), 0 0 0 4px var(--accent); }
 .slider input:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 2px var(--panel), 0 0 0 4px var(--accent); }
 
 /* Segmented control: a quiet track; the chosen option is lifted, not outlined. */
-.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 2px; padding: 3px; border-radius: var(--r-md); background: var(--chip); }
+.seg { position: relative; isolation: isolate; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 2px; padding: 3px; border-radius: var(--r-md); background: var(--chip); }
+.seg::before { content: ""; position: absolute; z-index: -1; top: 3px; bottom: 3px; left: 3px; width: calc((100% - 6px - (var(--n) - 1) * 2px) / var(--n));
+  border-radius: var(--r-sm); background: var(--seg-on); box-shadow: 0 1px 2px var(--shadow), 0 0 0 1px var(--rule);
+  transform: translateX(calc(var(--i) * (100% + 2px))); transition: transform 280ms var(--ease-out); }
 .seg button {
   min-height: 40px; padding: 6px 4px; border: 0; border-radius: var(--r-sm); background: transparent; cursor: pointer; color: var(--muted);
   font-size: var(--fs-ui); line-height: 1.1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
   transition: background-color var(--dur-1) var(--ease), color var(--dur-1) var(--ease), box-shadow var(--dur-1) var(--ease), transform 120ms var(--ease-out);
 }
 @media (hover: hover) and (pointer: fine) { .seg button:hover { color: var(--ink); } }
-.seg button[aria-checked="true"] { background: var(--seg-on); color: var(--ink); font-weight: 600; box-shadow: 0 1px 2px var(--shadow), 0 0 0 1px var(--rule); }
+.seg button[aria-checked="true"] { color: var(--ink); font-weight: 600; }
 .swatch { flex: none; box-sizing: border-box; width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--rule-strong); background-clip: padding-box; }
 .swatch.split { border: 0; border-radius: 0; }
 .swatch.split svg { display: block; }
@@ -359,7 +357,7 @@ svg { flex: none; }
 .switch { flex: none; position: relative; box-sizing: border-box; width: 36px; height: 22px; padding: 0; border-radius: var(--r-pill); border: 1.5px solid var(--muted); background: transparent; cursor: pointer;
   transition: background-color var(--dur-2) var(--ease), border-color var(--dur-2) var(--ease), transform 120ms var(--ease-out); }
 .switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 13px; height: 13px; border-radius: 50%; background: var(--muted);
-  transition: transform var(--dur-2) var(--ease-out), background-color var(--dur-2) var(--ease); }
+  transition: transform 260ms var(--ease-out), background-color var(--dur-2) var(--ease); }
 .switch[aria-checked="true"] { background: var(--control); border-color: var(--control); }
 .switch[aria-checked="true"]::after { transform: translateX(14px); background: var(--control-on); box-shadow: 0 1px 2px rgb(0 0 0 / 0.28); }
 
@@ -548,7 +546,7 @@ svg { flex: none; }
   .reopen { animation: none; }
   .bar { transition: none; }
   .panel { transform: none !important; }
-  .btn:active, .icon-btn:active, .size-btn:active, .seg button:active, .switch:active { transform: none; }
+  .seg::before { transition: none; }
   .bar[data-hidden] .outlet, .bar[data-hidden] .tools { transition: none; }
   .spinner { animation-duration: 2.4s; }
 }

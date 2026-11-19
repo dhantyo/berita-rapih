@@ -132,7 +132,9 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
     root.setAttribute('aria-label', viewMeta().title);
 
     const progress = h(doc, 'div', { class: 'progress', 'aria-hidden': 'true' });
-    const panelTop = (root.querySelector('.panel') as HTMLElement | null)?.scrollTop ?? 0;
+    const oldPanel = root.querySelector('.panel') as HTMLElement | null;
+    const panelTop = oldPanel?.scrollTop ?? 0;
+    const before = oldPanel ? controlStates(oldPanel) : undefined;
     root.replaceChildren(
       masthead(t, progress),
       articleView(t),
@@ -140,6 +142,7 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
     );
     if (feedback) root.append(feedback.el);
     if (panelTop) (root.querySelector('.panel') as HTMLElement).scrollTop = panelTop;
+    if (before && panelOpen) carryMotion(root.querySelector('.panel') as HTMLElement, before);
     reopen.replaceChildren(broom(16), doc.createTextNode(t.reopen));
     reopen.title = t.reopenLong;
     reopen.setAttribute('aria-label', t.reopenLong);
@@ -385,28 +388,60 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
     const last = SIZE_STEPS - 1;
     const pct = (v: number) => `${(v / last) * 100}%`;
     const range = h(doc, 'input', {
-      type: 'range', min: '0', max: String(last), step: '1', value: String(settings.size),
+      type: 'range', min: '0', max: String(last), step: 'any', value: String(settings.size),
       'aria-label': t.textSize, 'aria-valuetext': t.sizeStep(settings.size + 1, SIZE_STEPS),
     }) as HTMLInputElement;
-    range.style.setProperty('--p', pct(settings.size));
-    range.addEventListener('input', () => {
-      const v = Number(range.value);
-      range.style.setProperty('--p', pct(v));
-      range.setAttribute('aria-valuetext', t.sizeStep(v + 1, SIZE_STEPS));
-      root.style.setProperty('--fs', `${SIZES[v]}px`);
-      [...ticks.children].forEach((tick, i) => tick.setAttribute('data-on', String(i <= v)));
-    });
-    range.addEventListener('change', () => change({ size: Number(range.value) }, '.size input'));
     const ticks = h(doc, 'div', { class: 'ticks', 'aria-hidden': 'true' });
     for (let i = 0; i <= last; i++) ticks.append(h(doc, 'i', { 'data-on': String(i <= settings.size) }));
-    const stepBtn = (to: number, label: string, text: string, cls: string) => {
+    /** Draw the slider at v (fractional while moving) and size the article to the nearest step. */
+    const show = (v: number) => {
+      const step = Math.round(v);
+      range.value = String(v);
+      range.style.setProperty('--p', pct(v));
+      range.setAttribute('aria-valuetext', t.sizeStep(step + 1, SIZE_STEPS));
+      root.style.setProperty('--fs', `${SIZES[step]}px`);
+      [...ticks.children].forEach((tick, i) => tick.setAttribute('data-on', String(i <= v + 0.01)));
+    };
+    show(settings.size);
+    let glideFrame = 0;
+    /** Ease the thumb to a step, then save it (which redraws the panel at the same spot). */
+    const glide = (to: number) => {
+      to = Math.max(0, Math.min(last, to));
+      doc.defaultView?.cancelAnimationFrame(glideFrame);
+      const from = Number(range.value);
+      const win = doc.defaultView;
+      if (!win || reducedMotion() || Math.abs(to - from) < 0.01) {
+        show(to);
+        if (to !== settings.size) change({ size: to }, '.size input');
+        return;
+      }
+      const start = win.performance.now();
+      const dur = 160 + 60 * Math.min(2, Math.abs(to - from));
+      const frame = (now: number) => {
+        const k = Math.min(1, (now - start) / dur);
+        show(from + (to - from) * (1 - (1 - k) ** 3)); // ease-out cubic
+        if (k < 1) glideFrame = win.requestAnimationFrame(frame);
+        else if (to !== settings.size) change({ size: to }, '.size input');
+      };
+      glideFrame = win.requestAnimationFrame(frame);
+    };
+    range.addEventListener('input', () => show(Number(range.value)));
+    range.addEventListener('change', () => glide(Math.round(Number(range.value))));
+    range.addEventListener('keydown', (e) => {
+      const at = Math.round(Number(range.value));
+      const to = { ArrowRight: at + 1, ArrowUp: at + 1, ArrowLeft: at - 1, ArrowDown: at - 1, Home: 0, End: last }[e.key];
+      if (to === undefined) return;
+      e.preventDefault();
+      glide(to);
+    });
+    const stepBtn = (by: number, label: string, text: string, cls: string) => {
       const b = h(doc, 'button', { type: 'button', class: `size-btn ${cls}`, 'aria-label': label, tabindex: '-1' }, text) as HTMLButtonElement;
-      b.disabled = to < 0 || to > last;
-      b.addEventListener('click', () => change({ size: to }, '.size input'));
+      b.disabled = settings.size + by < 0 || settings.size + by > last;
+      b.addEventListener('click', () => glide(Math.round(Number(range.value)) + by));
       return b;
     };
     const sizeRow = h(doc, 'div', { class: 'size' },
-      stepBtn(settings.size - 1, t.smaller, 'A', 'small'), h(doc, 'div', { class: 'slider' }, ticks, range), stepBtn(settings.size + 1, t.larger, 'A', 'big'));
+      stepBtn(-1, t.smaller, 'A', 'small'), h(doc, 'div', { class: 'slider' }, ticks, range), stepBtn(1, t.larger, 'A', 'big'));
 
     // Font: each option previews itself in its own face. Theme: a swatch of each ground.
     const faces: Record<Font, string> = { serif: 'var(--serif)', sans: 'var(--sans)', legible: 'var(--legible)' };
@@ -418,7 +453,7 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
     };
     const theme = segmented<Theme>(t.theme, settings.theme, [
       ['auto', t.themeAuto], ['light', t.themeLight], ['sepia', t.themeSepia], ['dark', t.themeDark],
-    ], (v) => change({ theme: v }, `[data-value="${v}"]`), (btn, v) => {
+    ], (v) => fade(() => change({ theme: v }, `[data-value="${v}"]`)), (btn, v) => {
       const sw = h(doc, 'span', { class: 'swatch', 'aria-hidden': 'true' });
       if (v === 'auto') {
         sw.classList.add('split');
@@ -490,6 +525,8 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
   ) {
     const seg = h(doc, 'div', { class: 'seg', role: 'radiogroup', 'aria-label': label });
     const values = options.map(([v]) => v);
+    seg.style.setProperty('--n', String(values.length));
+    seg.style.setProperty('--i', String(Math.max(0, values.indexOf(current))));
     for (const [value, text] of options) {
       const btn = h(doc, 'button', {
         type: 'button', role: 'radio', 'aria-checked': String(value === current), 'data-value': value, tabindex: value === current ? '0' : '-1',
@@ -534,6 +571,41 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
   };
 
   const siteKey = () => article.ruleId ?? doc.location?.hostname ?? '';
+
+  // ── Motion across re-renders ────────────────────────────────────────────
+  // The panel is rebuilt on every change, so a switch or picker would simply appear in its new state. Remember
+  // where each one was, draw the new one there first, then let its CSS transition carry it to where it is now.
+  const reducedMotion = () => !!doc.defaultView?.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  const controlStates = (panel: HTMLElement) => ({
+    segs: new Map([...panel.querySelectorAll<HTMLElement>('.seg')].map((el) => [el.getAttribute('aria-label') ?? '', el.style.getPropertyValue('--i')])),
+    switches: new Map([...panel.querySelectorAll('[data-switch]')].map((el) => [el.getAttribute('data-switch') ?? '', el.getAttribute('aria-checked') ?? ''])),
+  });
+  const carryMotion = (panel: HTMLElement, was: ReturnType<typeof controlStates>) => {
+    if (reducedMotion()) return;
+    const win = doc.defaultView;
+    for (const el of panel.querySelectorAll<HTMLElement>('.seg')) {
+      const from = was.segs.get(el.getAttribute('aria-label') ?? '');
+      const to = el.style.getPropertyValue('--i');
+      if (!from || from === to) continue;
+      el.style.setProperty('--i', from);
+      win?.getComputedStyle(el, '::before').transform; // settle the old position before moving
+      el.style.setProperty('--i', to);
+    }
+    for (const el of panel.querySelectorAll<HTMLElement>('[data-switch]')) {
+      const from = was.switches.get(el.getAttribute('data-switch') ?? '');
+      const to = el.getAttribute('aria-checked') ?? '';
+      if (!from || from === to) continue;
+      el.setAttribute('aria-checked', from);
+      win?.getComputedStyle(el, '::after').transform;
+      el.setAttribute('aria-checked', to);
+    }
+  };
+  /** Run a change as a crossfade of the whole view (View Transitions: Chrome 111+, Safari 18+); elsewhere it just happens. */
+  const fade = (update: () => void) => {
+    const start = (doc as Document & { startViewTransition?: (cb: () => void) => unknown }).startViewTransition;
+    if (typeof start === 'function' && !reducedMotion()) start.call(doc, update);
+    else update();
+  };
 
   // ── Atur isi artikel: the editor (render/editor.ts), on the original page ──
   let editor: Editor | null = null;
