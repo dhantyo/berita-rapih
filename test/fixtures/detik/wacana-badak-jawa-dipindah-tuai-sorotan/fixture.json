@@ -1,0 +1,12 @@
+{
+  "url": "https://news.detik.com/berita/d-8756070/wacana-badak-jawa-dipindah-tuai-sorotan?page=6",
+  "capturedAt": "2026-11-20T06:10:11.446Z",
+  "pages": {},
+  "expect": {
+    "ok": true,
+    "source": "rule",
+    "pages": 1,
+    "chars": 7878,
+    "title": "Wacana Badak Jawa Dipindah Tuai Sorotan"
+  }
+}
