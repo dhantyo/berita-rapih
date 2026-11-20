@@ -4,6 +4,12 @@ Versions follow [semver](https://semver.org): MAJOR.MINOR.PATCH. While the versi
 
 The first four releases were published as 0.1.0-beta.1 to beta.4 and renamed on 2026-11-13 to the scheme below; the app files inside those releases still report their original beta names.
 
+## [Unreleased]
+
+- New site: **DW Indonesia** (dw.com/id, including the amp.dw.com pages Google often opens). The related-video box and the photo gallery of another story are swept.
+- Photos in the middle of an article now show on AMP pages (amp.dw.com). Before, only their caption was left.
+- Photo captions no longer run into the photographer credit (DW: "…dan basahFoto: AFP").
+
 ## [0.8.1] - 2026-11-20
 
 - Detik: long articles no longer end with a stray "Halaman 6 dari 6" line or next-page button.

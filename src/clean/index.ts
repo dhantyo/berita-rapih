@@ -2,7 +2,7 @@ import type { ResolvedRule, RuleSet } from '../types.ts';
 import { normalizeSummaries } from './summary.ts';
 import { convertEmbeds } from './embeds.ts';
 import { joinDatelines } from './dateline.ts';
-import { joinCaptions } from './captions.ts';
+import { joinCaptions, spaceCaptionCredits } from './captions.ts';
 import { splitBreaks } from './breaks.ts';
 
 const BLOCKS = 'p, div, li, h2, h3, h4, h5, table, blockquote, section, aside, span, strong';
@@ -23,6 +23,7 @@ const UNCOUNTED = new Set(['script', 'style', 'noscript', 'form', 'button']);
 export function clean(container: HTMLElement, rule: ResolvedRule, rules: RuleSet, adblock: string[], baseUrl: URL): number {
   // First: social posts quoted in the story become static cards (before iframe/blockquote cleanup would drop them).
   convertEmbeds(container);
+  convertAmpImages(container);
   let swept = removeCustomElements(container);
   swept += removeSelectors(container, rules.common.remove.filter((s) => UNCOUNTED.has(s)), false);
   swept += removeSelectors(container, [...rules.common.remove.filter((s) => !UNCOUNTED.has(s)), ...rule.remove, ...adblock]);
@@ -31,9 +32,36 @@ export function clean(container: HTMLElement, rule: ResolvedRule, rules: RuleSet
   normalizeSummaries(container, rules.common.summaryHeadings ?? []);
   joinDatelines(container);
   joinCaptions(container);
+  spaceCaptionCredits(container);
   fixMedia(container, baseUrl);
   removeEmpty(container);
   return swept;
+}
+
+/**
+ * AMP pages (amp.dw.com) draw the story's own photos with <amp-img>, which the custom-element sweep below would
+ * drop. Turn each one into a plain <img> first. A run of sibling amp-imgs with the same alt text is one photo in
+ * several sizes, smallest first: keep the last. Its width/height are only an aspect ratio, so they aren't copied. Photos inside other AMP widgets (a carousel) still go with them.
+ */
+function convertAmpImages(root: HTMLElement): void {
+  const doc = root.ownerDocument;
+  for (const amp of [...root.querySelectorAll('amp-img:not([fallback])')]) {
+    if (!attached(amp, root) || !amp.getAttribute('src')) continue;
+    let inWidget = false;
+    for (let p = amp.parentElement; p && p !== root; p = p.parentElement) if (p.tagName.includes('-')) inWidget = true;
+    if (inWidget) continue;
+    const next = amp.nextElementSibling;
+    if (next?.tagName === 'AMP-IMG' && !next.hasAttribute('fallback') && next.getAttribute('alt') === amp.getAttribute('alt')) {
+      amp.remove();
+      continue;
+    }
+    const img = doc.createElement('img');
+    for (const attr of ['src', 'srcset', 'alt']) {
+      const v = amp.getAttribute(attr);
+      if (v) img.setAttribute(attr, v);
+    }
+    amp.replaceWith(img);
+  }
 }
 
 /**
