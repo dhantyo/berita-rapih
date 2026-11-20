@@ -16,7 +16,9 @@
     ".dugout-video",
     ".ratio-dugout-detail",
     ".slick-cloned",
-    ".media__icon"
+    ".media__icon",
+    "[data-page-button]",
+    "[data-page-sub]"
   ],
   "dropParagraphs": ["^simak juga video\\b"],
   "pagination": {
@@ -30,5 +32,5 @@
     "https://news.detik.com/berita/d-8746131/pkb-pertimbangkan-hak-menyatakan-pendapat-terkait-polemik-gibran"
   ],
   "verified": "2026-11-10",
-  "notes": "No paginated article found in ~260 sampled (news, hot, wolipop, finance, travel, food). /2 redirects to ?page=2, so paging still exists; single=1 comes from AutoAllPage and is unverified here. CNN Indonesia runs on the same platform (see cnnindonesia.json). Desktop photo stories (detikHot) carry only a one-line intro in the body; the photos and captions sit in a slider after it (#slider-foto__detail, the trail). Slick's cloned slides and the enlarge icon are removed."
+  "notes": "No paginated article found in ~260 sampled (news, hot, wolipop, finance, travel, food). /2 redirects to ?page=2, so paging still exists; single=1 comes from AutoAllPage and is unverified here. CNN Indonesia runs on the same platform (see cnnindonesia.json). Desktop photo stories (detikHot) carry only a one-line intro in the body; the photos and captions sit in a slider after it (#slider-foto__detail, the trail). Slick's cloned slides and the enlarge icon are removed. Long stories (articletype longstory, desktop and detikBali) load every page at once and end with a next-page box (button and \"Halaman x dari y\"); its parts are removed."
 }
