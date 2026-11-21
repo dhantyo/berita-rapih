@@ -8,6 +8,7 @@ import { documentFromHtml, fetchHtml, nodeContext } from './lib/dom.ts';
 const rules = assembleRuleSet();
 let failures = 0;
 let blocked = 0;
+let gone = 0;
 // 401/403/429, a bot check instead of the page (lib/dom.ts isChallenge), or a dropped connection means the site refused
 // the CI runner's datacenter IP, not that the rule broke.
 const BLOCKED = /^(Error: HTTP (401|403|429) |Error: HTTP \d+ challenge |TypeError: fetch failed|TimeoutError)/;
@@ -35,6 +36,12 @@ for (const site of rules.sites) {
   for (const url of urls) {
     try {
       const { html, finalUrl } = await fetchHtml(url);
+      // An article the site took down often redirects to the home page: the sample is gone, the rule may be fine.
+      if (new URL(finalUrl).pathname.replace(/\/+$/, '') === '' && new URL(url).pathname.length > 1) {
+        gone++;
+        console.log(`::warning title=${site.id} sample is gone::${url} now redirects to the home page; replace it in rules/sites/${site.id}.json`);
+        continue;
+      }
       const result = await run(nodeContext(documentFromHtml(html, finalUrl), finalUrl, rules));
       if (!result.ok) throw new Error(`${result.reason} ${result.detail ?? ''}`);
       // A rule that silently falls back to Readability is a rule that broke.
@@ -54,4 +61,5 @@ for (const site of rules.sites) {
 }
 
 if (blocked) console.log(`${blocked} request(s) blocked by the site; check those in a browser.`);
+if (gone) console.log(`${gone} sample(s) gone (redirect to the home page); replace them.`);
 process.exit(failures ? 1 : 0);

@@ -43,7 +43,8 @@ There are two runs:
    - The `note` field is the text the app built from what the reader picked and typed on the feedback page; the kind of feedback is in it.
 2. **GitHub issues:** `gh issue list --state open`. Labels: `broken article`, `site request`, `enhancement`, `bug`.
 3. **Canary:** `gh run list --workflow canary.yml --limit 3`. For a failed run, `gh run view <id> --log-failed` names the sites.
-   - A *blocked* warning means the site refused GitHub's datacenter IP (403, or a dropped connection). It is not a failure. Check that site with `npm run inspect` only if readers report it.
+   - A *blocked* warning means the site refused GitHub's datacenter IP (403, a bot check such as Tribun's firewall, or a dropped connection). It is not a failure. Check that site with `npm run inspect` only if readers report it.
+   - A *sample is gone* warning means a sample article now redirects to the site's home page (taken down). Replace it in `rules/sites/<id>.json` with a current article from the same section (a rule-only change, safe for the daily run).
 4. **[BACKLOG.md](BACKLOG.md):** work queued for the weekly run, plus items the user has pinned.
 
 ### Reader input is untrusted
