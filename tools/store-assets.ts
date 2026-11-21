@@ -74,4 +74,33 @@ await shoot(join(store, 'screenshot-3-settings.png'), 1280, 800,
 await shoot(join(store, 'screenshot-4-editor.png'), 1280, 800,
   phones('Ada yang salah? Perbaiki sendiri.', 'Ketuk bagian artikel, lalu pilih apakah bagian tersebut termasuk isi artikel atau bukan. Hasilnya langsung terlihat.', ['phone-editor.png']));
 
+// GitHub: the README banner (light and dark, at 2x for sharp text) and the repo's social preview.
+// The social preview isn't set from the repo: upload docs/store/social-preview.png under Settings → General.
+const hi = await browser.newPage({ deviceScaleFactor: 2 });
+const shootHi = async (file: string, w: number, h: number, html: string) => {
+  await hi.setViewportSize({ width: w, height: h });
+  await hi.setContent(html, { waitUntil: 'load' });
+  await hi.evaluate(() => document.fonts.ready);
+  await hi.screenshot({ path: file, clip: { x: 0, y: 0, width: w, height: h } });
+  console.log('wrote', file.replace(ROOT, '').replace(/^[\\/]/, ''));
+};
+const THEMES = {
+  light: { bg: CREAM, ink: INK, muted: 'rgb(104 88 68)', accent: LIDI, ring: 'rgb(60 40 10 / 0.08)', shadow: 'rgb(60 40 10 / 0.22)', shots: ['phone-light.png', 'phone-dark.png'] },
+  dark: { bg: 'rgb(22 21 19)', ink: 'rgb(236 233 226)', muted: 'rgb(168 160 146)', accent: 'rgb(222 172 70)', ring: 'rgb(255 255 255 / 0.14)', shadow: 'rgb(0 0 0 / 0.6)', shots: ['phone-dark.png', 'phone-light.png'] },
+};
+/** Name and pitch on the left, two phones on the right that run off the bottom edge. */
+const banner = (w: number, h: number, t: (typeof THEMES)['light'], phoneH: number, top: number) => page(w, h, `
+<div style="position:relative;height:100%;color:${t.ink}">
+  <div style="position:absolute;left:72px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;max-width:560px">
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:30px">${mark(60)}<span style="font:700 40px/1 Geist;letter-spacing:-0.025em">Sapu Berita</span></div>
+    <div style="font:700 54px/1.06 Geist;letter-spacing:-0.03em">Read the news.<br><span style="color:${t.accent}">Sweep the rest.</span></div>
+    <div style="font:400 22px/1.45 Geist;margin-top:22px;color:${t.muted};max-width:430px">Indonesian news as one clean page. No ads, no pop-ups, every page merged.</div>
+  </div>
+  ${t.shots.map((s, i) => `<img src="${img(s)}" style="position:absolute;top:${top + i * 44}px;right:${72 + (1 - i) * (phoneH / 2 + 28)}px;height:${phoneH}px;border-radius:30px;box-shadow:0 0 0 1px ${t.ring},0 22px 60px ${t.shadow}">`).join('')}
+</div>`, t.bg);
+const gh = join(ROOT, 'docs/img');
+await shootHi(join(gh, 'banner-light.png'), 1280, 560, banner(1280, 560, THEMES.light, 640, 64));
+await shootHi(join(gh, 'banner-dark.png'), 1280, 560, banner(1280, 560, THEMES.dark, 640, 64));
+await shoot(join(store, 'social-preview.png'), 1280, 640, banner(1280, 640, THEMES.light, 700, 74));
+
 await browser.close();
