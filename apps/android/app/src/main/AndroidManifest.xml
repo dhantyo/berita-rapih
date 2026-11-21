@@ -51,6 +51,7 @@
                 <data android:host="*.cnbcindonesia.com" />
                 <data android:host="*.cnnindonesia.com" />
                 <data android:host="*.detik.com" />
+                <data android:host="*.dw.com" />
                 <data android:host="*.idntimes.com" />
                 <data android:host="*.inews.id" />
                 <data android:host="*.jawapos.com" />

@@ -39,3 +39,14 @@ export function joinCaptions(root: HTMLElement): number {
   }
   return n;
 }
+
+/**
+ * A credit tucked into the caption right after its last word ("…dan basah<small>Foto: AFP</small>", DW) would
+ * read as one word once styled alike: put a space between them.
+ */
+export function spaceCaptionCredits(root: HTMLElement): void {
+  for (const el of root.querySelectorAll('figcaption small, figcaption [class*="credit"], figcaption [class*="copyright"]')) {
+    const prev = el.previousSibling;
+    if (prev?.nodeType === 3 && /\S$/.test(prev.nodeValue ?? '') && /^\S/.test(el.textContent ?? '')) prev.nodeValue += ' ';
+  }
+}

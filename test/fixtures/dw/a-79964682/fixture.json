@@ -1,0 +1,12 @@
+{
+  "url": "https://amp.dw.com/id/wacana-badak-jawa-dipindah-tuai-sorotan/a-79964682",
+  "capturedAt": "2026-11-20T20:22:46.178Z",
+  "pages": {},
+  "expect": {
+    "ok": true,
+    "source": "rule",
+    "pages": 1,
+    "chars": 8083,
+    "title": "Wacana Badak Jawa Dipindah Tuai Sorotan"
+  }
+}

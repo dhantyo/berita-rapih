@@ -1,0 +1,12 @@
+{
+  "url": "https://www.dw.com/id/cop31-draf-kesepakatan-tak-singgung-bahan-bakar-fosil/a-80001178",
+  "capturedAt": "2026-11-20T20:22:46.604Z",
+  "pages": {},
+  "expect": {
+    "ok": true,
+    "source": "rule",
+    "pages": 1,
+    "chars": 8394,
+    "title": "Negosiator COP31 Hapus Seluruh Penyebutan Bahan Bakar Fosil dari Draf – Kesepakatan Iklim Terancam"
+  }
+}

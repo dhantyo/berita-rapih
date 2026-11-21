@@ -257,3 +257,49 @@ describe('logo crop window (Viva, Tirto: bottom cut off)', () => {
     expect(inner.y + inner.h).toBeCloseTo(22 * (56 / 39), 5);
   });
 });
+
+describe('AMP photos inside the article (amp.dw.com)', () => {
+  const url = 'https://amp.dw.com/id/wacana-badak-jawa-dipindah-tuai-sorotan/a-79964682';
+  const set = (alt: string, ids: number[]) =>
+    ids
+      .map(
+        (n) =>
+          `<amp-img src="https://static.example/image/1_${n}.webp" width="100" height="56.25" layout="responsive" alt="${alt}">` +
+          `<amp-img fallback src="https://static.example/image/1_${n}.jpg" width="100" height="56.25" layout="responsive" alt="${alt}"></amp-img>` +
+          '<img class="i-amphtml-fill-content" src="https://static.example/image/1_' + n + '.webp"></amp-img>',
+      )
+      .join('');
+
+  it('keeps an amp-img as a plain photo, one per size set (the largest), with its caption', () => {
+    const doc = documentFromHtml('<body></body>', url);
+    const container = doc.createElement('div');
+    container.innerHTML =
+      '<p>Paragraf pertama yang cukup panjang.</p>' +
+      `<figure class="placeholder-image"><div>${set('Badak jawa', [900, 902, 906])}</div><figcaption>Kondisi Alas Purwo<small class="copyright">Foto: AFP</small></figcaption></figure>` +
+      '<p>Paragraf berikutnya.</p>';
+    const rule = findRule(rules, new URL(url)) as ResolvedRule;
+    expect(rule.id).toBe('dw');
+    clean(container, rule, rules, [], new URL(url));
+    const imgs = [...container.querySelectorAll('img')];
+    expect(imgs.map((i) => i.getAttribute('src'))).toEqual(['https://static.example/image/1_906.webp']);
+    expect(imgs[0]!.getAttribute('alt')).toBe('Badak jawa');
+    expect(container.querySelector('amp-img')).toBeNull();
+    expect(container.querySelector('figcaption')?.textContent).toBe('Kondisi Alas Purwo Foto: AFP');
+  });
+
+  it('keeps different photos that sit side by side', () => {
+    const doc = documentFromHtml('<body></body>', url);
+    const container = doc.createElement('div');
+    container.innerHTML = `<p>Teks artikel yang cukup panjang.</p><div>${set('Foto satu', [904])}${set('Foto dua', [904])}</div>`;
+    clean(container, findRule(rules, new URL(url)) as ResolvedRule, rules, [], new URL(url));
+    expect([...container.querySelectorAll('img')].map((i) => i.getAttribute('alt'))).toEqual(['Foto satu', 'Foto dua']);
+  });
+
+  it('still drops photos inside other AMP widgets (a carousel of another story)', () => {
+    const doc = documentFromHtml('<body></body>', url);
+    const container = doc.createElement('div');
+    container.innerHTML = `<p>Teks artikel yang cukup panjang.</p><amp-carousel>${set('Galeri', [904])}</amp-carousel>`;
+    clean(container, findRule(rules, new URL(url)) as ResolvedRule, rules, [], new URL(url));
+    expect(container.querySelector('img')).toBeNull();
+  });
+});
