@@ -384,6 +384,11 @@ svg { flex: none; }
 
 /* Parts the reader removed in the editor. */
 .content [data-user-hidden] { display: none !important; }
+/* Blocks the reader told the editor to show as another kind (render/roles.ts), styled like the real thing. */
+.content [data-user-as="heading"] { font-family: var(--head); font-size: 1.28em; font-weight: 700; line-height: 1.25; letter-spacing: var(--sub-track); margin: 1.7em 0 0.5em; text-wrap: balance; }
+.content [data-user-as="caption"] { font: 0.72em/1.45 var(--sans); color: var(--muted); margin: 0 0 1.6em; }
+.content [data-user-as="quote"] { margin: 1.7em 0; padding: 0.9em 0; border-top: 2px solid var(--ink); border-bottom: 1px solid var(--rule); font-size: 0.94em; }
+.content [data-user-as="text"] { margin: 0 0 1.05em; padding: 0; border: 0; font-family: var(--body); font-size: 1em; font-weight: var(--text-weight); letter-spacing: var(--text-track); line-height: var(--lead); color: inherit; }
 /* The editor (render/editor.ts): boxes over the page, selection with corner handles, top toggle, bottom bar. */
 .ed-boxes { position: fixed; inset: 0; z-index: 2147483640; pointer-events: none; overflow: hidden; }
 .ed-boxes[hidden], .ed-sel[hidden], .ed-drag[hidden] { display: none; }
@@ -434,8 +439,6 @@ svg { flex: none; }
 .ed-choice-desc { font: 400 var(--fs-cap)/1.3 var(--sans); color: var(--muted); }
 .ed-chip:disabled { opacity: 0.4; cursor: default; }
 .pagepick[data-mode="clean"] .ed-h { display: none; }
-/* The field chips wrap instead of scrolling: four short choices must all be seen. */
-.ed-chips.ed-fields { flex-wrap: wrap; overflow: visible; padding-right: 0; -webkit-mask-image: none; mask-image: none; }
 .ed-msg { margin-block: 0; font: 600 var(--fs-sm)/1.4 var(--sans); color: var(--ink); }
 .ed-live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); margin: 0; }
 .ed-ask { margin-block: 0; font: var(--fs-ui)/1.45 var(--sans); color: var(--ink); }

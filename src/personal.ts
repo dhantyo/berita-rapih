@@ -7,17 +7,23 @@
  *   remove fingerprints ("t:…", "i:…") and add selectors -> the finished article (applyPersonalContent),
  *                        at run() and again by the overlay when the lists change (the editor, Kembalikan)
  *   fields            -> read from the live page before the JSON-LD fallbacks (extractMetadata)
+ *   as                -> what a block shows as (subheading, caption, quote, plain text), marked on the finished
+ *                        article (render/roles.ts)
  *   newSite           -> a whole SiteRule (ruleFromPersonal) for a site without an official rule
  */
 import type { ArticleMeta, ResolvedRule, RuleSet, SiteRule } from './types.ts';
 import { collapse, safeQuery, textKey } from './dom.ts';
 import { hostMatches, resolveSite } from './rules/match.ts';
 import { applyHidden } from './render/picker.ts';
-import { applyAdded } from './render/pagepicker.ts';
+import { applyAdded, shownIn } from './render/pagepicker.ts';
 import { hideMatching } from './render/provenance.ts';
+import { applyRoles, roleRedundant } from './render/roles.ts';
 
 export type PersonalField = 'title' | 'byline' | 'editor' | 'date' | 'image';
 export const PERSONAL_FIELDS: readonly PersonalField[] = ['title', 'byline', 'editor', 'date', 'image'];
+/** What a block of the article can be shown as; `text` undoes the site's own heading, caption or quote box. */
+export type PersonalRole = 'text' | 'heading' | 'caption' | 'quote';
+export const PERSONAL_ROLES: readonly PersonalRole[] = ['text', 'heading', 'caption', 'quote'];
 
 export interface PersonalRule {
   /** Rule id (or hostname for a new site). */
@@ -28,6 +34,8 @@ export interface PersonalRule {
   remove: string[];
   /** Selectors read from the live page before the JSON-LD fallbacks. */
   fields?: Partial<Record<PersonalField, string>>;
+  /** Selectors and/or fingerprints of article blocks to show as another kind of block. */
+  as?: Partial<Record<PersonalRole, string[]>>;
   /** A site without an official rule (bookmark only). */
   newSite?: { domains: string[]; articleUrl: string; body: string[] };
   /** ISO date of the last edit. */
@@ -58,6 +66,7 @@ export function applyPersonalContent(content: HTMLElement, p: PersonalRule | und
   applyHidden(content, new Set(p?.remove.filter(isFingerprint)));
   // A selector removal made after the article was extracted (the editor, or pages merged since): hide what it hits.
   hideMatching(content, page, p?.remove.filter((s) => !isFingerprint(s)) ?? []);
+  applyRoles(content, p?.as, page);
 }
 
 /**
@@ -171,7 +180,8 @@ export function generalisePath(pathname: string): string {
 export type PersonalEntry =
   | { kind: 'remove'; value: string }
   | { kind: 'add'; value: string }
-  | { kind: 'field'; field: PersonalField; value: string };
+  | { kind: 'field'; field: PersonalField; value: string }
+  | { kind: 'as'; role: PersonalRole; value: string };
 
 const startKey = (el: Element) => textKey(el.textContent).slice(0, 60);
 const BLOCKS = 'p, li, ul, ol, figure, blockquote, h2, h3, h4, h5, h6, table, div, section, aside, img';
@@ -200,11 +210,18 @@ export function isRedundant(
     }
     return true;
   }
+  if (entry.kind === 'as') {
+    return !!cleanView && !!page && 'baseURI' in page && roleRedundant(entry.role, entry.value, cleanView, page as Document);
+  }
   if (entry.kind === 'add') {
     if (official.lead.includes(entry.value) || official.trail.includes(entry.value) || official.body.includes(entry.value)) return true;
     const source = page && cleanView ? safeQuery(page, entry.value) : null;
-    const key = source ? startKey(source) : '';
-    return key.length >= 20 && textKey(cleanView!.textContent).includes(key);
+    if (!source || !cleanView) return false;
+    // A photo whose caption the clean view has is still missing until the photo is there too.
+    if (shownIn(source, cleanView).missing.length) return false;
+    const key = startKey(source);
+    if (key.length >= 20) return textKey(cleanView.textContent).includes(key);
+    return !collapse(source.textContent) && (/^(IMG|AMP-IMG)$/.test(source.tagName) || !!source.querySelector('img, amp-img'));
   }
   const current = meta?.[entry.field === 'date' ? 'published' : entry.field];
   const read = page ? readField(page, entry.value, entry.field) : undefined;
@@ -223,12 +240,21 @@ export function retireRedundant(
   const fields = Object.fromEntries(
     Object.entries(p.fields ?? {}).filter(([f, v]) => !isRedundant({ kind: 'field', field: f as PersonalField, value: v }, official, cleanView, page, meta)),
   ) as PersonalRule['fields'];
-  const out: PersonalRule = { ...p, add: p.add.filter(keep('add')), remove: p.remove.filter(keep('remove')), fields };
+  const as: NonNullable<PersonalRule['as']> = {};
+  for (const role of PERSONAL_ROLES) {
+    const left = (p.as?.[role] ?? []).filter((v) => !isRedundant({ kind: 'as', role, value: v }, official, cleanView, page, meta));
+    if (left.length) as[role] = left;
+  }
+  const out: PersonalRule = { ...p, add: p.add.filter(keep('add')), remove: p.remove.filter(keep('remove')), fields, as };
   if (!Object.keys(fields ?? {}).length) delete out.fields;
+  if (!Object.keys(as).length) delete out.as;
   return isEmpty(out) ? undefined : out;
 }
 
-const isEmpty = (p: PersonalRule) => !p.add.length && !p.remove.length && !Object.keys(p.fields ?? {}).length && !p.newSite;
+/** How many blocks the reader gave another role. */
+export const roleCount = (p: PersonalRule | undefined): number => PERSONAL_ROLES.reduce((n, r) => n + (p?.as?.[r]?.length ?? 0), 0);
+
+const isEmpty = (p: PersonalRule) => !p.add.length && !p.remove.length && !Object.keys(p.fields ?? {}).length && !roleCount(p) && !p.newSite;
 
 // ── Lists (what settings store and the editor edits) ─────────────────────────────────────────────────
 
@@ -272,6 +298,12 @@ function normalizeOne(raw: unknown): PersonalRule | undefined {
     if (typeof v === 'string' && v && v.length <= MAX_LEN) fields[f] = v;
   }
   if (Object.keys(fields).length) out.fields = fields;
+  const as: NonNullable<PersonalRule['as']> = {};
+  for (const role of PERSONAL_ROLES) {
+    const list = strings(r.as?.[role]);
+    if (list.length) as[role] = list;
+  }
+  if (Object.keys(as).length) out.as = as;
   const n = r.newSite;
   if (n && typeof n.articleUrl === 'string' && n.articleUrl.length <= MAX_LEN) {
     const domains = strings(n.domains, 5);

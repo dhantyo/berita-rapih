@@ -117,9 +117,10 @@ const STRINGS = {
     edResetYes: 'Ya, kembalikan',
     edResetNo: 'Batal',
     edResetDone: 'Situs ini sudah kembali ke aturan bawaan.',
-    edSummary: (site: string, added: number, removed: number, fields: string[]) =>
-      `Usulan aturan untuk ${site}: ${removed} dibuang, ${added} dimasukkan${fields.length ? `, sumber: ${fields.join(', ')}` : ''}`,
-    edCount: (added: number, removed: number, fields: number) => `${removed} dibuang, ${added} dimasukkan${fields ? `, ${fields} sumber` : ''}`,
+    edSummary: (site: string, added: number, removed: number, fields: string[], kinds = 0) =>
+      `Usulan aturan untuk ${site}: ${removed} dibuang, ${added} dimasukkan${kinds ? `, ${kinds} diubah tampilannya` : ''}${fields.length ? `, sumber: ${fields.join(', ')}` : ''}`,
+    edCount: (added: number, removed: number, fields: number, kinds = 0) =>
+      `${removed} dibuang, ${added} dimasukkan${kinds ? `, ${kinds} diubah tampilannya` : ''}${fields ? `, ${fields} sumber` : ''}`,
     nsPrompt: 'Sapu Berita belum mengenal situs ini. Kamu bisa mencoba merapikan halaman ini sendiri.',
     nsTry: 'Coba atur sendiri',
     nsClose: 'Tutup',
@@ -185,6 +186,9 @@ const STRINGS = {
     edChooseOut: 'Bukan isi artikel',
     edChooseOutDesc: 'Buang dari versi bersih',
     edOrField: 'Jadikan sebagai',
+    edKindLabel: 'Tampil sebagai',
+    edKindNames: { media: 'Foto atau video', text: 'Paragraf', heading: 'Subjudul', caption: 'Keterangan foto', quote: 'Kutipan' },
+    edKindSaved: (name: string) => `Bagian ini sekarang tampil sebagai ${name.toLowerCase()}.`,
     edNotInClean: 'Bagian ini tidak tampil di versi bersih.',
     edNotInOriginal: 'Bagian ini tidak tampil di halaman asli.',
     edHeaderElsewhere: (name: string) => `Kalau ${name.toLowerCase()} seharusnya diambil dari bagian lain, pilih Asli, lalu ketuk bagian tersebut.`,
@@ -311,9 +315,10 @@ const STRINGS = {
     edResetYes: 'Yes, reset',
     edResetNo: 'Cancel',
     edResetDone: 'Back to the default rules.',
-    edSummary: (site: string, added: number, removed: number, fields: string[]) =>
-      `Rule suggestion for ${site}: ${removed} removed, ${added} included${fields.length ? `, sources: ${fields.join(', ')}` : ''}`,
-    edCount: (added: number, removed: number, fields: number) => `${removed} removed, ${added} included${fields ? `, ${fields} source${fields === 1 ? '' : 's'}` : ''}`,
+    edSummary: (site: string, added: number, removed: number, fields: string[], kinds = 0) =>
+      `Rule suggestion for ${site}: ${removed} removed, ${added} included${kinds ? `, ${kinds} shown differently` : ''}${fields.length ? `, sources: ${fields.join(', ')}` : ''}`,
+    edCount: (added: number, removed: number, fields: number, kinds = 0) =>
+      `${removed} removed, ${added} included${kinds ? `, ${kinds} shown differently` : ''}${fields ? `, ${fields} source${fields === 1 ? '' : 's'}` : ''}`,
     nsPrompt: "Sapu Berita doesn't know this site yet. You can try tidying up this page yourself.",
     nsTry: 'Set it up yourself',
     nsClose: 'Close',
@@ -379,6 +384,9 @@ const STRINGS = {
     edChooseOut: 'Not article text',
     edChooseOutDesc: 'Leave it out of the clean view',
     edOrField: 'Use as',
+    edKindLabel: 'Show as',
+    edKindNames: { media: 'Photo or video', text: 'Paragraph', heading: 'Subheading', caption: 'Photo caption', quote: 'Quote' },
+    edKindSaved: (name: string) => `Now shown as ${/^[aeiou]/i.test(name) ? 'an' : 'a'} ${name.toLowerCase()}.`,
     edNotInClean: "This part doesn't show in the clean view.",
     edNotInOriginal: "This part doesn't show on the original page.",
     edHeaderElsewhere: (name: string) => `If the ${name.toLowerCase()} should come from another part, choose Original, then tap that part.`,

@@ -11,7 +11,8 @@
  * The logic that needs no screen (provenance, snapping, note) lives in editmodel.ts / provenance.ts.
  */
 import { collapse } from '../dom.ts';
-import { readField, retireRedundant, withEntry, type PersonalField, type PersonalRule } from '../personal.ts';
+import { readField, retireRedundant, roleCount, withEntry, type PersonalField, type PersonalRole, type PersonalRule } from '../personal.ts';
+import { officialRole, shownRole } from './roles.ts';
 import type { OfficialView } from '../types.ts';
 import type { Strings } from './i18n.ts';
 import { compactRule, computeMarks, entryCovers, findHeaderSources, markAt, removalFor, shareOf, snapBest, spanned, statusOf, type HeaderKey, type HeaderMeta, type HeaderSource, type Marks, type Rect } from './editmodel.ts';
@@ -88,10 +89,17 @@ export interface Editor {
 type Mode = 'original' | 'clean';
 const CORNERS = ['tl', 'tr', 'bl', 'br'] as const;
 /** What a picked part can be besides article text, in the order the sheet offers them. */
-const FIELD_CHOICES: readonly PersonalField[] = ['title', 'byline', 'date', 'image'];
+const FIELD_CHOICES: readonly PersonalField[] = ['title', 'byline', 'editor', 'date', 'image'];
+/** What a part inside the article can be shown as, in the order the sheet offers them (`media` = a photo or video). */
+const KIND_CHOICES = ['media', 'text', 'heading', 'caption', 'quote'] as const;
+type Kind = (typeof KIND_CHOICES)[number];
+/** The longest text each kind may hold (a whole paragraph is not a subheading). */
+const KIND_MAX: Record<Exclude<Kind, 'media'>, number> = { text: MAX_CHARS, heading: 240, caption: 600, quote: 3000 };
+const MEDIA = 'img, picture, video, iframe, amp-img, amp-video';
+const hasMedia = (el: Element) => el.matches(MEDIA) || !!el.querySelector(MEDIA);
 /** Where each header item is drawn in the clean view (overlay.ts articleView). */
 const CLEAN_HEADER: Partial<Record<HeaderKey, string>> = {
-  title: '.column > header h1', byline: '.column > header .byline', date: '.column > header .date', image: '.column > header .hero',
+  title: '.column > header h1', byline: '.column > header .byline', editor: '.column > header .editor', date: '.column > header .date', image: '.column > header .hero',
 };
 
 function h(doc: Document, tag: string, attrs: Record<string, string> = {}, ...children: Array<Node | string>): HTMLElement {
@@ -181,7 +189,7 @@ export function startEditor(ctx: EditorContext): Editor {
   let closed = false;
   let frame = 0;
   let seenOriginal = !!ctx.newSite;
-  const shape = (r?: PersonalRule) => JSON.stringify([r?.add, r?.remove, r?.fields, r?.newSite]);
+  const shape = (r?: PersonalRule) => JSON.stringify([r?.add, r?.remove, r?.fields, r?.as, r?.newSite]);
   const startShape = shape(ctx.personal());
 
   // ── Layout helpers ──
@@ -580,24 +588,76 @@ export function startEditor(ctx: EditorContext): Editor {
     }
   };
 
-  const addPart = () => {
-    const part = selected;
-    if (!part) return;
+  /** Make the pick show in the clean view: drop removals that hide it, then add it. What happened, or nothing to do. */
+  const includePart = (part: Element): 'added' | 'once' | 'shown' => {
     const p0 = ctx.personal();
     const covering = p0?.remove.filter((e) => entryCovers(e, part, doc)) ?? [];
     if (covering.length) {
       ctx.edit((p) => ({ ...p, remove: p.remove.filter((e) => !covering.includes(e)) }));
       compute();
     }
-    if (statusOf(part, marks).outside === 0) return afterEdit(t.edAdded);
+    if (statusOf(part, marks).outside === 0) return 'shown';
     const selector = stableSelector(part);
     if (selector) {
       ctx.edit((p) => ({ ...p, add: withEntry(p.add, selector) }));
-      afterEdit(t.edAdded);
-    } else {
-      insertFromPage(part, ctx.content());
-      afterEdit(t.edAddedOnce);
+      compute();
+      return 'added';
     }
+    insertFromPage(part, ctx.content());
+    compute();
+    return 'once';
+  };
+
+  const addPart = () => {
+    const part = selected;
+    if (!part) return;
+    afterEdit(includePart(part) === 'once' ? t.edAddedOnce : t.edAdded);
+  };
+
+  /** The kind of block the pick shows as now; none when it isn't shown. */
+  const shownKind = (): Kind | undefined => {
+    const el = selected ?? cleanEl;
+    if (!el) return undefined;
+    if (selected && statusOf(selected, marks).inside === 0) return undefined;
+    if (hasMedia(el) && !readable(el)) return 'media';
+    // A pick of several blocks has no one kind.
+    const targets = cleanTargets();
+    return targets.length === 1 ? shownRole(targets[0]!, ctx.content()) : undefined;
+  };
+  const kindOk = (k: Kind) => {
+    const el = selected ?? cleanEl;
+    if (!el) return false;
+    if (k === 'media') return hasMedia(el) && (!selected || canAdd(statusOf(selected, marks)));
+    return !hasMedia(el) && readable(el) && collapse(cleanCopy(el).textContent).length <= KIND_MAX[k];
+  };
+
+  /** Show the pick as this kind of block: make it show first, then remember the role (none when it is what the article makes it). */
+  const setKind = (k: Kind) => {
+    if (k === 'media') return addPart();
+    const role: PersonalRole = k;
+    const part = selected;
+    if (part) includePart(part);
+    const content = ctx.content();
+    const target = (part ? cleanFor(part) : cleanEl ? [cleanEl] : [])[0];
+    const key = part ? (stableSelector(part) ?? fingerprint(target ?? part)) : cleanEl ? fingerprint(cleanEl) : undefined;
+    if (!key || !target) {
+      message = t.edFieldFail;
+      return renderBar();
+    }
+    const official = officialRole(target, content);
+    const covers = (e: string) => e === key || (!!part && entryCovers(e, part, doc));
+    ctx.edit((p) => {
+      const as: NonNullable<PersonalRule['as']> = {};
+      for (const [r, list] of Object.entries(p.as ?? {}) as Array<[PersonalRole, string[]]>) {
+        const left = list.filter((e) => !covers(e));
+        if (left.length) as[r] = left;
+      }
+      if (role !== official) as[role] = withEntry(as[role] ?? [], key);
+      const next: PersonalRule = { ...p, as };
+      if (!Object.keys(as).length) delete next.as;
+      return next;
+    });
+    afterEdit(t.edKindSaved(t.edKindNames[k]));
   };
 
   // Entries the official rule already covers are dropped quietly (on opening, after each edit).
@@ -655,6 +715,16 @@ export function startEditor(ctx: EditorContext): Editor {
   };
   const describeEl = (el: Element) => (readable(el) ? describe(cleanCopy(el)) : el.querySelector('img') || el.tagName === 'IMG' ? t.edPhoto : t.edNoText);
 
+  /** A chip row is one scrolling line (the sheet stays short on a phone): scroll the current chip into view. */
+  const showPressed = (row: HTMLElement) =>
+    win.requestAnimationFrame(() => {
+      const on = row.querySelector<HTMLElement>('[aria-pressed="true"]');
+      if (!on) return;
+      const a = on.getBoundingClientRect();
+      const box = row.getBoundingClientRect();
+      if (a.right > box.right - 28) row.scrollLeft += a.right - box.right + 28;
+    });
+
   /** "Bagian ini apa?": the choices for the pick, the current one marked. */
   const sheet = (): HTMLElement[] => {
     const out: HTMLElement[] = [];
@@ -686,7 +756,20 @@ export function startEditor(ctx: EditorContext): Editor {
       if (selected && s.inside && !canRemove(s) && !isOut) out.push(h(doc, 'p', { class: 'ed-note' }, t.edTooBig));
       else if (selected && s.outside && !canAdd(s) && !isIn) out.push(h(doc, 'p', { class: 'ed-note' }, t.edTooBig));
     }
-    const fields = h(doc, 'div', { class: 'ed-chips ed-fields', role: 'group', 'aria-label': t.edOrField }, h(doc, 'span', { class: 'ed-chips-label' }, t.edOrField));
+    if (!headerKey && (selected || cleanEl)) {
+      const now = shownKind();
+      const kinds = h(doc, 'div', { class: 'ed-chips ed-kinds', role: 'group', 'aria-label': t.edKindLabel }, h(doc, 'span', { class: 'ed-chips-label' }, t.edKindLabel));
+      for (const k of KIND_CHOICES) {
+        const current = now === k;
+        const chip = h(doc, 'button', { type: 'button', class: 'ed-chip', 'aria-pressed': String(current), 'data-ed': `kind-${k}` }, t.edKindNames[k]);
+        chip.toggleAttribute('disabled', !current && !kindOk(k));
+        chip.addEventListener('click', () => (current ? select(null) : setKind(k)));
+        kinds.append(chip);
+      }
+      out.push(kinds);
+      showPressed(kinds);
+    }
+    const fields = h(doc, 'div', { class: 'ed-chips', role: 'group', 'aria-label': t.edOrField }, h(doc, 'span', { class: 'ed-chips-label' }, t.edOrField));
     for (const f of FIELD_CHOICES) {
       const current = headerKey === f || (!!selected && sourceOf(f)?.el === selected);
       const chip = h(doc, 'button', { type: 'button', class: 'ed-chip', 'aria-pressed': String(current), 'data-ed': `field-${f}` }, t.edFieldNames[f]);
@@ -694,7 +777,10 @@ export function startEditor(ctx: EditorContext): Editor {
       chip.addEventListener('click', () => (current ? select(null) : assignField(f)));
       fields.append(chip);
     }
-    if (selected || headerKey) out.push(fields);
+    if (selected || headerKey) {
+      out.push(fields);
+      showPressed(fields);
+    }
     if (headerKey && mode === 'clean') out.push(h(doc, 'p', { class: 'ed-note' }, tapWord(t.edHeaderElsewhere(t.edFieldNames[headerKey]))));
     else if (headerKey && !selected) out.push(h(doc, 'p', { class: 'ed-note' }, t.edFromData));
     return out;
@@ -727,7 +813,7 @@ export function startEditor(ctx: EditorContext): Editor {
         const reset = button(t.edReset, '', 'reset', () => { confirming = true; renderBar(); });
         reset.toggleAttribute('disabled', !p);
         lines.push(h(doc, 'div', { class: 'ed-actions' }, reset),
-          h(doc, 'p', { class: 'ed-note' }, p ? t.edCount(p.add.length, p.remove.length, Object.keys(p.fields ?? {}).length) : t.edNoChanges));
+          h(doc, 'p', { class: 'ed-note' }, p ? t.edCount(p.add.length, p.remove.length, Object.keys(p.fields ?? {}).length, roleCount(p)) : t.edNoChanges));
       }
     }
     bar.replaceChildren(...lines);
@@ -786,7 +872,7 @@ export function startEditor(ctx: EditorContext): Editor {
       const [note = '', ...rest] = full.split('\n');
       return full ? { kind: 'edit', note, detail: rest.join('\n') } : undefined;
     }
-    return { kind: 'edit', note: t.edSummary(ctx.site, p.add.length, p.remove.length, names), detail: compactRule(p) };
+    return { kind: 'edit', note: t.edSummary(ctx.site, p.add.length, p.remove.length, names, roleCount(p)), detail: compactRule(p) };
   };
   const sendEdits = () => {
     const p = ctx.personal();

@@ -269,7 +269,12 @@ export function findHeaderSources(
 /** Whether the live element is something this entry (selector or fingerprint) refers to. */
 export function entryCovers(entry: string, part: Element, page: Document): boolean {
   if (isFingerprint(entry)) {
-    return fingerprint(part) === entry || leavesOf(part).some((l) => fingerprint(l.el) === entry);
+    if (fingerprint(part) === entry || leavesOf(part).some((l) => fingerprint(l.el) === entry)) return true;
+    // A photo is known by every address it has (lazy-load, sizes of an AMP run), not only the one the clean view used.
+    if (!entry.startsWith('i:')) return false;
+    const key = `img:${entry.slice(2)}`.toLowerCase();
+    const pics = part.matches('img, amp-img') ? [part] : [...part.querySelectorAll('img, amp-img')];
+    return pics.some((img) => imageKeys(img, page.baseURI).some((k) => k.startsWith(key)));
   }
   return safeQueryAll(page, entry).some((x) => x === part || x.contains(part) || part.contains(x));
 }
@@ -287,7 +292,7 @@ export const shareOf = (part: Element, clean: Element): number => collapse(part.
 
 /** The personal rule as compact JSON, ready to apply to rules/sites/<id>.json; trimmed (oldest first) to fit a link. */
 export function compactRule(p: PersonalRule, maxChars = 1400): string {
-  const body = { site: p.site, add: [...p.add], remove: [...p.remove], ...(p.fields ? { fields: p.fields } : {}) };
+  const body = { site: p.site, add: [...p.add], remove: [...p.remove], ...(p.fields ? { fields: p.fields } : {}), ...(p.as ? { as: p.as } : {}) };
   let json = JSON.stringify(body);
   while (json.length > maxChars && (body.remove.length || body.add.length)) {
     if (body.remove.length >= body.add.length) body.remove.shift();

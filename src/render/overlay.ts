@@ -284,7 +284,7 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
       });
       meta.append(by);
     }
-    if (m.editor && m.editor !== m.byline) meta.append(h(doc, 'span', { class: 'name' }, `${t.editor} ${m.editor}`));
+    if (m.editor && m.editor !== m.byline) meta.append(h(doc, 'span', { class: 'name editor' }, `${t.editor} ${m.editor}`));
     const date = formatDate(m.published, t);
     if (date) meta.append(h(doc, 'span', { class: 'date' }, date));
     if (meta.childNodes.length) head.append(meta);
