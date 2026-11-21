@@ -8,8 +8,9 @@ import { documentFromHtml, fetchHtml, nodeContext } from './lib/dom.ts';
 const rules = assembleRuleSet();
 let failures = 0;
 let blocked = 0;
-// 401/403/429, or a dropped connection, means the site refused the CI runner's datacenter IP, not that the rule broke.
-const BLOCKED = /^(Error: HTTP (401|403|429) |TypeError: fetch failed|TimeoutError)/;
+// 401/403/429, a bot check instead of the page (lib/dom.ts isChallenge), or a dropped connection means the site refused
+// the CI runner's datacenter IP, not that the rule broke.
+const BLOCKED = /^(Error: HTTP (401|403|429) |Error: HTTP \d+ challenge |TypeError: fetch failed|TimeoutError)/;
 
 async function newestFromFeed(feed: string): Promise<string | undefined> {
   try {

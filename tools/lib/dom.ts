@@ -24,11 +24,23 @@ export function documentFromHtml(html: string, url: string): Document {
   return win.document as unknown as Document;
 }
 
+/**
+ * A bot check instead of the page: AWS WAF (`x-amzn-waf-action: challenge`, Tribun since 2026-11-21, answered with
+ * 202 and an empty body), Cloudflare (`cf-mitigated: challenge`), or any other 2xx with nothing in it. A browser
+ * passes these by running the site's script; the tools don't try to.
+ */
+export function isChallenge(res: Pick<Response, 'status' | 'headers'>, body: string): boolean {
+  if (res.headers.get('x-amzn-waf-action') || res.headers.get('cf-mitigated') === 'challenge') return true;
+  return res.status === 202 || !body.trim();
+}
+
 export async function fetchHtml(url: string): Promise<{ html: string; finalUrl: string }> {
   // A site that stalls the connection must not hang the canary.
   const res = await fetch(url, { headers: { 'user-agent': USER_AGENT, 'accept-language': 'id-ID,id;q=0.9' }, signal: AbortSignal.timeout(30_000) });
   if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
-  return { html: await res.text(), finalUrl: res.url || url };
+  const html = await res.text();
+  if (isChallenge(res, html)) throw new Error(`HTTP ${res.status} challenge for ${url}`);
+  return { html, finalUrl: res.url || url };
 }
 
 /** Context whose fetchDocument hits the network (canary) or a fixture map (tests). */
