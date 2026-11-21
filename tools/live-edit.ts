@@ -2,7 +2,7 @@
 // header sources, Bersih, Kembalikan), of old-format settings and of the "hide the bar while scrolling" setting,
 // on real articles in your installed Chrome. Needs `npm run build` first.
 //
-//   node tools/live-edit.ts [editor|migrate|bar|all] [--shot <folder>]
+//   node tools/live-edit.ts [editor|kinds|migrate|bar|all] [--shot <folder>]
 import { mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { chromium, type BrowserContext, type Page } from 'playwright-core';
@@ -350,6 +350,78 @@ async function editorTribun() {
   await ctx.close();
 }
 
+// ── "Tampil sebagai": a removed photo comes back (DW draws each photo as a run of sizes), a paragraph becomes a quote ──
+const DW = 'https://amp.dw.com/id/wacana-badak-jawa-dipindah-tuai-sorotan/a-79964682';
+const visibleSrc = (p: Page, s: string) =>
+  p.evaluate((src) => {
+    const r = document.querySelector('.sapuberita-overlay')!.shadowRoot!;
+    return [...r.querySelectorAll('.content img')].filter((i) => i.getAttribute('src') === src && !i.closest('[data-user-hidden]')).length;
+  }, s);
+async function editorKinds() {
+  console.log('\n== Editor: Tampil sebagai (DW AMP)');
+  const ctx = await newContext();
+  let page = await open(ctx, DW);
+  const src = await page.evaluate(() => {
+    const r = document.querySelector('.sapuberita-overlay')!.shadowRoot!;
+    return [...r.querySelectorAll('.content img')].find((i) => i.closest('figure')?.querySelector('figcaption'))?.getAttribute('src') ?? '';
+  });
+  ok(!!src, 'the article has a photo with a caption');
+  if (!src) return void (await ctx.close());
+  await page.close();
+  // A reader who once removed the story's photo by mistake (a personal removal by its address) wants it back.
+  const u = new URL(src);
+  page = await open(ctx, DW, JSON.stringify({ personal: [{ site: 'dw', add: [], remove: [`i:${u.hostname}${u.pathname}`], updated: '2026-11-21' }] }));
+  ok((await visibleSrc(page, src)) === 0, 'the removed photo is gone from the clean view');
+  // DW's consent dialog sits over the page in its own frame.
+  await page.evaluate(() => document.querySelectorAll('amp-consent, .i-amphtml-consent-ui-mask').forEach((e) => e.remove()));
+  await toEditor(page);
+  // Find it on the page: one of a run of sizes, the one this screen shows.
+  const box = await page.evaluate((s) => {
+    const key = new URL(s).pathname;
+    const hit = [...document.querySelectorAll('amp-img, img')].find((i) => (i.getAttribute('src') ?? '').includes(key));
+    const run = hit ? [...(hit.parentElement?.children ?? [])].filter((x) => x.tagName === hit.tagName) : [];
+    const shown = run.find((x) => x.getBoundingClientRect().width > 50);
+    if (!shown) return null;
+    shown.scrollIntoView({ block: 'center' });
+    const b = shown.getBoundingClientRect();
+    return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
+  }, src);
+  ok(!!box, 'the photo is on the page');
+  if (!box) return void (await ctx.close());
+  await page.waitForTimeout(600);
+  await page.touchscreen.tap(box.x, box.y);
+  await page.waitForTimeout(500);
+  await shot(page, 'kinds-photo-sheet.png');
+  ok((await barText(page)).includes('Tidak tampil'), 'the photo shows as left out');
+  const media = page.locator(`${SHADOW} [data-ed="kind-media"]`);
+  ok((await media.count()) === 1 && !(await media.isDisabled()), 'Foto atau video can be chosen');
+  await media.click();
+  await page.waitForTimeout(800);
+  ok((await visibleSrc(page, src)) === 1, 'the photo is back in the clean view, once');
+  ok(!(await edPersonal(page))?.remove?.length, 'the old removal is dropped');
+
+  // A paragraph becomes a quote; a long one can't be a subheading.
+  await page.locator(`${SHADOW} [data-ed="view-clean"]`).click();
+  await page.waitForTimeout(800);
+  const para = await tapClean(page, 1);
+  ok(!!para, 'picked a paragraph in Bersih');
+  ok((await pressed(page, 'kind-text')) === 'true', 'a paragraph shows Paragraf as its kind');
+  const long = (await barText(page)).length > 240;
+  if (long) ok(await page.locator(`${SHADOW} [data-ed="kind-heading"]`).isDisabled(), 'a long paragraph cannot be a subheading');
+  await page.locator(`${SHADOW} [data-ed="kind-quote"]`).click();
+  await page.waitForTimeout(600);
+  const marked = await page.evaluate(() => document.querySelector('.sapuberita-overlay')!.shadowRoot!.querySelectorAll('.content [data-user-as="quote"]').length);
+  ok(marked === 1, 'the paragraph shows as a quote');
+  ok(/kutipan/.test(await edMsg(page)), `it says so: ${await edMsg(page)}`);
+  const p = await edPersonal(page);
+  ok(!!p?.as?.quote?.length, `saved: ${JSON.stringify({ add: p?.add, remove: p?.remove, as: p?.as })}`);
+  await shot(page, 'kinds-quote.png');
+  // Pick it again: Kutipan is its kind now; Paragraf undoes it.
+  await tapClean(page, 1);
+  await shot(page, 'kinds-quote-sheet.png');
+  await ctx.close();
+}
+
 async function editorFlow() {
   await editorDetik('light');
   await editorDetik('dark');
@@ -420,6 +492,7 @@ async function barFlow() {
 }
 
 if (which === 'editor' || which === 'all') await editorFlow();
+if (which === 'kinds' || which === 'editor' || which === 'all') await editorKinds();
 if (which === 'migrate' || which === 'all') await migrateFlow();
 if (which === 'bar' || which === 'all') await barFlow();
 await browser.close();

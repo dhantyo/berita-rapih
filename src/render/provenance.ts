@@ -33,9 +33,22 @@ export function imageKey(src: string | null | undefined, base: string): string |
   }
 }
 
+/**
+ * AMP pages (DW) draw one photo as a run of sibling <amp-img>s in several sizes, one shown per screen width, each with a
+ * fallback inside it. All of them are the same photo: the run's members (not fallbacks), in page order.
+ */
+export function ampRun(el: Element): Element[] {
+  let amp = el.closest('amp-img');
+  while (amp?.hasAttribute('fallback') && amp.parentElement?.closest('amp-img')) amp = amp.parentElement.closest('amp-img');
+  if (!amp) return [];
+  const alt = amp.getAttribute('alt');
+  return [...(amp.parentElement?.children ?? [amp])].filter((s) => s.tagName === 'AMP-IMG' && !s.hasAttribute('fallback') && s.getAttribute('alt') === alt);
+}
+
 export function imageKeys(img: Element, base?: string): string[] {
   const b = base ?? img.baseURI ?? 'about:blank';
-  const raw = [img.getAttribute('src'), (img as HTMLImageElement).currentSrc, ...LAZY.map((a) => img.getAttribute(a)?.split(',')[0])];
+  const own = (el: Element) => [el.getAttribute('src'), (el as HTMLImageElement).currentSrc, ...LAZY.map((a) => el.getAttribute(a)?.split(',')[0])];
+  const raw = [...own(img), ...ampRun(img).flatMap(own)];
   return [...new Set(raw.map((s) => imageKey(s, b)).filter((k): k is string => !!k))];
 }
 
@@ -79,6 +92,8 @@ export function leavesOf(root: Element, skip?: (el: Element) => boolean, base?: 
 export interface MatchOptions {
   /** Live elements whose leaves are matched last, so a twin of their text elsewhere gets the clean leaf first. */
   last?: readonly Element[];
+  /** Live elements whose leaves are matched first: the reader pointed at them, so a twin elsewhere must not take their clean leaf. */
+  first?: readonly Element[];
   skipClean?: (el: Element) => boolean;
   skipLive?: (el: Element) => boolean;
 }
@@ -95,7 +110,9 @@ export function matchLeaves(clean: Element, page: Document, opts: MatchOptions =
   const base = page.baseURI;
   const live = leavesOf(root, opts.skipLive, base);
   const inLast = (el: Element) => !!opts.last?.some((l) => l === el || l.contains(el));
-  const order = opts.last?.length ? [...live.filter((l) => !inLast(l.el)), ...live.filter((l) => inLast(l.el))] : live;
+  const inFirst = (el: Element) => !!opts.first?.some((l) => l === el || l.contains(el));
+  let order = opts.last?.length ? [...live.filter((l) => !inLast(l.el)), ...live.filter((l) => inLast(l.el))] : live;
+  if (opts.first?.length) order = [...order.filter((l) => inFirst(l.el)), ...order.filter((l) => !inFirst(l.el))];
   const byKey = new Map<string, Leaf[]>();
   for (const l of order) for (const k of l.keys) (byKey.get(k) ?? byKey.set(k, []).get(k)!).push(l);
   const used = new Set<Leaf>();

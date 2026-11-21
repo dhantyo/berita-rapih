@@ -9,6 +9,8 @@ The first four releases were published as 0.1.0-beta.1 to beta.4 and renamed on 
 - New site: **DW Indonesia** (dw.com/id, including the amp.dw.com pages Google often opens). The related-video box and the photo gallery of another story are swept.
 - Photos in the middle of an article now show on AMP pages (amp.dw.com). Before, only their caption was left.
 - Photo captions no longer run into the photographer credit (DW: "…dan basahFoto: AFP").
+- Atur isi artikel: a photo can be brought back. Before, choosing Isi artikel on a missing photo did nothing when its caption was already showing, and a photo removed by mistake on an AMP page couldn't come back.
+- Atur isi artikel: new **Tampil sebagai** choices say what a part of the article is: Foto atau video, Paragraf, Subjudul, Keterangan foto or Kutipan. A line the site set as a heading can go back to a normal paragraph, and a caption shows small under its photo. **Editor** joins Judul, Penulis, Tanggal and Foto utama.
 
 ## [0.8.1] - 2026-11-20
 

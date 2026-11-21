@@ -138,6 +138,15 @@ function linkDensity(el: Element, textLength: number): number {
   return textLength ? linkText / textLength : 0;
 }
 
+/**
+ * Make a copy of page photos show outside the page: AMP photos become plain images, lazy-load addresses become the
+ * real ones, links absolute. The editor runs it on a part the reader adds back (render/pagepicker.ts).
+ */
+export function prepareMedia(root: HTMLElement, baseUrl: URL): void {
+  convertAmpImages(root);
+  fixMedia(root, baseUrl);
+}
+
 function fixMedia(root: HTMLElement, baseUrl: URL): void {
   for (const img of root.querySelectorAll('img')) {
     for (const attr of LAZY_SRC_ATTRS) {
