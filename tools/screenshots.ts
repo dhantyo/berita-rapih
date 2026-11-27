@@ -37,6 +37,11 @@ async function open(url: string, o: { desktop?: boolean; dark?: boolean; setting
   await page.waitForSelector(`${SHADOW} .content p`, { timeout: 30_000, state: 'attached' });
   // Extra pages merged, the logo fitted, photos loaded.
   for (let i = 0; i < 40 && (await page.locator(`${SHADOW} .status`).count()); i++) await page.waitForTimeout(500);
+  // The main photo can take several seconds (Kompas crops it on request); wait for every photo on screen, up to 20 s.
+  await page.waitForFunction((sel) => {
+    const imgs = [...(document.querySelector(sel)?.shadowRoot?.querySelectorAll('img') ?? [])];
+    return imgs.filter((i) => i.getBoundingClientRect().top < innerHeight).every((i) => i.complete && i.naturalWidth > 0);
+  }, SHADOW, { timeout: 20_000 }).catch(() => console.warn('photos still loading after 20 s:', url));
   await page.waitForTimeout(2500);
   return page;
 }

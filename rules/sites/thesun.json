@@ -1,0 +1,15 @@
+{
+  "$schema": "../schema.json",
+  "id": "thesun",
+  "name": "The Sun",
+  "domains": ["thesun.co.uk"],
+  "articleUrl": "^/[a-z-]+/(?:[a-z0-9-]+/)?\\d{6,}/[a-z0-9-]+/?$",
+  "body": ["div.single__content.entry-content"],
+  "remove": ["div.advert-wrapper", "div.inline-module", "div.article-boxout", "div.article-readmore__content-wrapper", "div.rail__items", "li.share-home", "li.share-native", "div.wp-block-buttons"],
+  "pagination": {
+    "method": "none"
+  },
+  "samples": ["https://www.thesun.co.uk/news/41142152/car-wash-rapists-jailed-deported/", "https://www.thesun.co.uk/money/37853811/best-energy-deals/"],
+  "verified": "2026-11-27",
+  "notes": "Drafted by a reader with the editor (two drafts, news and money sections, merged); checked live."
+}

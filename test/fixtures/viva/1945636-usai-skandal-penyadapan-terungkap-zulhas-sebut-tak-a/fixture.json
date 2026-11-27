@@ -1,0 +1,17 @@
+{
+  "url": "https://www.viva.co.id/berita/nasional/1945636-usai-skandal-penyadapan-terungkap-zulhas-sebut-tak-ada-lagi-laporan-keracunan-mbg",
+  "capturedAt": "2026-11-27T19:40:04.321Z",
+  "pages": {
+    "https://www.viva.co.id/berita/nasional/1945636-usai-skandal-penyadapan-terungkap-zulhas-sebut-tak-ada-lagi-laporan-keracunan-mbg?page=all": "pages/p2.html"
+  },
+  "expect": {
+    "ok": true,
+    "source": "rule",
+    "pages": 2,
+    "chars": 3611,
+    "title": "Usai Skandal Penyadapan Terungkap, Zulhas Sebut Tak Ada Lagi Laporan Keracunan MBG",
+    "absent": [
+      "Wamendes Riza Patria Dorong Desa"
+    ]
+  }
+}

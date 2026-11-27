@@ -79,9 +79,9 @@ Not sure? The [install page](https://dhantyo.github.io/sapu-berita/) picks the r
 
 ## Supported sites
 
-**29 outlets**, including regional editions:
+**30 outlets**, including regional editions:
 
-> Detik · Kompas · Tribunnews · CNN Indonesia · CNBC Indonesia · Liputan6 · Merdeka · Suara · Okezone · Viva · iNews · JPNN · ANTARA · Republika · Bisnis.com · Tirto · Tribrata News · Kumparan · IDN Times · Sindonews · Jawa Pos · Pikiran Rakyat · Kontan · Katadata · Media Indonesia · Berita Satu · Medcom · Kompas TV · DW Indonesia
+> Detik · Kompas · Tribunnews · CNN Indonesia · CNBC Indonesia · Liputan6 · Merdeka · Suara · Okezone · Viva · iNews · JPNN · ANTARA · Republika · Bisnis.com · Tirto · Tribrata News · Kumparan · IDN Times · Sindonews · Jawa Pos · Pikiran Rakyat · Kontan · Katadata · Media Indonesia · Berita Satu · Medcom · Kompas TV · DW Indonesia · The Sun (UK)
 
 **Not yet:** Tempo (paywalled; Sapu Berita doesn't bypass paywalls). Want another site? [Suggest it](../../issues/new/choose).
 
