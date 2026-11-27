@@ -11,7 +11,8 @@ import { hasSavedPage } from './saved-pages.ts';
 interface Fixture {
   url: string;
   pages: Record<string, string>;
-  expect: { ok: boolean; source?: string; pages?: number; chars?: number };
+  /** absent: text that must not survive, e.g. a related-story card that slipped through once. */
+  expect: { ok: boolean; source?: string; pages?: number; chars?: number; absent?: string[] };
 }
 
 const FIXTURES = join(import.meta.dirname, 'fixtures');
@@ -59,6 +60,7 @@ describe.skipIf(!cases.length)('fixtures', () => {
     // Allow small drift from rule tweaks, catch big regressions.
     expect(text.replace(/\s+/g, ' ').trim().length).toBeGreaterThan((fx.expect.chars ?? 0) * 0.9);
     for (const junk of JUNK) expect(text).not.toMatch(junk);
+    for (const gone of fx.expect.absent ?? []) expect(text).not.toContain(gone);
     // Brave Shields hides <strong> on some news domains, even inside our Shadow DOM.
     expect(result.article.content.querySelector('strong')).toBeNull();
   });

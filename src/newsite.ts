@@ -8,19 +8,9 @@ import { hostMatches } from './rules/match.ts';
 import { isFingerprint, type PersonalRule } from './personal.ts';
 import { selectorPart, stableSelector } from './render/pagepicker.ts';
 import type { ResolvedRule, RuleSet, RunResult } from './types.ts';
+import { mainDomain } from './domain.ts';
 
-/** Second-level labels under .id ("go.id", "co.id"…): the registrable domain then has three labels. */
-const SECOND_LEVEL = new Set(['co', 'ac', 'or', 'go', 'web', 'my', 'sch', 'net', 'biz']);
-
-/** The host's main domain. No public-suffix list: the last two labels, three under a known second level of .id. */
-export function mainDomain(host: string): string {
-  const h = host.toLowerCase().replace(/\.$/, '');
-  if (/^[\d.]+$/.test(h) || h.includes(':')) return h; // an address
-  const labels = h.split('.');
-  if (labels.length <= 2) return h;
-  const three = labels[labels.length - 1] === 'id' && SECOND_LEVEL.has(labels[labels.length - 2]!);
-  return labels.slice(three ? -3 : -2).join('.');
-}
+export { mainDomain };
 
 /** The rule id for a domain (schema: ^[a-z0-9-]+$): its first label, "inilah.com" -> "inilah". */
 export const siteIdFor = (domain: string): string => domain.split('.')[0]!.replace(/[^a-z0-9-]/gi, '').toLowerCase() || 'situs';

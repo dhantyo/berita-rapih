@@ -4,6 +4,12 @@ Versions follow [semver](https://semver.org): MAJOR.MINOR.PATCH. While the versi
 
 The first four releases were published as 0.1.0-beta.1 to beta.4 and renamed on 2026-11-13 to the scheme below; the app files inside those releases still report their original beta names.
 
+## [Unreleased]
+
+- New site: **The Sun** (thesun.co.uk), from a reader's draft. Ads, newsletter boxes, "read more" links, share buttons and shopping boxes are swept.
+- VIVA: the big "other story" card after the end of each page is gone.
+- Suggesting a new site from a site under a country domain such as .co.uk or .com.au now names the site correctly (it used to become "co").
+
 ## [0.9.0] - 2026-11-21
 
 - New site: **DW Indonesia** (dw.com/id, including the amp.dw.com pages Google often opens). The related-video box and the photo gallery of another story are swept.

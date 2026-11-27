@@ -1,0 +1,12 @@
+{
+  "url": "https://www.thesun.co.uk/news/41142152/car-wash-rapists-jailed-deported/",
+  "capturedAt": "2026-11-27T19:40:19.881Z",
+  "pages": {},
+  "expect": {
+    "ok": true,
+    "source": "rule",
+    "pages": 1,
+    "chars": 2559,
+    "title": "Two men, 38 & 31, who locked man in van before they bound, raped & robbed him at UK car wash are jailed & to be deported"
+  }
+}

@@ -30,6 +30,11 @@ describe('mainDomain', () => {
     expect(mainDomain('www.dpr.go.id')).toBe('dpr.go.id');
     expect(mainDomain('news.kampus.ac.id')).toBe('kampus.ac.id');
     expect(mainDomain('blog.toko.co.id')).toBe('toko.co.id');
+    expect(mainDomain('www.thesun.co.uk')).toBe('thesun.co.uk');
+    expect(mainDomain('www.abc.net.au')).toBe('abc.net.au');
+    expect(mainDomain('www.thestar.com.my')).toBe('thestar.com.my');
+    expect(mainDomain('www.bbc.co.uk')).toBe('bbc.co.uk');
+    expect(mainDomain('news.co.com')).toBe('co.com');
     expect(mainDomain('WWW.Example.Com.')).toBe('example.com');
     expect(mainDomain('localhost')).toBe('localhost');
     expect(mainDomain('127.0.0.1')).toBe('127.0.0.1');
@@ -37,6 +42,7 @@ describe('mainDomain', () => {
   it('makes a schema-safe id', () => {
     expect(siteIdFor('inilah.com')).toBe('inilah');
     expect(siteIdFor('dpr.go.id')).toBe('dpr');
+    expect(siteIdFor('thesun.co.uk')).toBe('thesun');
   });
 });
 

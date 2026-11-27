@@ -1,6 +1,7 @@
 // Find the outlet's own masthead logo on the live page, and the colour it sits on there.
 // Fully automatic: no per-site lists, so a redesigned header or a new logo is picked up as is.
 import { safeQuery } from '../dom.ts';
+import { mainDomain } from '../domain.ts';
 
 export interface FoundLogo {
   src: string;
@@ -132,12 +133,8 @@ export function absoluteLogoUrl(src: string, base: string): string | undefined {
   }
 }
 
-/** The site a host belongs to: its last two labels, or three under Indonesia's second-level zones (kontan.co.id). */
-function siteOf(host: string): string {
-  const labels = host.toLowerCase().replace(/^www\./, '').split('.');
-  const zone = labels.length >= 3 && /^(co|go|ac|or|web|my|sch|net|mil|biz|ponpes|desa)$/.test(labels[labels.length - 2]!);
-  return labels.slice(zone ? -3 : -2).join('.');
-}
+/** The site a host belongs to (kontan.co.id, thesun.co.uk). */
+const siteOf = (host: string): string => mainDomain(host);
 
 /** A link to the front page of this same site (another site's home is a sister brand: Kontan Academy). */
 function isHomeLink(doc: Document, href: string | null): boolean {
