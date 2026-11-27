@@ -4,13 +4,13 @@ The extension is listed in three stores. Each store installs it in one click and
 
 | Store | Covers | Cost | Package from each release |
 |---|---|---|---|
-| Chrome Web Store | Chrome, Brave, Opera, Vivaldi, Kiwi and other Chromium browsers on Android | $5 once | `sapu-berita-extension-X.Y.Z.zip` |
-| Microsoft Edge Add-ons | Edge | free | `sapu-berita-extension-X.Y.Z.zip` |
-| Firefox Add-ons (AMO) | Firefox on desktop and Android | free | `sapu-berita-firefox-X.Y.Z.zip`, plus `sapu-berita-source-X.Y.Z.zip` as the source |
+| Chrome Web Store | Chrome, Brave, Opera, Vivaldi, Kiwi and other Chromium browsers on Android | $5 once | `berita-rapih-extension-X.Y.Z.zip` |
+| Microsoft Edge Add-ons | Edge | free | `berita-rapih-extension-X.Y.Z.zip` |
+| Firefox Add-ons (AMO) | Firefox on desktop and Android | free | `berita-rapih-firefox-X.Y.Z.zip`, plus `berita-rapih-source-X.Y.Z.zip` as the source |
 
 When a listing goes live, put its URL in `STORE` near the top of the script in `site/index.html` (buttons and mentions for a store without a URL stay hidden), and in README.md and docs/install-android.md. Live now: Chrome Web Store, Edge Add-ons (also on Edge for Android). Firefox: awaiting review.
 
-All three come from the GitHub release assets. Listing images live in `docs/store/` and are redrawn with `node tools/store-assets.ts`, which also draws the extension icons. The privacy policy is at https://dhantyo.github.io/sapu-berita/privacy.html (`site/privacy.html`).
+All three come from the GitHub release assets. Listing images live in `docs/store/` and are redrawn with `node tools/store-assets.ts`, which also draws the extension icons. The privacy policy is at https://dhantyo.github.io/berita-rapih/privacy.html (`site/privacy.html`).
 
 ## Updating a listing after a release
 
@@ -54,7 +54,7 @@ Each account is the owner's to create. Then:
 
 ### Chrome Web Store
 1. Register at https://chrome.google.com/webstore/devconsole and pay the one-time $5.
-2. **New item** → upload `sapu-berita-extension-X.Y.Z.zip`.
+2. **New item** → upload `berita-rapih-extension-X.Y.Z.zip`.
 3. **Store listing:**
    - description and category below;
    - language: Indonesian;
@@ -71,24 +71,24 @@ Each account is the owner's to create. Then:
 
 ### Firefox Add-ons
 1. Sign in at https://addons.mozilla.org/developers/ (free).
-2. **Submit a New Add-on** → **On this site** → upload `sapu-berita-firefox-X.Y.Z.zip`. Tick both **Firefox** and **Firefox for Android**.
-3. When asked about source code: **yes**. Upload `sapu-berita-source-X.Y.Z.zip`. Build notes: "Node 22. `npm ci && npm run build`; the add-on is `dist/extension-firefox/`. content.js is an esbuild bundle (not minified) of src/entries/extension.ts. The innerHTML warnings come from bundled libraries: @mozilla/readability, DOMPurify and PhotoSwipe."
+2. **Submit a New Add-on** → **On this site** → upload `berita-rapih-firefox-X.Y.Z.zip`. Tick both **Firefox** and **Firefox for Android**.
+3. When asked about source code: **yes**. Upload `berita-rapih-source-X.Y.Z.zip`. Build notes: "Node 22. `npm ci && npm run build`; the add-on is `dist/extension-firefox/`. content.js is an esbuild bundle (not minified) of src/entries/extension.ts. The innerHTML warnings come from bundled libraries: @mozilla/readability, DOMPurify and PhotoSwipe."
 4. Fill in the same texts. License: GPL-3.0. Privacy policy: the URL above.
 
 ## Listing texts
 
-**Name:** Sapu Berita
+**Name:** Berita Rapih
 
 **Summary** (132 characters max):
-> Baca beritanya, sapu sisanya. Iklan dan pop-up hilang, artikel yang dipecah jadi beberapa halaman digabung jadi satu.
+> Beritanya saja, tanpa berantakan. Iklan dan pop-up hilang, artikel yang dipecah jadi beberapa halaman digabung jadi satu.
 
 **Category:** News & Weather (Chrome, Edge); Feeds, News & Blogging (Firefox).
 
 **Description:**
 
-> Baca beritanya. Sapu sisanya.
+> Beritanya saja. Tanpa berantakan.
 >
-> Sapu Berita merapikan artikel di situs berita Indonesia. Begitu kamu membuka artikel, yang tampil hanya beritanya: judul, penulis, foto utama dan isinya, dalam satu halaman.
+> Berita Rapih merapikan artikel di situs berita Indonesia. Begitu kamu membuka artikel, yang tampil hanya beritanya: judul, penulis, foto utama dan isinya, dalam satu halaman.
 >
 > • Artikel yang dipecah jadi beberapa halaman langsung digabung jadi satu
 > • Iklan, pop-up dan video yang menyela hilang, begitu juga daftar link "Baca Juga" di tengah cerita
@@ -96,15 +96,15 @@ Each account is the owner's to create. Then:
 > • Ada bagian yang salah? Atur sendiri lewat Pengaturan → Beri masukan → Atur isi artikel, atau kirim masukan langsung dari artikel tersebut
 > • Satu tombol untuk kembali ke tampilan asli situs
 >
-> Bekerja di hampir 30 situs berita besar Indonesia (daftar lengkapnya: https://github.com/dhantyo/sapu-berita#supported-sites). Perbaikan untuk tiap situs datang sendiri setiap hari.
+> Bekerja di hampir 30 situs berita besar Indonesia (daftar lengkapnya: https://github.com/dhantyo/berita-rapih#supported-sites). Perbaikan untuk tiap situs datang sendiri setiap hari.
 >
-> Tanpa akun, tanpa pelacak, dan tanpa server. Semuanya terjadi di perangkatmu. Masukan hanya terkirim kalau kamu sendiri yang mengirimnya. Sapu Berita tidak melewati paywall: yang dirapikan hanya yang memang sudah ditampilkan oleh situsnya.
+> Tanpa akun, tanpa pelacak, dan tanpa server. Semuanya terjadi di perangkatmu. Masukan hanya terkirim kalau kamu sendiri yang mengirimnya. Berita Rapih tidak melewati paywall: yang dirapikan hanya yang memang sudah ditampilkan oleh situsnya.
 >
-> Kode terbuka (GPL-3.0): https://github.com/dhantyo/sapu-berita
+> Kode terbuka (GPL-3.0): https://github.com/dhantyo/berita-rapih
 >
 > ---
 >
-> Read the news. Sweep the rest. Sapu Berita turns articles on Indonesian news sites into one clean page: no ads or pop-ups, and articles split over several pages merged into one. No accounts, no tracking; everything runs on your device.
+> Just the news, none of the mess. Berita Rapih turns articles on Indonesian news sites into one clean page: no ads or pop-ups, and articles split over several pages merged into one. No accounts, no tracking; everything runs on your device.
 
 Don't list outlet names in a store description: the Chrome Web Store rejected 0.6.3 for it as keyword spam ("Yellow Argon"). Link to the supported-sites list instead.
 
@@ -115,8 +115,8 @@ Don't list outlet names in a store description: the Chrome Web Store rejected 0.
 - `storage`: saves the reader's own settings on their device: text size, font, theme, their own corrections to which parts of an article are shown, and whether they agreed to send those corrections to the developer. Settings themselves are never sent. (Edge has this text since 0.7.0; use it for Chrome too.)
 - **Host permissions** (content script on the listed news domains): the reader view runs only on these news sites, to read the article on the page and show it cleaned up. No other site is touched unless the reader opts in (below).
 - `activeTab` (since 0.8): when the reader clicks the toolbar button, the popup looks at that one tab to tell whether it is a news article, and offers to tidy it up. Nothing is sent.
-- `scripting` (since 0.8): runs that article check, and the reader view itself, in the tab the reader chose from the popup; and, only if the reader turns on "Tawarkan Sapu Berita di situs berita lain", registers the small check that offers the reader view on news articles from sites it doesn't support yet.
-- **Optional host permission `<all_urls>`** (since 0.8): asked for only when the reader turns on "Tawarkan Sapu Berita di situs berita lain" in the popup, and given back when they turn it off. Used only for the on-device article check above. Nothing is sent.
+- `scripting` (since 0.8): runs that article check, and the reader view itself, in the tab the reader chose from the popup; and, only if the reader turns on "Tawarkan Berita Rapih di situs berita lain", registers the small check that offers the reader view on news articles from sites it doesn't support yet.
+- **Optional host permission `<all_urls>`** (since 0.8): asked for only when the reader turns on "Tawarkan Berita Rapih di situs berita lain" in the popup, and given back when they turn it off. Used only for the on-device article check above. Nothing is sent.
 - **Remote code:** no. The daily `rules.json` is data (CSS selectors per site), not code.
 
 **Data usage** (Chrome and Edge), since 0.7: tick **Web history** (the article link sent with feedback and with edits) and **Website content** (the parts of the article an edit changes, and what the reader writes on the feedback page). Nothing else. Both are sent only when the reader presses Kirim on the feedback page, or after they agreed once to send edits from Atur isi artikel; they go to the developer's Google Form. Tick all three certifications: no selling, no use beyond the single purpose, no creditworthiness use. The Chrome dashboard is filled in by hand (extensions can't script it); Edge can be done through Brave.

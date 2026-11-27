@@ -12,7 +12,7 @@ Everyday Indonesian news readers ("normies", not power users) who open news link
 
 ## Product Purpose
 
-Sapu Berita turns a messy Indonesian news article into a clean, complete, readable page the moment it opens: the article only, every page merged into one, no ads, no "Baca Juga" links, no promos. Success: a reader opens a Detik/Kompas/Tribun/CNN Indonesia/Liputan6 link and reads the whole story without fighting the page.
+Berita Rapih turns a messy Indonesian news article into a clean, complete, readable page the moment it opens: the article only, every page merged into one, no ads, no "Baca Juga" links, no promos. Success: a reader opens a Detik/Kompas/Tribun/CNN Indonesia/Liputan6 link and reads the whole story without fighting the page.
 
 ## Positioning
 
@@ -20,7 +20,7 @@ Runs entirely on the reader's own device (no proxy server, nothing redistributed
 
 ## Operating Context
 
-- Delivered as: iOS Shortcut (Share → Sapu Berita), Android link-router app (planned), desktop browser extension (dev; tested in Brave).
+- Delivered as: iOS Shortcut (Share → Berita Rapih), Android link-router app (planned), desktop browser extension (dev; tested in Brave).
 - The overlay sits on top of the original page in a Shadow DOM; the original stays underneath and is one tap away ("Tampilkan asli").
 - Readers arrive mid-scroll from chat apps; sessions are short, one article at a time.
 
@@ -35,8 +35,8 @@ Runs entirely on the reader's own device (no proxy server, nothing redistributed
 
 ## Brand Commitments
 
-- Name: **Sapu Berita** ("sapu" = broom; plays on "sapu bersih", a clean sweep).
-- Family: a planned sibling project, **Sapu Buzzer** (blocks paid "buzzer" accounts on social media), must read as the same effort — shared "Sapu" name and a shared visual identity across both.
+- Name: **Berita Rapih** ("rapih" = tidy, uncluttered). Renamed from Sapu Berita on 2026-11-27 so the maintainer's projects share one pattern: *[subject] Rapih*. "Rapih" (not the dictionary spelling "rapi") is a deliberate choice. Copy avoids "bersih" (reads as honest or anti-corruption) and no longer uses the sweep wording; the broom mark stays as the logo.
+- Tagline: "Beritanya saja. Tanpa berantakan." / "Just the news. None of the mess."
 - Each news outlet's own logo is shown in the overlay so readers know whose journalism they're reading.
 
 ## Evidence on Hand
@@ -47,7 +47,7 @@ Runs entirely on the reader's own device (no proxy server, nothing redistributed
 ## Product Principles
 
 1. Never leave the reader worse off: if anything looks wrong, show the original page.
-2. The outlet's journalism is the content; Sapu Berita only clears the clutter around it, and credits the outlet visibly.
+2. The outlet's journalism is the content; Berita Rapih only clears the clutter around it, and credits the outlet visibly.
 3. Zero setup after install: defaults must be right for a normie; settings are optional refinements.
 4. Everything happens on the reader's device; no server sees what they read.
 

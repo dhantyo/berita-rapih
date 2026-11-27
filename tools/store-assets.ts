@@ -52,8 +52,8 @@ mkdirSync(store, { recursive: true });
 // Small promo tile, 440×280.
 await shoot(join(store, 'promo-440x280.png'), 440, 280, page(440, 280, `
 <div style="height:100%;display:flex;flex-direction:column;justify-content:center;gap:18px;padding:0 40px">
-  <div style="display:flex;align-items:center;gap:14px">${mark(56)}<span style="font:700 34px/1 Geist;letter-spacing:-0.02em">Sapu Berita</span></div>
-  <div style="font:600 25px/1.25 Geist;letter-spacing:-0.01em;max-width:340px">Baca beritanya.<br>Sapu sisanya.</div>
+  <div style="display:flex;align-items:center;gap:14px">${mark(56)}<span style="font:700 34px/1 Geist;letter-spacing:-0.02em">Berita Rapih</span></div>
+  <div style="font:600 25px/1.25 Geist;letter-spacing:-0.01em;max-width:340px">Beritanya saja.<br>Tanpa berantakan.</div>
 </div>`, CREAM));
 
 // Screenshots, 1280×800.
@@ -61,14 +61,14 @@ await shoot(join(store, 'screenshot-1-desktop.png'), 1280, 800, page(1280, 800, 
 const phones = (title: string, sub: string, shots: string[]) => page(1280, 800, `
 <div style="height:100%;display:flex;align-items:center;justify-content:space-between;gap:56px;padding:0 80px">
   <div style="flex:1;max-width:560px">
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:28px">${mark(40)}<span style="font:700 24px/1 Geist">Sapu Berita</span></div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:28px">${mark(40)}<span style="font:700 24px/1 Geist">Berita Rapih</span></div>
     <div style="font:700 46px/1.12 Geist;letter-spacing:-0.02em">${title}</div>
     <div style="font:400 22px/1.45 Geist;margin-top:18px;color:rgb(104 88 68)">${sub}</div>
   </div>
   ${shots.map((s) => `<img src="${img(s)}" style="height:680px;border-radius:28px;box-shadow:0 18px 50px rgb(60 40 10 / 0.25)">`).join('')}
 </div>`, CREAM);
 await shoot(join(store, 'screenshot-2-phone.png'), 1280, 800,
-  phones('Satu artikel, satu halaman.', 'Halaman 2, 3, dan seterusnya langsung digabung jadi satu. Iklan dan pop-up ikut disapu.', ['phone-light.png', 'phone-dark.png']));
+  phones('Satu artikel, satu halaman.', 'Halaman 2, 3, dan seterusnya langsung digabung jadi satu. Iklan dan pop-up ikut dibuang.', ['phone-light.png', 'phone-dark.png']));
 await shoot(join(store, 'screenshot-3-settings.png'), 1280, 800,
   phones('Atur sesukamu.', 'Ukuran dan jenis huruf, lalu tema terang, sepia, atau gelap. Semuanya ada di tombol roda gigi.', ['phone-settings.png']));
 await shoot(join(store, 'screenshot-4-editor.png'), 1280, 800,
@@ -92,8 +92,8 @@ const THEMES = {
 const banner = (w: number, h: number, t: (typeof THEMES)['light'], phoneH: number, top: number) => page(w, h, `
 <div style="position:relative;height:100%;color:${t.ink}">
   <div style="position:absolute;left:72px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;max-width:560px">
-    <div style="display:flex;align-items:center;gap:16px;margin-bottom:30px">${mark(60)}<span style="font:700 40px/1 Geist;letter-spacing:-0.025em">Sapu Berita</span></div>
-    <div style="font:700 54px/1.06 Geist;letter-spacing:-0.03em">Read the news.<br><span style="color:${t.accent}">Sweep the rest.</span></div>
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:30px">${mark(60)}<span style="font:700 40px/1 Geist;letter-spacing:-0.025em">Berita Rapih</span></div>
+    <div style="font:700 54px/1.06 Geist;letter-spacing:-0.03em">Just the news.<br><span style="color:${t.accent}">None of the mess.</span></div>
     <div style="font:400 22px/1.45 Geist;margin-top:22px;color:${t.muted};max-width:430px">Indonesian news as one clean page. No ads, no pop-ups, every page merged.</div>
   </div>
   ${t.shots.map((s, i) => `<img src="${img(s)}" style="position:absolute;top:${top + i * 44}px;right:${72 + (1 - i) * (phoneH / 2 + 28)}px;height:${phoneH}px;border-radius:30px;box-shadow:0 0 0 1px ${t.ring},0 22px 60px ${t.shadow}">`).join('')}

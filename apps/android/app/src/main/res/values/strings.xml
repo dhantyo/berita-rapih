@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Sapu Berita</string>
+    <string name="app_name">Berita Rapih</string>
 
     <!-- Android's own labels, as the Settings app shows them in this language. Keep in sync with the OS wording. -->
     <string name="sys_open_by_default">Buka secara default</string>
@@ -16,13 +16,13 @@
     <string name="back">Kembali</string>
 
     <string name="welcome_title">Baca berita tanpa gangguan</string>
-    <string name="welcome_lead">Sapu Berita membuka link berita dalam versi bersih: tanpa iklan dan pop-up, dan artikel yang dipecah jadi beberapa halaman langsung digabung.</string>
+    <string name="welcome_lead">Berita Rapih membuka link berita dalam versi bersih: tanpa iklan dan pop-up, dan artikel yang dipecah jadi beberapa halaman langsung digabung.</string>
     <string name="welcome_point_1">Link berita dari WhatsApp, Telegram, dan lainnya langsung terbuka bersih.</string>
     <string name="welcome_point_2">Browser kamu tetap seperti biasa, dan link lain tetap terbuka seperti sebelumnya.</string>
     <string name="welcome_point_3">Tanpa akun dan tanpa server. Semuanya berjalan di ponselmu.</string>
     <string name="welcome_start">Mulai</string>
 
-    <string name="links_title">Izinkan Sapu Berita membuka link berita</string>
+    <string name="links_title">Izinkan Berita Rapih membuka link berita</string>
     <string name="links_lead">Android perlu izin darimu, cukup sekali saja. Tombol di bawah akan membuka halaman pengaturan seperti ini:</string>
     <string name="links_mock_note">Tampilannya bisa sedikit berbeda di setiap ponsel.</string>
     <string name="links_do_1">Pastikan \"%1$s\" sudah menyala.</string>
@@ -39,14 +39,14 @@
     <string name="sites_count">%1$d situs lagi</string>
     <string name="status_none">Belum aktif. Ketuk \"Buka pengaturan\", lalu ikuti langkah di atas.</string>
     <string name="status_off">\"%1$s\" masih mati. Nyalakan dulu, lalu tambahkan link-nya.</string>
-    <string name="status_taken">%1$s dibuka oleh aplikasi %2$s, jadi situs tersebut tidak bisa dipilih di sini. Tidak apa-apa, situs lain tetap dibuka lewat Sapu Berita.</string>
+    <string name="status_taken">%1$s dibuka oleh aplikasi %2$s, jadi situs tersebut tidak bisa dipilih di sini. Tidak apa-apa, situs lain tetap dibuka lewat Berita Rapih.</string>
 
-    <string name="old_title">Pilih Sapu Berita untuk link berita</string>
+    <string name="old_title">Pilih Berita Rapih untuk link berita</string>
     <string name="old_lead">Ketuk tombol di bawah. Ponselmu akan bertanya aplikasi mana yang ingin dipakai:</string>
-    <string name="old_do_1">Pilih Sapu Berita.</string>
+    <string name="old_do_1">Pilih Berita Rapih.</string>
     <string name="old_do_2">Ketuk \"%1$s\".</string>
     <string name="old_try">Buka link berita</string>
-    <string name="old_status_ok">Beres! Sekarang link berita dibuka oleh Sapu Berita.</string>
+    <string name="old_status_ok">Beres! Sekarang link berita dibuka oleh Berita Rapih.</string>
     <string name="old_status_browser">Link berita masih selalu dibuka oleh %1$s. Hapus dulu pilihan tersebut: di halaman yang terbuka, cari \"%2$s\" lalu \"%3$s\".</string>
     <string name="old_clear">Buka pengaturan %1$s</string>
 
@@ -61,5 +61,5 @@
     <string name="home_guide">Ulangi panduan</string>
     <string name="home_feedback">Kirim masukan</string>
     <string name="version">Versi %1$s</string>
-    <string name="privacy">Semuanya berjalan di ponselmu. Sapu Berita tidak punya server dan tidak tahu apa yang kamu baca. Sekali sehari, Sapu Berita mengecek versi baru dan perbaikan situs dari GitHub (bisa dimatikan di Pengaturan → Cek update).</string>
+    <string name="privacy">Semuanya berjalan di ponselmu. Berita Rapih tidak punya server dan tidak tahu apa yang kamu baca. Sekali sehari, Berita Rapih mengecek versi baru dan perbaikan situs dari GitHub (bisa dimatikan di Pengaturan → Cek update).</string>
 </resources>

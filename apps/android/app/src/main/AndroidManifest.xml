@@ -83,7 +83,7 @@
             </intent-filter>
         </activity>
 
-        <!-- The clean reader: a WebView with the Sapu Berita script injected. -->
+        <!-- The clean reader: a WebView with the Berita Rapih script injected. -->
         <activity
             android:name=".ReaderActivity"
             android:exported="false"

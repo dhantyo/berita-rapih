@@ -3,7 +3,7 @@
 The app claims **only the news sites' links**, the way the YouTube app claims youtube.com. The reader's browser is untouched; no default-browser role.
 
 - The manifest's link filter lists every news host (generated from the rules by `npm run build`, between the `sapu:hosts` markers). No `autoVerify`: we don't own these domains, so Android 12+ leaves them off until the reader turns them on once under **Open by default → Add link** (the setup screen opens that page and shows "Active on N of M" from `DomainVerificationManager`). Android 11 and older show the usual chooser on first tap; the reader picks **Always**.
-- **Article link:** opens in the app's own WebView with the Sapu Berita script injected at document start. The overlay sits in the browser's top layer, so even full-screen interstitial ads can't cover it.
+- **Article link:** opens in the app's own WebView with the Berita Rapih script injected at document start. The overlay sits in the browser's top layer, so even full-screen interstitial ads can't cover it.
 - **Homepage / section link of a news site, or any link tapped inside the reader that isn't an article:** handed to the reader's default browser.
 - If a site's official app is installed and verified for its domain, Android sends that site's links to it; we can't override that.
 - **Settings** (font, size, theme, language) are stored in the app and shared by every site, unlike the iPhone Shortcut's per-site storage.
@@ -17,7 +17,7 @@ npm run build                      # writes app/src/main/assets/{webview.js,doma
 cd apps/android && ./gradlew assembleDebug
 ```
 
-Output: `app/build/outputs/apk/debug/app-debug.apk`. CI builds the same APK on every push (artifact `sapu-berita-android-apk`).
+Output: `app/build/outputs/apk/debug/app-debug.apk`. CI builds the same APK on every push (artifact `berita-rapih-android-apk`).
 
 Plain Java, no Kotlin, one dependency (`androidx.webkit` for document-start scripts). minSdk 26 (Android 8), targetSdk 35.
 

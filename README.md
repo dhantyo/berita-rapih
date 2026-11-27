@@ -2,19 +2,19 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/img/banner-dark.png">
-  <img src="docs/img/banner-light.png" width="100%" alt="Sapu Berita. Read the news. Sweep the rest. Two phones show a Kompas and a Detik Travel article as clean pages.">
+  <img src="docs/img/banner-light.png" width="100%" alt="Berita Rapih. Just the news. None of the mess. Two phones show a Kompas and a Detik Travel article as clean pages.">
 </picture>
 
 <br><br>
 
-[![Latest release](https://img.shields.io/github/v/release/dhantyo/sapu-berita?label=release&color=b07a12)](https://github.com/dhantyo/sapu-berita/releases/latest) [![Chrome Web Store](https://img.shields.io/chrome-web-store/v/cnpcdeijcckcobfngmglmdfgfcdlnglc?label=chrome%20web%20store&color=b07a12)](https://chromewebstore.google.com/detail/cnpcdeijcckcobfngmglmdfgfcdlnglc) [![CI](https://img.shields.io/github/actions/workflow/status/dhantyo/sapu-berita/ci.yml?branch=master&label=tests)](https://github.com/dhantyo/sapu-berita/actions/workflows/ci.yml) [![License: GPL-3.0](https://img.shields.io/github/license/dhantyo/sapu-berita?color=5c5c5c)](LICENSE)
+[![Latest release](https://img.shields.io/github/v/release/dhantyo/berita-rapih?label=release&color=b07a12)](https://github.com/dhantyo/berita-rapih/releases/latest) [![Chrome Web Store](https://img.shields.io/chrome-web-store/v/cnpcdeijcckcobfngmglmdfgfcdlnglc?label=chrome%20web%20store&color=b07a12)](https://chromewebstore.google.com/detail/cnpcdeijcckcobfngmglmdfgfcdlnglc) [![CI](https://img.shields.io/github/actions/workflow/status/dhantyo/berita-rapih/ci.yml?branch=master&label=tests)](https://github.com/dhantyo/berita-rapih/actions/workflows/ci.yml) [![License: GPL-3.0](https://img.shields.io/github/license/dhantyo/berita-rapih?color=5c5c5c)](LICENSE)
 
-### [Install page](https://dhantyo.github.io/sapu-berita/) · [Chrome](https://chromewebstore.google.com/detail/cnpcdeijcckcobfngmglmdfgfcdlnglc) · [Edge](https://microsoftedge.microsoft.com/addons/detail/bhdciokajcobbbajokfomgjoonofcdbj) · [Android](docs/install-android.md) · [iPhone, iPad, Mac](docs/install-apple.md)
+### [Install page](https://dhantyo.github.io/berita-rapih/) · [Chrome](https://chromewebstore.google.com/detail/cnpcdeijcckcobfngmglmdfgfcdlnglc) · [Edge](https://microsoftedge.microsoft.com/addons/detail/bhdciokajcobbbajokfomgjoonofcdbj) · [Android](docs/install-android.md) · [iPhone, iPad, Mac](docs/install-apple.md)
 
 </div>
 
 > [!NOTE]
-> **Beta.** Sapu Berita is still early (0.x). If an article looks wrong, [report it](../../issues/new/choose) with the link.
+> **Beta.** Berita Rapih is still early (0.x). If an article looks wrong, [report it](../../issues/new/choose) with the link.
 
 ## What it does
 
@@ -72,10 +72,10 @@ The **Asli** (Original) button always takes you back to the publisher's page.
 |---|---|---|
 | 💻 **Computer**<br><sub>Chrome, Brave, Opera, Vivaldi, Edge</sub> | An extension that runs automatically on every supported article and updates itself. | [Chrome](https://chromewebstore.google.com/detail/cnpcdeijcckcobfngmglmdfgfcdlnglc)<br>[Edge](https://microsoftedge.microsoft.com/addons/detail/bhdciokajcobbbajokfomgjoonofcdbj) |
 | 🤖 **Android** | The same extension, in Edge (or Firefox, once Mozilla approves it). Chrome for Android doesn't allow extensions; there you can use a bookmark instead. | [Android guide](docs/install-android.md) |
-| 📱 **iPhone, iPad** | A Safari bookmark today, an Apple Shortcut (Share → Sapu Berita) soon. Always the latest version. | [Apple guide](docs/install-apple.md) |
+| 📱 **iPhone, iPad** | A Safari bookmark today, an Apple Shortcut (Share → Berita Rapih) soon. Always the latest version. | [Apple guide](docs/install-apple.md) |
 | 🍎 **Mac with Safari** | One button in Safari's Favourites bar. Always the latest version. | [Apple guide](docs/install-apple.md) |
 
-Not sure? The [install page](https://dhantyo.github.io/sapu-berita/) picks the right steps for your device and browser.
+Not sure? The [install page](https://dhantyo.github.io/berita-rapih/) picks the right steps for your device and browser.
 
 ## Supported sites
 
@@ -83,7 +83,7 @@ Not sure? The [install page](https://dhantyo.github.io/sapu-berita/) picks the r
 
 > Detik · Kompas · Tribunnews · CNN Indonesia · CNBC Indonesia · Liputan6 · Merdeka · Suara · Okezone · Viva · iNews · JPNN · ANTARA · Republika · Bisnis.com · Tirto · Tribrata News · Kumparan · IDN Times · Sindonews · Jawa Pos · Pikiran Rakyat · Kontan · Katadata · Media Indonesia · Berita Satu · Medcom · Kompas TV · DW Indonesia · The Sun (UK)
 
-**Not yet:** Tempo (paywalled; Sapu Berita doesn't bypass paywalls). Want another site? [Suggest it](../../issues/new/choose).
+**Not yet:** Tempo (paywalled; Berita Rapih doesn't bypass paywalls). Want another site? [Suggest it](../../issues/new/choose).
 
 ## Updates
 
@@ -94,15 +94,15 @@ Not sure? The [install page](https://dhantyo.github.io/sapu-berita/) picks the r
 ## Privacy
 
 > [!TIP]
-> **Everything runs on your device.** No server, no analytics, no account. Sapu Berita doesn't know what you read.
+> **Everything runs on your device.** No server, no analytics, no account. Berita Rapih doesn't know what you read.
 
 Articles still load from the publisher's own site, so your visit counts for them as usual.
 
-Once a day it downloads two small files from GitHub: the latest version number and the latest site rules. Nothing about you or your reading is sent. You can turn it off under **the gear button → Cek update** (check for updates). Feedback is only sent when you send it yourself, and changes from **Atur isi artikel** (adjust the article) only if you agree the first time it asks; both go to a Google Form. Details: [privacy page](https://dhantyo.github.io/sapu-berita/privacy.html).
+Once a day it downloads two small files from GitHub: the latest version number and the latest site rules. Nothing about you or your reading is sent. You can turn it off under **the gear button → Cek update** (check for updates). Feedback is only sent when you send it yourself, and changes from **Atur isi artikel** (adjust the article) only if you agree the first time it asks; both go to a Google Form. Details: [privacy page](https://dhantyo.github.io/berita-rapih/privacy.html).
 
 ## Made with AI
 
-Sapu Berita is built with AI. Nearly all of its code, documentation and design were written by Claude, Anthropic's AI model, working under the direction of the maintainer, who decides what gets built, tests it and publishes each release. Site rules are checked against real articles by automated tests and a daily live check. If something looks wrong, please [report it](../../issues/new/choose).
+Berita Rapih is built with AI. Nearly all of its code, documentation and design were written by Claude, Anthropic's AI model, working under the direction of the maintainer, who decides what gets built, tests it and publishes each release. Site rules are checked against real articles by automated tests and a daily live check. If something looks wrong, please [report it](../../issues/new/choose).
 
 ## Contributing
 
@@ -110,7 +110,7 @@ News sites change their layouts often, so the per-site rules need care. Reportin
 
 ## Thank you
 
-Sapu Berita stands on the work of people who shared theirs. Thank you to everyone behind these projects.
+Berita Rapih stands on the work of people who shared theirs. Thank you to everyone behind these projects.
 
 **In the reader**
 
@@ -141,9 +141,9 @@ More on what was reused and why: [docs/PRIOR-ART.md](docs/PRIOR-ART.md).
 
 ## License
 
-[GPL-3.0](LICENSE), because the ad filters and pagination rules derive from GPL-3.0 projects (see above). Sapu Berita is not affiliated with any news outlet; their names and logos belong to their owners.
+[GPL-3.0](LICENSE), because the ad filters and pagination rules derive from GPL-3.0 projects (see above). Berita Rapih is not affiliated with any news outlet; their names and logos belong to their owners.
 
 <div align="center">
 <br>
-<sub>Part of the <b>Sapu</b> family, alongside Sapu Buzzer (coming soon).</sub>
+<sub>Formerly <b>Sapu Berita</b>.</sub>
 </div>

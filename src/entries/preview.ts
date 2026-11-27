@@ -18,7 +18,7 @@ const fx = params.get('fx');
 async function main() {
   if (!fx) {
     const list = (await (await fetch('/fixtures')).json()) as string[];
-    document.body.innerHTML = '<h1>Sapu Berita preview</h1>' +
+    document.body.innerHTML = '<h1>Berita Rapih preview</h1>' +
       list.map((f) => `<p><a href="?fx=${encodeURIComponent(f)}">${f}</a></p>`).join('');
     return;
   }

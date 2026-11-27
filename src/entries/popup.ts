@@ -1,6 +1,6 @@
 // The extension's toolbar popup (apps/extension/popup.html). What it shows depends on the page in the current tab:
 //   - a supported site: open the clean view, or open it with Pengaturan;
-//   - another site whose page looks like an article: "Coba Sapu Berita di halaman ini" and "Sarankan situs ini";
+//   - another site whose page looks like an article: "Coba Berita Rapih di halaman ini" and "Sarankan situs ini";
 //   - anything else: says so.
 // Below that, always: the opt-in page check (ext-offer.ts), which lives here because only an extension page may ask
 // the browser for permissions. Clicking the toolbar button grants activeTab, which lets the popup look at the page.
@@ -173,10 +173,10 @@ async function main() {
   drawOffer(await offerPrefs());
 
   root.append(
-    h('div', { class: 'pop-head' }, broom(), h('h1', {}, 'Sapu Berita'), h('span', { class: 'pop-host' }, host)),
+    h('div', { class: 'pop-head' }, broom(), h('h1', {}, 'Berita Rapih'), h('span', { class: 'pop-host' }, host)),
     ...body,
     offerSection,
-    h('p', { class: 'pop-version' }, `Sapu Berita ${__SAPU_VERSION__}`),
+    h('p', { class: 'pop-version' }, `Berita Rapih ${__SAPU_VERSION__}`),
   );
 }
 

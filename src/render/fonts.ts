@@ -1,5 +1,5 @@
 /**
- * Sapu Berita's own fonts, the same on every device:
+ * Berita Rapih's own fonts, the same on every device:
  *   - Geist (the identity: headlines, text, labels) is built into the script, so it's there instantly,
  *     offline, and no news site's font policy can block it.
  *   - Merriweather (Pengaturan → Serif) and Fira Sans (Pengaturan → Jelas) download only when the reader picks them,

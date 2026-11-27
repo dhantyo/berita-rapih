@@ -33,11 +33,11 @@ import java.util.Set;
 
 /**
  * First run: a hand-held, three-step guide.
- *   1. What Sapu Berita does.
+ *   1. What Berita Rapih does.
  *   2. Let it open news links. Android 12+: a drawing of the "Open by default" screen with numbered
  *      taps, a button that opens exactly that screen, and a live check when the reader comes back
  *      (which sites are on, which are missing, which belong to an official app). Android 8 to 11:
- *      open a news link so the system asks "which app?", and pick Sapu Berita, Always.
+ *      open a news link so the system asks "which app?", and pick Berita Rapih, Always.
  *   3. Try it on a sample article.
  * Afterwards the same screen is a small home: status, fix-it button, sample, version.
  * Built in code (no layouts) to keep the app tiny.
@@ -578,7 +578,7 @@ public class SetupActivity extends Activity {
 
     private Typeface geistBase;
 
-    /** Geist (res/font/geist.ttf, variable 100 to 900, OFL), the Sapu Berita voice. */
+    /** Geist (res/font/geist.ttf, variable 100 to 900, OFL), the Berita Rapih voice. */
     private Typeface geist(int weight) {
         if (geistBase == null) {
             try {

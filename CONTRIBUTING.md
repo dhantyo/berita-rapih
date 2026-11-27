@@ -4,7 +4,7 @@ Thanks for helping! Three ways, easiest first.
 
 ## 1. Report an article that looks wrong
 
-The quickest way: on that article, open **the gear button → Beri masukan → Laporkan masalah** (report a problem). The article link and your Sapu Berita version are sent with it.
+The quickest way: on that article, open **the gear button → Beri masukan → Laporkan masalah** (report a problem). The article link and your Berita Rapih version are sent with it.
 
 Or [open a report](../../issues/new/choose) → **Broken article**, with:
 - **the article link** (most important),
@@ -29,7 +29,7 @@ Most fixes are a few lines of JSON in `rules/sites/<site>.json`. Read [docs/RULE
 For a new site, `npm run probe -- https://www.example.com` drafts the rule for you.
 
 Ground rules:
-- **No paywall bypassing.** Sapu Berita cleans what the site already shows you.
+- **No paywall bypassing.** Berita Rapih cleans what the site already shows you.
 - **No servers, no analytics.** Everything runs on the reader's device. The only request of our own is the daily, opt-out fetch of `update.json` and `rules.json` from the release channel; it carries nothing about the reader.
 - Prefer stable selectors (ids, semantic class names) over generated ones like `.css-1x2y3z`.
 

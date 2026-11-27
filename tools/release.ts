@@ -75,6 +75,6 @@ if (dryRun) {
 
 sh(`git commit -q -am "Release ${version}" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"`);
 sh('git push -q');
-sh(`git tag -a v${version} -m "Sapu Berita ${version}"`);
+sh(`git tag -a v${version} -m "Berita Rapih ${version}"`);
 sh(`git push -q origin v${version}`);
 console.log(`v${version} pushed; CI builds and publishes it (gh run list).`);

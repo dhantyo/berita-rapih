@@ -1,12 +1,12 @@
 # Browser extension (Chrome, Brave, Edge)
 
-On a computer, Sapu Berita runs on its own whenever you open an article from a supported site.
+On a computer, Berita Rapih runs on its own whenever you open an article from a supported site.
 
 > During the beta the extension isn't in the Chrome Web Store yet, so it's installed by hand (about a minute).
 
 ## Install
 
-1. Download **sapu-berita-extension-….zip** from the [Releases](https://github.com/dhantyo/sapu-berita/releases/latest) page and unzip it (right-click → *Extract All*).
+1. Download **berita-rapih-extension-….zip** from the [Releases](https://github.com/dhantyo/berita-rapih/releases/latest) page and unzip it (right-click → *Extract All*).
 2. Open `chrome://extensions` (Brave: `brave://extensions`, Edge: `edge://extensions`).
 3. Turn on **Developer mode** in the top-right corner.
 4. Click **Load unpacked** and pick the unzipped folder.
@@ -16,7 +16,7 @@ Chrome may show a notice about developer-mode extensions when it starts. That's 
 
 ## Updates
 
-When a new version is out, a box appears above the article: **"Sapu Berita … sudah tersedia"** (is available). Tap **Update**, download the new zip, replace the contents of the same folder, and click ↻ on the Sapu Berita card in the extensions page. Your settings are kept.
+When a new version is out, a box appears above the article: **"Berita Rapih … sudah tersedia"** (is available). Tap **Update**, download the new zip, replace the contents of the same folder, and click ↻ on the Berita Rapih card in the extensions page. Your settings are kept.
 
 ## For developers
 

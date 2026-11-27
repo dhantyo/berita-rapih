@@ -43,7 +43,7 @@ async function load(url: string): Promise<Page> {
 const p1 = await load(FIRST);
 await p1.waitForSelector('.sapuberita-newsite', { state: 'attached', timeout: 15_000 });
 await p1.waitForTimeout(600);
-ok((await shadow(p1, '.ns-text', '.sapuberita-newsite')) ?.startsWith('Sapu Berita belum mengenal situs ini.') === true, 'the offer appears on a site without a rule');
+ok((await shadow(p1, '.ns-text', '.sapuberita-newsite')) ?.startsWith('Berita Rapih belum mengenal situs ini.') === true, 'the offer appears on a site without a rule');
 ok(!(await p1.$('.sapuberita-overlay')), 'the reader is not open yet');
 await shot(p1, 'newsite-prompt.png');
 

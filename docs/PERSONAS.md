@@ -1,4 +1,4 @@
-# Who uses Sapu Berita, and how
+# Who uses Berita Rapih, and how
 
 Character cards for the people we build for, then every way they reach an article and every way they give (or don't give) feedback. Status marks:
 
@@ -25,11 +25,11 @@ Written 2026-11-11, at version 0.1.0 (then called 0.1.0-beta.1), before the firs
 **Journey today**
 1. Her son sends the APK link. 🟡 She opens GitHub Releases on her phone, which is confusing (lots of files). ❓ Whether Play Protect or Google's developer verification **blocks the install outright** in Indonesia. Today it probably does, until we register (see State, below).
 2. Allow "Instal aplikasi tidak dikenal" for Chrome or WhatsApp. 🟡 A scary system warning; this is where most people quit.
-3. Opens Sapu Berita → "Atur link berita" → "Tambahkan link" → ticks 28 sites. 🟡 On Samsung (One UI) the screen is worded differently from Pixel; the guide's labels may not match.
+3. Opens Berita Rapih → "Atur link berita" → "Tambahkan link" → ticks 28 sites. 🟡 On Samsung (One UI) the screen is worded differently from Pixel; the guide's labels may not match.
 4. Taps a Detik link in WhatsApp. 🟡 Should open clean. ❓ Depends on WhatsApp handing the link to Android (good) rather than its own in-app browser (bad).
 5. Taps **Aa**, makes text bigger. ✅ Remembered for every site.
 
-**Where it breaks:** if the official Detik app is installed, Detik links go there, not to us. Links to unsupported sites (Kumparan) just open in Chrome, so she may think Sapu Berita "stopped working".
+**Where it breaks:** if the official Detik app is installed, Detik links go there, not to us. Links to unsupported sites (Kumparan) just open in Chrome, so she may think Berita Rapih "stopped working".
 
 **Feedback she would give:** none on GitHub. She would tell her son, or say "aplikasinya error" in the family group. If the reader looks broken, she taps **Asli** and carries on.
 
@@ -47,10 +47,10 @@ Written 2026-11-11, at version 0.1.0 (then called 0.1.0-beta.1), before the firs
 1. ❌ No iCloud link yet: the Shortcut hasn't been assembled. Nothing to install.
 2. Once it exists: open the iCloud link → "Tambahkan Pintasan" → Settings → Pintasan → Lanjutan → "Izinkan Menjalankan Skrip". 🟡 That setting is buried; most people give up there.
 3. Taps a link in X or Instagram → it opens in **their in-app browser**. ❌ The Shortcut can't run there. He must tap "Open in Safari" first.
-4. In Safari: Share → Sapu Berita → "Izinkan Selalu" (once per site). 🟡
+4. In Safari: Share → Berita Rapih → "Izinkan Selalu" (once per site). 🟡
 5. Reads. Settings are remembered **per site** (Safari storage), so he sets dark mode again on each outlet. 🟡
 
-**Where it breaks:** every article costs two extra taps (Share, then Sapu Berita). There's no automatic mode on iOS without a paid App Store app.
+**Where it breaks:** every article costs two extra taps (Share, then Berita Rapih). There's no automatic mode on iOS without a paid App Store app.
 
 **Feedback he would give:** a reply or quote-post on X ("kok error di Tribun"), or a DM. Maybe a GitHub issue if the link is in the Share sheet result. He has no GitHub account.
 
@@ -121,14 +121,14 @@ How a tap on a news link reaches the reader, per platform.
 
 | Where the link is tapped | Android | iPhone / iPad | Desktop extension |
 |---|---|---|---|
-| WhatsApp chat | 🟡 opens clean (if WA hands off to Android) | Opens in Safari → Share → Sapu Berita 🟡 | ✅ WhatsApp Web/Desktop opens the browser, the extension runs |
+| WhatsApp chat | 🟡 opens clean (if WA hands off to Android) | Opens in Safari → Share → Berita Rapih 🟡 | ✅ WhatsApp Web/Desktop opens the browser, the extension runs |
 | Telegram | ❓ Telegram's in-app browser may keep it | in-app browser → "Open in Safari" first | ✅ |
 | X / Twitter | ❓ X in-app browser on by default | in-app browser → Safari first | ✅ |
 | Instagram, Facebook, TikTok | ❌ in-app browser keeps it; user must pick "Buka di browser", which then goes to Chrome, not us | ❌ in-app browser → Safari first | ✅ |
 | LINE | ❓ | in-app browser | ✅ |
 | Gmail / email | 🟡 | Safari 🟡 | ✅ |
 | Google Search app, Google Discover | ❌ opens in Google's own view | Google app's browser → Safari first | ✅ |
-| Typed or browsed inside Chrome | ❌ stays in Chrome (Android doesn't hand off inside the browser) | ✅ Share → Sapu Berita | ✅ |
+| Typed or browsed inside Chrome | ❌ stays in Chrome (Android doesn't hand off inside the browser) | ✅ Share → Berita Rapih | ✅ |
 | Official outlet app installed (Detik, Kompas…) | ❌ that app wins for its own domain | n/a | n/a |
 | Link to a homepage or section page | ✅ sent on to the browser, on purpose | Shortcut says "bukan artikel" | stays as is |
 | Unsupported site | ✅ browser, untouched | ❓ generic extraction may kick in, or "bukan artikel" | not matched, untouched |

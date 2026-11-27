@@ -518,7 +518,7 @@ export function renderOverlay(doc: Document, initial: Article, opts: OverlayOpti
       }
     }
     // Version, so bug reports say which build they came from.
-    foot.append(h(doc, 'span', { class: 'version' }, `Sapu Berita ${VERSION}`));
+    foot.append(h(doc, 'span', { class: 'version' }, `Berita Rapih ${VERSION}`));
     more.push(foot);
     panel.append(section(t.secMore, ...more));
     return panel;

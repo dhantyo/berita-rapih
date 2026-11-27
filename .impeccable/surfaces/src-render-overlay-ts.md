@@ -5,7 +5,7 @@ primary_target: "src/render/overlay.ts"
 related_targets: ["src/render/styles.ts"]
 ---
 
-# Reader overlay (Sapu Berita)
+# Reader overlay (Berita Rapih)
 
 Scope: the article overlay drawn over Indonesian news pages (src/render). Mode: Read.
 Audience/job: everyday readers finishing one article from a shared link, on phone and desktop equally.

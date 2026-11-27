@@ -47,14 +47,14 @@ jobs:
         name: Download the release zips
         run: |
           V="${TAG#v}"
-          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" -p "sapu-berita-extension-$V.zip" -p "sapu-berita-firefox-$V.zip" -p "sapu-berita-source-$V.zip"
-          mkdir firefox && unzip -q "sapu-berita-firefox-$V.zip" -d firefox
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" -p "berita-rapih-extension-$V.zip" -p "berita-rapih-firefox-$V.zip" -p "berita-rapih-source-$V.zip"
+          mkdir firefox && unzip -q "berita-rapih-firefox-$V.zip" -d firefox
           echo "V=$V" >> "$GITHUB_ENV"
       - id: chrome
         name: Chrome Web Store
         continue-on-error: true
         if: ${{ steps.zips.outcome == 'success' && contains(inputs.stores, 'chrome') && env.CWS_REFRESH_TOKEN != '' }}
-        run: npx -y chrome-webstore-upload-cli@4.0.2 --source "sapu-berita-extension-$V.zip"
+        run: npx -y chrome-webstore-upload-cli@4.0.2 --source "berita-rapih-extension-$V.zip"
         env:
           EXTENSION_ID: cnpcdeijcckcobfngmglmdfgfcdlnglc
           CLIENT_ID: ${{ env.CWS_CLIENT_ID }}
@@ -72,7 +72,7 @@ jobs:
           { "version": { "approval_notes": "Node 22. `npm ci && npm run build`; the add-on is `dist/extension-firefox/`. content.js is an esbuild bundle (not minified) of src/entries/extension.ts. The innerHTML warnings come from bundled libraries: @mozilla/readability, DOMPurify and PhotoSwipe." } }
           JSON
           npx -y web-ext@10.8.0 sign --source-dir firefox --artifacts-dir amo-out --channel listed \
-            --upload-source-code "sapu-berita-source-$V.zip" --amo-metadata amo.json --approval-timeout 0 \
+            --upload-source-code "berita-rapih-source-$V.zip" --amo-metadata amo.json --approval-timeout 0 \
             --api-key "$AMO_API_KEY" --api-secret "$AMO_API_SECRET"
       # Edge's API key expires every 72 days; Partner Center emails before it does (renewing: docs/STORES.md).
       - id: edge
@@ -82,7 +82,7 @@ jobs:
         uses: wdzeng/edge-addon@9881f57720358040d079eaa06a4596dc9c273eb6 # v2.1.1
         with:
           product-id: 52c939f3-79ef-4a25-b7cd-d309ecd843b9
-          zip-path: sapu-berita-extension-${{ env.V }}.zip
+          zip-path: berita-rapih-extension-${{ env.V }}.zip
           client-id: ${{ env.EDGE_CLIENT_ID }}
           api-key: ${{ env.EDGE_API_KEY }}
       - name: Report

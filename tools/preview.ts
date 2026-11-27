@@ -41,7 +41,7 @@ createServer(async (req, res) => {
   try {
     if (url.pathname === '/') {
       res.writeHead(200, { 'content-type': TYPES['.html']! });
-      res.end('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Sapu Berita preview</title><body style="font:16px system-ui;margin:24px"><script src="/preview.js"></script>');
+      res.end('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Berita Rapih preview</title><body style="font:16px system-ui;margin:24px"><script src="/preview.js"></script>');
     } else if (url.pathname === '/preview.js') {
       res.writeHead(200, { 'content-type': TYPES['.js']!, 'cache-control': 'no-store' });
       res.end(await bundle()); // rebuilt on every load: edit, reload, see

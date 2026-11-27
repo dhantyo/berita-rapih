@@ -9,10 +9,10 @@ User-facing guide: [docs/install-apple.md](../../docs/install-apple.md). Install
 
 ## Self-updating
 
-Both run the same tiny **loader** (`dist/apple-loader.js`, about 300 characters, one line, no `#`). It downloads the latest core (`sapu-berita.js` on the release channel) and runs it:
+Both run the same tiny **loader** (`dist/apple-loader.js`, about 300 characters, one line, no `#`). It downloads the latest core (`berita-rapih.js` on the release channel) and runs it:
 
 ```
-Shortcut / bookmark ─► loader ─► fetch https://<owner>.github.io/<repo>/sapu-berita.js ─► (0,eval)(core)
+Shortcut / bookmark ─► loader ─► fetch https://<owner>.github.io/<repo>/berita-rapih.js ─► (0,eval)(core)
 ```
 
 So a new release reaches Apple users the moment the release job publishes the channel. Nobody re-adds the Shortcut; the Shortcut and the bookmark never change. The core skips the "update available" bar (`selfUpdating`), since it is always current.
@@ -27,19 +27,19 @@ Checked 2026-11-11 with headless Chrome on a sample article from each of the 16 
 
 No Apple device of our own is needed beyond these 2 minutes: anyone with an iPhone can do it.
 
-1. Shortcuts app → **+** → name it **Sapu Berita**, pick an icon (ochre colour).
+1. Shortcuts app → **+** → name it **Berita Rapih**, pick an icon (ochre colour).
 2. Shortcut details (ⓘ) → turn on **Show in Share Sheet**; under *Share Sheet Types* keep only **Safari web pages**.
 3. Add the action **Run JavaScript on Web Page**; its input is *Shortcut Input*.
 4. Replace the action's sample code with the contents of `dist/apple-loader.js` (one line). It is also at `https://<owner>.github.io/<repo>/apple-loader.js` once the channel is published, easy to open and copy on the phone.
 5. Settings → Apps → Shortcuts → Advanced → turn on **Allow Running Scripts**.
-6. Test on a Kompas article: Share → Sapu Berita.
+6. Test on a Kompas article: Share → Berita Rapih.
 7. Share menu of the Shortcut → **Copy iCloud Link**. Put it in `site/index.html` (`ICLOUD_SHORTCUT`) and `docs/install-apple.md`.
 
 Apple doesn't allow importing unsigned `.shortcut` files, and signing needs a Mac (`shortcuts sign`). The iCloud link is the free path that works for everyone. It never needs to change, because the Shortcut only holds the loader.
 
 ## Offline / pinned variant
 
-`dist/shortcut.b64.js` is the whole core, base64-wrapped (no `#`, no whitespace), for a Shortcut that must work without fetching. It does not update itself. Each release also attaches it as `sapu-berita-shortcut-<version>.js`.
+`dist/shortcut.b64.js` is the whole core, base64-wrapped (no `#`, no whitespace), for a Shortcut that must work without fetching. It does not update itself. Each release also attaches it as `berita-rapih-shortcut-<version>.js`.
 
 ## Behaviour
 

@@ -1,5 +1,5 @@
 {
-  "name": "sapu-berita",
+  "name": "berita-rapih",
   "version": "0.9.0",
   "private": true,
   "description": "Clean reading overlay for Indonesian news sites. One core script, wrapped for an Apple Shortcut, an Android app and a browser extension.",

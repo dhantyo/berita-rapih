@@ -1,4 +1,4 @@
-// The extension's opt-in page check ("Tawarkan Sapu Berita di situs berita lain"), shared by the popup and the
+// The extension's opt-in page check ("Tawarkan Berita Rapih di situs berita lain"), shared by the popup and the
 // background script. Off by default. Turned on in the popup, it asks the browser for access to all sites; with it,
 // offer.js runs on pages of sites without a rule and, on an article, asks the background script to load the reader,
 // which shows the offer card. Turned off, the script is unregistered and the access given back.
