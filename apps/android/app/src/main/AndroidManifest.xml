@@ -73,6 +73,7 @@
                 <data android:host="*.republika.co.id" />
                 <data android:host="*.sindonews.com" />
                 <data android:host="*.suara.com" />
+                <data android:host="*.thesun.co.uk" />
                 <data android:host="tirto.id" />
                 <data android:host="*.tirto.id" />
                 <data android:host="tribratanews.polri.go.id" />

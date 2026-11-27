@@ -4,7 +4,7 @@ Versions follow [semver](https://semver.org): MAJOR.MINOR.PATCH. While the versi
 
 The first four releases were published as 0.1.0-beta.1 to beta.4 and renamed on 2026-11-13 to the scheme below; the app files inside those releases still report their original beta names.
 
-## [Unreleased]
+## [0.10.0] - 2026-11-27
 
 - **Sapu Berita is now Berita Rapih.** Same app, new name: "Beritanya saja. Tanpa berantakan." The floating button is now called **Rapih**, and the note at the end of an article says "gangguan dibuang". Settings, bookmarks and installed copies keep working; the project moved to github.com/dhantyo/berita-rapih and the install page to dhantyo.github.io/berita-rapih.
 - New site: **The Sun** (thesun.co.uk), from a reader's draft. Ads, newsletter boxes, "read more" links, share buttons and shopping boxes are removed.

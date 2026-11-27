@@ -1,6 +1,6 @@
 {
   "name": "berita-rapih",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "private": true,
   "description": "Clean reading overlay for Indonesian news sites. One core script, wrapped for an Apple Shortcut, an Android app and a browser extension.",
   "license": "GPL-3.0-only",
