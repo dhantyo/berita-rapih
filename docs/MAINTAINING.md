@@ -1,4 +1,4 @@
-# Maintaining Sapu Berita
+# Maintaining Berita Rapih
 
 This is the runbook for the scheduled maintenance runs. Each run starts in a fresh session that remembers nothing of earlier runs, so this file is the handover. Read it once at the start of a run. Then open other docs only when the task needs them: grep first, and read only the lines you need. Reading costs the same budget that fixing does.
 
@@ -29,6 +29,7 @@ There are two runs:
   - `node tools/live-edit.ts editor`: live check of the article editor.
   - `npm run check`: typecheck and all tests.
   - Run `npm run build` before inspect or live-edit.
+- **Old address mirror:** the project was called Sapu Berita until 2026-11-27. Copies installed before that read `update.json`, `rules.json` and the Apple core from https://dhantyo.github.io/sapu-berita/. The public repo `dhantyo/sapu-berita` only mirrors the release channel there (every hour, from `files.txt`, with `berita-rapih.js` also served as `sapu-berita.js`). Don't delete it or rename anything back to that name. If the mirror's workflow stops (GitHub pauses scheduled workflows after 60 days without commits; it commits once a month to prevent that), run it by hand from its Actions tab.
 - **Saved news pages:** these are copyrighted. They live only in the private repo `dhantyo/sapu-berita-fixtures`; use `npm run fixtures:pull` and `npm run fixtures:push`. Never add them to this public repo.
 - **The APK signing key:** it is in GitHub secrets and outside the repo. Never read it, print it or commit it.
 
@@ -124,7 +125,7 @@ These are the user's standing preferences; they apply to every run.
   - Commits, PRs, issues, docs and the changelog are in English.
   - The app's own text is in everyday Indonesian: "link" and "update", not "tautan" and "pembaruan".
   - Write Indonesian in full, descriptive sentences, the way a native speaker would explain it to a friend. Don't compress it to mirror short English. Use the English word where that's what people actually say (extension, install, store, user). Prefer "tersebut" when pointing back to something just named. The user says forced or shortened Indonesian "feels like AI".
-  - Keep a visible note on public pages that Sapu Berita is made with the help of AI, without naming the model.
+  - Keep a visible note on public pages that Berita Rapih is made with the help of AI, without naming the model.
 - **Versions:** plain semver. PATCH for fixes, site rules and docs; MINOR for features a reader sees. 0.x means beta.
 - **No `#` in the overlay's CSS:** iOS Shortcuts breaks on it, so use `rgb()` or named colours. `npm run build` prints how many `#` are in `shortcut.js`; that number must not grow.
 - **Commit trailer:** every commit ends with `Co-Authored-By:` naming the model that wrote it, e.g. `Claude Opus 5.5 <noreply@anthropic.com>`.

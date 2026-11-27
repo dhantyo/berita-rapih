@@ -25,7 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 /**
- * The clean reader: the news page in a WebView, with the Sapu Berita script injected at document start
+ * The clean reader: the news page in a WebView, with the Berita Rapih script injected at document start
  * (the same core as the desktop extension and the iPhone Shortcut). Links to other news articles stay
  * here; anything else is handed to the user's normal browser.
  */

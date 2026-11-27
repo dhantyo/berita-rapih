@@ -1,4 +1,4 @@
-# Developing Sapu Berita
+# Developing Berita Rapih
 
 One TypeScript core (`src/`) finds the article on a news page, merges its pages, cleans it and draws the reading overlay. Thin wrappers ship that core to each platform:
 
@@ -62,9 +62,9 @@ Android APK: `cd apps/android && ./gradlew assembleDebug`.
 1. While working, note each user-visible change under `## [Unreleased]` at the top of `CHANGELOG.md`.
 2. `npm run release -- 0.3.4` sets the version in `package.json` (the extension, the APK and the Shortcut all read it), dates the changelog section, builds, runs every check, commits, pushes, and pushes the one tag `v0.3.4` (tags go one at a time: GitHub starts no build when more than three tags are pushed together). `--dry-run` stops after the checks and changes nothing.
 3. CI builds and signs everything and publishes a GitHub Release with the APK, the extension zip and the Shortcut script. Versions with a `-` suffix are marked pre-release.
-4. CI also publishes the **release channel** to GitHub Pages: `update.json` (latest version and per-platform update links) and `rules.json` (site rules). Installed copies read both once a day: a newer version shows an "update available" bar in the reader; newer rules apply silently, so most site fixes need no app update. It also carries the Apple core (`sapu-berita.js`), which the Shortcut and the Safari bookmark download on every run, and the install page (`site/`).
+4. CI also publishes the **release channel** to GitHub Pages: `update.json` (latest version and per-platform update links) and `rules.json` (site rules). Installed copies read both once a day: a newer version shows an "update available" bar in the reader; newer rules apply silently, so most site fixes need no app update. It also carries the Apple core (`berita-rapih.js`), which the Shortcut and the Safari bookmark download on every run, and the install page (`site/`).
 
-One-time setup: Settings → Pages → Source: **GitHub Actions** (needs a public repository on the free plan). Pages URLs don't follow repository renames, so rename before the first release.
+One-time setup: Settings → Pages → Source: **GitHub Actions** (needs a public repository on the free plan). Pages URLs don't follow repository renames. The project was renamed from `sapu-berita` on 2026-11-27; copies installed before that still read the old address, which the mirror repo `dhantyo/sapu-berita` keeps serving (docs/MAINTAINING.md).
 
 ### Where feedback goes
 

@@ -1,12 +1,13 @@
 # Changelog
 
-Versions follow [semver](https://semver.org): MAJOR.MINOR.PATCH. While the version starts with 0, Sapu Berita is in beta; 1.0.0 is the public launch. Every tag `vX.Y.Z` publishes a GitHub Release built from this file.
+Versions follow [semver](https://semver.org): MAJOR.MINOR.PATCH. While the version starts with 0, Berita Rapih is in beta; 1.0.0 is the public launch. Every tag `vX.Y.Z` publishes a GitHub Release built from this file.
 
 The first four releases were published as 0.1.0-beta.1 to beta.4 and renamed on 2026-11-13 to the scheme below; the app files inside those releases still report their original beta names.
 
 ## [Unreleased]
 
-- New site: **The Sun** (thesun.co.uk), from a reader's draft. Ads, newsletter boxes, "read more" links, share buttons and shopping boxes are swept.
+- **Sapu Berita is now Berita Rapih.** Same app, new name: "Beritanya saja. Tanpa berantakan." The floating button is now called **Rapih**, and the note at the end of an article says "gangguan dibuang". Settings, bookmarks and installed copies keep working; the project moved to github.com/dhantyo/berita-rapih and the install page to dhantyo.github.io/berita-rapih.
+- New site: **The Sun** (thesun.co.uk), from a reader's draft. Ads, newsletter boxes, "read more" links, share buttons and shopping boxes are removed.
 - VIVA: the big "other story" card after the end of each page is gone.
 - Suggesting a new site from a site under a country domain such as .co.uk or .com.au now names the site correctly (it used to become "co").
 

@@ -1,9 +1,9 @@
 /**
- * "Is there a newer Sapu Berita?" One small JSON file (update.json), published with every release next to
+ * "Is there a newer Berita Rapih?" One small JSON file (update.json), published with every release next to
  * the site rules, is fetched at most once a day. No identifiers are sent; the reader can turn it off.
  *
  *   { "version": "0.1.0-beta.2", "notes": "https://…/releases/tag/v0.1.0-beta.2",
- *     "android": "https://…/sapu-berita-0.1.0-beta.2.apk", "extension": "https://…/releases/tag/…",
+ *     "android": "https://…/berita-rapih-0.1.0-beta.2.apk", "extension": "https://…/releases/tag/…",
  *     "apple": "https://…/docs/install-apple.md", "form": "https://docs.google.com/forms/…/viewform?…" }
  */
 

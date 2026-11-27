@@ -106,7 +106,7 @@ export function draftRule(p: PersonalRule, url: URL, siteName?: string, date = n
     pagination: { method: 'none' },
     samples: [url.origin + url.pathname],
     verified: date,
-    notes: "Drafted by a reader with Sapu Berita's editor",
+    notes: "Drafted by a reader with Berita Rapih's editor",
   };
 }
 

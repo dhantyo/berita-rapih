@@ -69,11 +69,11 @@ jobs:
           SAPU_KEYSTORE_PASSWORD: ${{ secrets.SAPU_KEYSTORE_PASSWORD }}
           SAPU_KEY_ALIAS: ${{ secrets.SAPU_KEY_ALIAS }}
           SAPU_KEY_PASSWORD: ${{ secrets.SAPU_KEY_PASSWORD }}
-      - run: mv apps/android/app/build/outputs/apk/release/app-release.apk sapu-berita.apk
+      - run: mv apps/android/app/build/outputs/apk/release/app-release.apk berita-rapih.apk
       - uses: actions/upload-artifact@v7
         with:
-          name: sapu-berita-android-apk
-          path: sapu-berita.apk
+          name: berita-rapih-android-apk
+          path: berita-rapih.apk
 
   # Pushing a tag like v0.1.0-beta.1 publishes a GitHub Release with the APK, the extension and the Shortcut script.
   release:
@@ -90,7 +90,7 @@ jobs:
           path: builds/
       - uses: actions/download-artifact@v8
         with:
-          name: sapu-berita-android-apk
+          name: berita-rapih-android-apk
           path: apk/
       - name: Package
         env:
@@ -99,31 +99,33 @@ jobs:
           V="${GITHUB_REF_NAME#v}"
           test "$V" = "$(node -p "require('./package.json').version")" || { echo "::error::Tag $GITHUB_REF_NAME does not match package.json"; exit 1; }
           mkdir out
-          cp apk/sapu-berita.apk "out/sapu-berita-$V.apk"
+          cp apk/berita-rapih.apk "out/berita-rapih-$V.apk"
           # Extension: one zip for Load unpacked, the Chrome Web Store and Edge Add-ons; one for addons.mozilla.org,
           # plus the source AMO asks for (content.js is bundled; build with `npm ci && npm run build`).
-          (cd builds/apps/extension && zip -q "$GITHUB_WORKSPACE/out/sapu-berita-extension-$V.zip" manifest.json content.js popup.html popup.js background.js offer.js icons/*.png)
-          (cd builds/dist/extension-firefox && zip -q "$GITHUB_WORKSPACE/out/sapu-berita-firefox-$V.zip" manifest.json content.js popup.html popup.js background.js offer.js icons/*.png)
-          git archive --format=zip -o "out/sapu-berita-source-$V.zip" HEAD
-          cp builds/dist/shortcut.b64.js "out/sapu-berita-shortcut-$V.js"
+          (cd builds/apps/extension && zip -q "$GITHUB_WORKSPACE/out/berita-rapih-extension-$V.zip" manifest.json content.js popup.html popup.js background.js offer.js icons/*.png)
+          (cd builds/dist/extension-firefox && zip -q "$GITHUB_WORKSPACE/out/berita-rapih-firefox-$V.zip" manifest.json content.js popup.html popup.js background.js offer.js icons/*.png)
+          git archive --format=zip -o "out/berita-rapih-source-$V.zip" HEAD
+          cp builds/dist/shortcut.b64.js "out/berita-rapih-shortcut-$V.js"
           # Release channel, served by GitHub Pages: installed copies check update.json once a day
           # and pick up rules.json (site fixes) without reinstalling.
           REPO_URL="https://github.com/$GITHUB_REPOSITORY"
           mkdir channel
           cp builds/dist/rules.json channel/rules.json
           # Apple: the Shortcut and the Safari bookmark download this core on every run (always the latest).
-          cp builds/dist/shortcut.js channel/sapu-berita.js
+          cp builds/dist/shortcut.js channel/berita-rapih.js
           cp builds/dist/apple-loader.js builds/dist/bookmarklet.txt channel/
           # Install page.
           cp -r site/. channel/
           mkdir -p channel/img && cp docs/img/phone-light.png docs/img/phone-dark.png channel/img/
           # Fonts: Aa → Serif / Jelas download these on demand; the install page uses Geist.
           mkdir -p channel/fonts && cp fonts/*.woff2 fonts/OFL-*.txt channel/fonts/
+          # Every file on the channel, for the mirror at the old address (dhantyo/sapu-berita, see docs/MAINTAINING.md).
+          (cd channel && find . -type f ! -name files.txt | sed 's|^\./||' | sort > files.txt)
           cat > channel/update.json <<JSON
           {
             "version": "$V",
             "notes": "$REPO_URL/releases/tag/v$V",
-            "android": "$REPO_URL/releases/download/v$V/sapu-berita-$V.apk",
+            "android": "$REPO_URL/releases/download/v$V/berita-rapih-$V.apk",
             "extension": "$REPO_URL/releases/tag/v$V",
             "apple": "$REPO_URL/blob/master/docs/install-apple.md"
           }
@@ -143,7 +145,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           PRE=""; [[ "$V" == *-* ]] && PRE="--prerelease"
-          gh release create "$GITHUB_REF_NAME" out/* --title "Sapu Berita $V" --notes-file notes.md $PRE
+          gh release create "$GITHUB_REF_NAME" out/* --title "Berita Rapih $V" --notes-file notes.md $PRE
       - uses: actions/upload-pages-artifact@v5
         with:
           path: channel/

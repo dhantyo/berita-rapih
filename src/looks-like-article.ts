@@ -1,5 +1,5 @@
 /**
- * Does this page look like a single news article? Used by the extension on sites Sapu Berita has no rule for: the
+ * Does this page look like a single news article? Used by the extension on sites Berita Rapih has no rule for: the
  * toolbar popup (via chrome.scripting.executeScript) and the opt-in page check (offer.js). It must stay
  * self-contained, with no imports and no outside references, because the popup sends its source into the page.
  */

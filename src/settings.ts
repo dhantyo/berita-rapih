@@ -14,7 +14,7 @@ export interface Settings {
   lang: Lang;
   /** Show the outlet's main photo above the article. */
   hero: boolean;
-  /** Open the clean view as soon as an article loads; off = only via the floating Sapu button. */
+  /** Open the clean view as soon as an article loads; off = only via the floating Rapih button. */
   autoOpen: boolean;
   /** Show the "N distractions swept · merged pages · original link" line at the end. */
   sweepLine: boolean;

@@ -1,5 +1,5 @@
 name: Suggest a site
-description: Ask Sapu Berita to support another news site.
+description: Ask Berita Rapih to support another news site.
 labels: ["site request"]
 body:
   - type: input

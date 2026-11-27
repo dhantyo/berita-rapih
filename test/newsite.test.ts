@@ -171,7 +171,7 @@ describe('the draft rules/sites/<id>.json', () => {
       id: 'inilah', name: 'Inilah.com', domains: ['inilah.com'], articleUrl: p.newSite!.articleUrl, body: ['div.detail-text'],
       remove: ['div.related', 'section.promo > div.box'], // fingerprints are for one article, not for the rule
       pagination: { method: 'none' }, samples: ['https://www.inilah.com/berita/2026/11/15/1234567/judul-yang-cukup-panjang-ini'],
-      verified: '2026-11-15', notes: "Drafted by a reader with Sapu Berita's editor",
+      verified: '2026-11-15', notes: "Drafted by a reader with Berita Rapih's editor",
     });
     expect(validate(rule), JSON.stringify(validate.errors)).toBe(true);
     // the article pattern is a working regex that matches the sample

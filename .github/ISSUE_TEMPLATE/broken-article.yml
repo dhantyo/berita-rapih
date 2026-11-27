@@ -25,7 +25,7 @@ body:
     attributes:
       label: What's wrong?
       options:
-        - label: Sapu Berita doesn't appear at all
+        - label: Berita Rapih doesn't appear at all
         - label: Part of the article text is missing
         - label: Ads, "Baca Juga" or other links are still in the article
         - label: Pages 2, 3 and so on aren't merged
@@ -35,4 +35,4 @@ body:
     id: details
     attributes:
       label: Details
-      description: Screenshots help a lot. Your Sapu Berita version is at the bottom of the Aa panel. Indonesian is fine too.
+      description: Screenshots help a lot. Your Berita Rapih version is at the bottom of the Aa panel. Indonesian is fine too.

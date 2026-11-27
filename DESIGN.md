@@ -1,5 +1,5 @@
 ---
-name: Sapu Berita
+name: Berita Rapih
 description: The article alone, set like a great newspaper's own web edition, swept clean on the reader's device.
 colors:
   paper: "rgb(255 255 255)"
@@ -200,13 +200,13 @@ components:
     padding: "11px 18px 11px 14px"
 ---
 
-# Design System: Sapu Berita
+# Design System: Berita Rapih
 
 ## Overview
 
 **Creative North Star: "The Swept Page"**
 
-Sapu Berita sets a swept Indonesian news article in one modernist voice: a strict Swiss-style grotesk (Geist) for headline, text and every label, generous white space, order kept by hairline rules rather than boxes. The reader should feel the clutter is gone and only the story is left, in a calm, contemporary hand, not a generic reader-mode card and not the outlet's cluttered chrome. Hierarchy comes from weight, size and tracking within the one family: tight, bold headlines; even, open text; small grey labels. A serif (Merriweather) and an extra-legible humanist sans (Fira Sans) are reader options, never the identity.
+Berita Rapih sets a swept Indonesian news article in one modernist voice: a strict Swiss-style grotesk (Geist) for headline, text and every label, generous white space, order kept by hairline rules rather than boxes. The reader should feel the clutter is gone and only the story is left, in a calm, contemporary hand, not a generic reader-mode card and not the outlet's cluttered chrome. Hierarchy comes from weight, size and tracking within the one family: tight, bold headlines; even, open text; small grey labels. A serif (Merriweather) and an extra-legible humanist sans (Fira Sans) are reader options, never the identity.
 
 Density is low and vertical: one centered column, one slim bar above it, nothing in the margins. Colour is almost absent. Paper and ink carry the page; a single accent, lidi ochre (the straw colour of a sapu lidi broom), appears only where Sapu itself is acting: the reading-progress hairline, the active setting, the sweep line at the end. Three grounds exist and are first-class: paper white, warm newsprint sepia, and ink-black dark.
 

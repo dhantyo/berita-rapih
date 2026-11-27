@@ -37,7 +37,7 @@ export interface BootResult {
   supported: boolean;
   /** The reader on this page, once there is one (the extension's popup opens it or its settings). */
   overlay: () => OverlayHandle | null;
-  /** Read this page as a new site right away (the popup's "Coba Sapu Berita di halaman ini"). */
+  /** Read this page as a new site right away (the popup's "Coba Berita Rapih di halaman ini"). */
   tryHere: () => void;
 }
 
@@ -107,7 +107,7 @@ export async function boot(options: BootOptions = {}): Promise<BootResult> {
     updatesSetting: !options.selfUpdating,
     updatesFixesOnly: !!options.storeInstall,
     // The release channel is the install page (GitHub Pages); the release notes live on GitHub.
-    links: CHANNEL ? { home: CHANNEL, privacy: new URL('privacy.html', CHANNEL).href, changes: 'https://github.com/dhantyo/sapu-berita/releases' } : undefined,
+    links: CHANNEL ? { home: CHANNEL, privacy: new URL('privacy.html', CHANNEL).href, changes: 'https://github.com/dhantyo/berita-rapih/releases' } : undefined,
     originalUrl: url.href,
     official,
     platform,

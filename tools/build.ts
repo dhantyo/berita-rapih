@@ -27,7 +27,7 @@ const [OWNER = '', NAME = ''] = REPO.split('/');
 const CHANNEL_URL = process.env.SAPU_CHANNEL_URL ?? (REPO ? `https://${OWNER.toLowerCase()}.github.io/${NAME}/` : '');
 // "Report a problem": a prefilled "Artikel rusak" issue form. update.json can swap in a form that needs no account.
 const REPORT_URL = process.env.SAPU_REPORT_URL || (REPO
-  ? `https://github.com/${REPO}/issues/new?template=broken-article.yml&url={url}&details={note}%0A%0A${encodeURIComponent('Sapu Berita ')}{version}%20(%7Bplatform%7D)`.replace('%7Bplatform%7D', '{platform}')
+  ? `https://github.com/${REPO}/issues/new?template=broken-article.yml&url={url}&details={note}%0A%0A${encodeURIComponent('Berita Rapih ')}{version}%20(%7Bplatform%7D)`.replace('%7Bplatform%7D', '{platform}')
   : '');
 
 const rules = buildRules();
@@ -78,10 +78,10 @@ writeFileSync(
 );
 
 // Apple loader: what actually goes in the Shortcut and the Safari bookmark. It downloads the latest core
-// (dist/shortcut.js, published as sapu-berita.js on the release channel) and runs it, so Apple users never
+// (dist/shortcut.js, published as berita-rapih.js on the release channel) and runs it, so Apple users never
 // re-add anything. Short, one line, no '#' (Shortcuts quirks); `completion` is Shortcuts' global, absent
 // in a bookmark. Fails visibly (completion reason) rather than silently if the channel is unreachable.
-const CORE_URL = CHANNEL_URL ? new URL('sapu-berita.js', CHANNEL_URL).href : '';
+const CORE_URL = CHANNEL_URL ? new URL('berita-rapih.js', CHANNEL_URL).href : '';
 const loader =
   `(function(){var c=typeof completion=='function'?completion:function(){};` +
   `fetch('${CORE_URL}',{cache:'no-cache'}).then(function(r){if(!r.ok)throw r.status;return r.text()})` +
@@ -105,8 +105,8 @@ manifest.version_name = version;
 manifest.icons = Object.fromEntries([16, 32, 48, 128].map((s) => [String(s), `icons/icon-${s}.png`]));
 // The toolbar button and its popup. activeTab: clicking it lets the popup look at that one tab (no install warning);
 // scripting: to run the article check and the reader there. All sites only on request, when the reader turns on
-// "Tawarkan Sapu Berita di situs berita lain" (src/entries/ext-offer.ts).
-manifest.action = { default_popup: 'popup.html', default_title: 'Sapu Berita', default_icon: manifest.icons };
+// "Tawarkan Berita Rapih di situs berita lain" (src/entries/ext-offer.ts).
+manifest.action = { default_popup: 'popup.html', default_title: 'Berita Rapih', default_icon: manifest.icons };
 manifest.permissions = ['storage', 'activeTab', 'scripting'];
 manifest.optional_host_permissions = ['<all_urls>'];
 manifest.background = { service_worker: 'background.js' };

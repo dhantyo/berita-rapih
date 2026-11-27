@@ -9,7 +9,7 @@ Code: the model is `src/settings.ts`, the panel is `settingsPanel` in `src/rende
 The reader's top bar holds three things:
 - the outlet's logo, a link to its homepage;
 - the gear (**Pengaturan**), which opens the panel;
-- **Asli**, which shows the original page. A floating **Sapu** button at the bottom right of the screen brings the clean view back.
+- **Asli**, which shows the original page. A floating **Rapih** button at the bottom right of the screen brings the clean view back.
 
 The panel is a bottom sheet on phones and a popover under the gear on wide screens. On phones it rises from the bottom edge, and you close it with a downward drag, a tap outside it, or ×. The title row stays at the top while the panel scrolls.
 
@@ -49,8 +49,8 @@ The panel is ordered by how often each part is used, and every section has a tit
 **5. Lainnya**
 - **Bahasa:** Indonesia · English, on one row.
 - **Update otomatis** (extension, Android, on). Its hint depends on the build: "Perbaikan situs, sekali sehari. Versi baru datang lewat store" for a store install, and "Versi baru dan perbaikan situs, sekali sehari" for a hand install or the Android app.
-- **Links:** Tentang Sapu Berita · Privasi · Apa yang baru. The install page, the privacy page, and the GitHub release notes.
-- **The version:** "Sapu Berita 0.x.y".
+- **Links:** Tentang Berita Rapih · Privasi · Apa yang baru. The install page, the privacy page, and the GitHub release notes.
+- **The version:** "Berita Rapih 0.x.y".
 
 ## How the controls behave
 
@@ -92,19 +92,19 @@ The bookmark always opens the clean view when tapped, so it has no "Buka otomati
 
 ## Left out on purpose
 
-- **A per-site on/off switch, in the panel or the popup.** Nobody asked for it, and Buka otomatis plus the Sapu button already cover "not here". Add it if feedback asks.
+- **A per-site on/off switch, in the panel or the popup.** Nobody asked for it, and Buka otomatis plus the Rapih button already cover "not here". Add it if feedback asks.
 - **A list of every site with the reader's own edits.** Each site's Kembalikan is enough for now.
 
 ## The extension's toolbar popup
 
 Code: `src/entries/popup.ts`, `ext-offer.ts`, `offer.ts`, `background.ts`.
 
-- **On a supported site:** "Situs ini didukung Sapu Berita." with **Buka tampilan bersih** and **Pengaturan**, which opens the reader with this panel. On a page there that isn't an article, it says so.
+- **On a supported site:** "Situs ini didukung Berita Rapih." with **Buka tampilan bersih** and **Pengaturan**, which opens the reader with this panel. On a page there that isn't an article, it says so.
 - **On another site, if the page looks like a news article** (`src/looks-like-article.ts`: JSON-LD, og:type with a publish time, or a body of long paragraphs):
-  - **Coba Sapu Berita di halaman ini** reads it as a new site and opens the editor.
+  - **Coba Berita Rapih di halaman ini** reads it as a new site and opens the editor.
   - **Sarankan situs ini** opens the feedback form for that site.
 - **On anything else:** it says the page isn't an article, or that it can't run there (the browser's own pages).
-- **Always: "Tawarkan Sapu Berita di situs berita lain"** (off by default). This switch lives in the popup, not in this panel, because only an extension page may ask the browser for permissions.
+- **Always: "Tawarkan Berita Rapih di situs berita lain"** (off by default). This switch lives in the popup, not in this panel, because only an extension page may ask the browser for permissions.
   - Turning it on asks for access to all sites. A tiny check then offers the reader, by itself, on articles from sites without a rule. Its card has **Jangan tawarkan di situs ini**.
   - Silenced sites are listed under the switch, each with a way to undo it.
   - Turning it off removes the check and gives the access back.

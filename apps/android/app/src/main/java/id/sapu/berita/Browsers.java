@@ -13,7 +13,7 @@ import java.util.List;
 
 /**
  * Hands a page to the user's normal browser. Needed because once the user approves a news site for
- * Sapu Berita, a plain "view this link" would come straight back to us for that site's homepage.
+ * Berita Rapih, a plain "view this link" would come straight back to us for that site's homepage.
  */
 final class Browsers {
     static final String PREFS = "sapu";

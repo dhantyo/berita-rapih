@@ -376,7 +376,7 @@ svg { flex: none; }
 .nav-row svg { color: var(--muted); transition: transform var(--dur-1) var(--ease), color var(--dur-1) var(--ease); }
 @media (hover: hover) and (pointer: fine) { .nav-row:hover svg { color: var(--ink); transform: translateX(2px); } }
 
-/* The foot: where Sapu Berita lives, and which build this is. */
+/* The foot: where Berita Rapih lives, and which build this is. */
 .panel-foot { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; margin: var(--sp-2) 0 0; font: var(--fs-cap)/1.4 var(--sans); color: var(--muted); }
 .panel-foot a { color: var(--ink); text-decoration: none; }
 @media (hover: hover) and (pointer: fine) { .panel-foot a:hover { text-decoration: underline; text-underline-offset: 0.2em; } }

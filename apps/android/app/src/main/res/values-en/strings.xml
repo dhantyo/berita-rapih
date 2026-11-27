@@ -13,13 +13,13 @@
     <string name="back">Back</string>
 
     <string name="welcome_title">News without the clutter</string>
-    <string name="welcome_lead">Sapu Berita opens news links in a clean version: no ads or pop-ups, and articles split over several pages merged into one.</string>
+    <string name="welcome_lead">Berita Rapih opens news links in a clean version: no ads or pop-ups, and articles split over several pages merged into one.</string>
     <string name="welcome_point_1">News links from WhatsApp, Telegram and other apps open clean.</string>
     <string name="welcome_point_2">Your browser stays as it is. Other links don\'t change.</string>
     <string name="welcome_point_3">No account, no server. Everything runs on your phone.</string>
     <string name="welcome_start">Start</string>
 
-    <string name="links_title">Let Sapu Berita open news links</string>
+    <string name="links_title">Let Berita Rapih open news links</string>
     <string name="links_lead">Android needs your permission once. The button below opens a settings page like this:</string>
     <string name="links_mock_note">It may look slightly different on your phone.</string>
     <string name="links_do_1">Make sure \"%1$s\" is on.</string>
@@ -38,12 +38,12 @@
     <string name="status_off">\"%1$s\" is still off. Turn it on first, then add the links.</string>
     <string name="status_taken">%1$s opens in the %2$s app, so it can\'t be picked here. That\'s fine; the other sites still work.</string>
 
-    <string name="old_title">Pick Sapu Berita for news links</string>
+    <string name="old_title">Pick Berita Rapih for news links</string>
     <string name="old_lead">Tap the button below. Your phone asks which app to use:</string>
-    <string name="old_do_1">Pick Sapu Berita.</string>
+    <string name="old_do_1">Pick Berita Rapih.</string>
     <string name="old_do_2">Tap \"%1$s\".</string>
     <string name="old_try">Open a news link</string>
-    <string name="old_status_ok">Done! News links now open in Sapu Berita.</string>
+    <string name="old_status_ok">Done! News links now open in Berita Rapih.</string>
     <string name="old_status_browser">News links still always open in %1$s. Clear that first: on the page that opens, find \"%2$s\" and then \"%3$s\".</string>
     <string name="old_clear">Open %1$s settings</string>
 
@@ -58,5 +58,5 @@
     <string name="home_guide">Show the guide again</string>
     <string name="home_feedback">Send feedback</string>
     <string name="version">Version %1$s</string>
-    <string name="privacy">Everything runs on your phone. Sapu Berita has no server and doesn\'t know what you read. Once a day it checks GitHub for a new version and site fixes (turn off under Settings → Cek update).</string>
+    <string name="privacy">Everything runs on your phone. Berita Rapih has no server and doesn\'t know what you read. Once a day it checks GitHub for a new version and site fixes (turn off under Settings → Cek update).</string>
 </resources>
